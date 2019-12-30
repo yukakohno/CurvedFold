@@ -44,8 +44,8 @@ int papermodel::postproc()
 		crs[c].setEnds( psx,psy,pex,pey, dccnt,dcurve );
 		crs[c].calcRLenP(psx,psy,pex,pey);		// ruling長さ修正（枠線、曲線までの長さ優先）
 		crs[c].calcRLenC( dccnt, dcurve );		// ruling長さ修正（トリム）
-		if( flg_rectifyR ){
-			crs[c].calcRLenHoseiR();	// 曲率小さい部分は長さ0に
+		if( rp.flg_rectifyR ){
+			crs[c].calcRLenHoseiR( rp.rectifyR_kvthres );	// 曲率小さい部分は長さ0に
 		}
 	}
 

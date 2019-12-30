@@ -24,20 +24,36 @@ typedef enum _ruling_end_type {
 	RETYPE_UNDEF, RETYPE_CURVE, RETYPE_TRIM, RETYPE_EGTOP, RETYPE_EGRIGHT, RETYPE_EGBOTTOM, RETYPE_EGLEFT
 } ruling_end_type;
 
-// defined in curvedraw.h
-//typedef enum _curve_type {
-//	CTYPE_UNDEF, CTYPE_TRIM, CTYPE_FOLD, CTYPE_FOLD_LEFT, CTYPE_FOLD_RIGHT
-//} curve_type;
-//typedef enum _cvertex_type {
-//	CVTYPE_UNDEF, CVTYPE_RUL_LEFT, CVTYPE_RUL_RIGHT, CVTYPE_FCURVE_START, CVTYPE_FCURVE_END, CVTYPE_PAPER_EDGE
-//} cvertex_type;
+#define MIN_CURV 0.005
+#define RECT_ASIZE 10
+
+typedef struct{
+	int flg_src_s1e1;	// 0:k2d, 1:kv*cos(alpha)
+	double kvthres;		// ã»ó¶0Ç∆Ç›Ç»Ç∑Ëáíl
+	int s1mgn;			// ã»ó¶0ãÊä‘ÇçLÇ∞ÇÈïù >=0
+	int s2mgn;			// ï‚ä‘ãÊä‘  -1: ã…ílÇ‹Ç≈, 0: ï‚ä‘Ç»Çµ, >0: ï‚ä‘ïù
+	int method;			// ï‚ä‘ï˚ñ@  1: linear, 2:Bezier
+	int src;			// 0: Ç∑Ç◊ÇƒéZèo  1: s1e1ÇÕä˘ë∂, 2: s2e2ÇÕä˘ë∂
+	int s1[RECT_ASIZE], e1[RECT_ASIZE], s2[RECT_ASIZE], e2[RECT_ASIZE], scnt;
+	double svlen0[RECT_ASIZE], svlen1[RECT_ASIZE];	// (s1-s2)*0.5
+	double evlen0[RECT_ASIZE], evlen1[RECT_ASIZE];	// (e2-e1)*0.5
+} rectify_param;
+
+typedef struct{
+	bool flg_rectifyT;
+	rectify_param rectT;
+	bool flg_rectifyA;
+	rectify_param rectA;
+	bool flg_rectifyR;
+	double rectifyR_kvthres;
+} rectify_params;
 
 class crease
 {
 public:
 	int rl;				// -1:left, 1:right
 	int flg_org;		// generated from 0:org* 1:CP*
-	int flg_src_s1e1;	// 0: k2d, 1: kv*cos(alpha)
+	//int flg_src_s1e1;	// 0: k2d, 1: kv*cos(alpha)
 
 	// original curve shape (reference to curvedraw or curveintersect)
 	int org_idx;
@@ -116,9 +132,9 @@ public:
 
 	// ------------------------- proseq -------------------------------------------
 
-	int calcXA_CP( int flg_interpolate, int flg_rectifyT, int flg_rectifyA, int flg_rectifyR );	// a) 3Dã»ê¸Ç∆ê‹ÇËäpìxÇ©ÇÁÅAê‹ÇËê¸ÇãÅÇﬂÇÈ
-	int calcCPA_X( int flg_interpolate, int flg_rectifyT, int flg_rectifyA, int flg_rectifyR );	// b) ê‹ÇËê¸Ç∆ê‹ÇËäpìxÇ©ÇÁÅA3Dã»ê¸ÇãÅÇﬂÇÈ
-	int calcCPX_A( int flg_interpolate, int flg_rectifyT, int flg_rectifyA, int flg_rectifyR );	// c) ê‹ÇËê¸Ç∆3Dã»ê¸Ç©ÇÁÅAê‹ÇËäpìxÇãÅÇﬂÇÈ
+	int calcXA_CP( int flg_interpolate, rectify_params *rp );
+	int calcCPA_X( int flg_interpolate, rectify_params *rp );
+	int calcCPX_A( int flg_interpolate, rectify_params *rp );
 
 	// ------------------------- interpolate -------------------------------------------
 
@@ -141,36 +157,35 @@ public:
 		double *Tx2d0, double *Ty2d0, double *d2d0,
 		double *Nx2d0, double *Ny2d0, double *k2d0 );
 	int calcXTN2d( double m2[9] ); // k2d -> X2d -> calcTN2d();
-	// ÅöcalcXTN2d()ÇåJÇËï‘Ç∑Ç∆åÎç∑Ç™ó›êœÇµX2dÇ™ïœâªÅB
 
-	int calcTNB( int flg_rectifyT ); // X -> T,N,B,kv,tr
-	int calcTNB( int flg_rectifyT, int Xsidx0, int Xeidx0 );
+	int calcTNB(); // X -> T,N,B,kv,tr
+	int calcTNB( int Xsidx0, int Xeidx0 );
 	static int calcTNB( int Xcnt, double *Xx, double *Xy, double *Xz,
 		double *Tx, double *Ty, double *Tz,	double *dx,
 		double *Nx, double *Ny, double *Nz, double *kv,
-		double *Bx, double *By, double *Bz, double *tr, int flg_rectifyT );
-	int calcXTNB( int flg_rectifyT, double m3[16] ); // kv,tr -> (rectifyTau) -> X -> calcTNB();
-	// ÅöcalcXTNB()ÇåJÇËï‘Ç∑Ç∆trÇÃílÇ™ïœâªÇµÇƒÇ¢Ç≠ -> rulingï˚å¸Ç…âeãø
+		double *Bx, double *By, double *Bz, double *tr );
+	int calcXTNB( double m3[16] ); // kv,tr -> (rectifyTau) -> X -> calcTNB();
 
-	int calcTau( int flg_rectifyT ); // tréZèo
+	int calcTau(); // tréZèo
 	static int calcTau( int Xcnt, double *Xx, double *Xy, double *Xz,
 		double *Tx, double *Ty, double *Tz, double *dx,
 		double *Nx, double *Ny, double *Nz, double *kv,
-		double *Bx, double *By, double *Bz, double *tr, int flg_rectifyT );
+		double *Bx, double *By, double *Bz, double *tr );
 
 	// ------------------------- alpha -------------------------------------------
 
 	int setA(double a); // alpha = a Çê›íË
-	int calcAlpha( int flg_rectifyA ); // kv, k2d -> alpha, sina, cosa, tana, da
+	int calcAlpha( int flg_rectifyA, rectify_param *rp ); // kv, k2d -> alpha, sina, cosa, tana, da
 	static int calcAlpha( int Xcnt, double *Xx, double *Xy, double *Xz, double *kv, double *k2d,
-		double *cosa, double *sina, double *tana, double *alpha, double *da, int flg_rectifyA );
-	int calcAK_K2D( int flg_rectifyA ); // alpha, kv -> (rectifyAlpha) -> k2d, sina, cosa, tana, da
-	int calcAK2D_K( int flg_rectifyA ); // alpha, k2d -> (rectifyAlpha) -> kv
+		double *cosa, double *sina, double *tana, double *alpha, double *da,
+		int flg_rectifyA, rectify_param *rp );
+	int calcAK_K2D(); // alpha, kv -> k2d, sina, cosa, tana, da
+	int calcAK2D_K(); // alpha, k2d -> kv
 	int calcDA(); // alpha, X -> da
 
 	// ------------------------- beta -------------------------------------------
 
-	int calcRuling( int flg_rectifyR ); // rulingéZèo
+	int calcRuling( int flg_rectifyR, double rectifyR_kvthres ); // rulingéZèo
 	static int calcRuling( int cxcnt,
 		double *Tx, double *Ty, double *Tz, double *Tx2d, double *Ty2d, 
 		double *Nx, double *Ny, double *Nz,  double *Bx, double *By, double *Bz,					   
@@ -179,7 +194,7 @@ public:
 		double *cosbl, double *cosbr, double *cotbl, double *cotbr, double *sina, double *cosa, 
 		double *rlx, double *rly, double *rlz, double *rlx_cp, double *rly_cp, double *rllen,
 		double *rrx, double *rry, double *rrz, double *rrx_cp, double *rry_cp, double *rrlen, int rl );
-	int calcRuling2D( int flg_rectifyR );
+	int calcRuling2D( int flg_rectifyR, double rectifyR_kvthres );
 	static int calcRuling2D( int cxcnt, double *da, double *sina, double *kv, double *tr,
 		double *betal, double *betar, double *sinbl, double *sinbr,
 		double *cosbl, double *cosbr, double *cotbl, double *cotbr, int rl );
@@ -190,7 +205,7 @@ public:
 		double *rlx, double *rly, double *rlz, double *rrx, double *rry, double *rrz,
 		double *rlx_cp, double *rly_cp, double *rrx_cp, double *rry_cp, int rl );
 
-	int calcRuling2DH( int flg_rectifyR ); // ruling horizontal
+	int calcRuling2DH( int flg_rectifyR, double rectifyR_kvthres ); // ruling horizontal
 
 	// ------------------------- length -------------------------------------------
 
@@ -207,25 +222,30 @@ public:
 	static int calcRLenC_( double *cvx, double *cvy, double *rx, double *ry, int cvcnt,
 					double *cvx1, double *cvy1, int cvcnt1, double *rlen, ruling_end_type *rflg );
 
-	int calcRLenHoseiR(); // ã»ó¶è¨Ç≥Ç¢ïîï™ÇÕí∑Ç≥0Ç…
-	static int calcRLenHoseiR( int Xcnt, double *k2d, double *rlen, ruling_end_type *rflg ); // ã»ó¶è¨Ç≥Ç¢ïîï™ÇÕí∑Ç≥0Ç…
+	int calcRLenHoseiR( double rectifyR_kvthres ); // ã»ó¶è¨Ç≥Ç¢ïîï™ÇÕí∑Ç≥0Ç…
+	static int calcRLenHoseiR( int Xcnt, double *k2d, double rectifyR_kvthres, double *rlen, ruling_end_type *rflg ); // ã»ó¶è¨Ç≥Ç¢ïîï™ÇÕí∑Ç≥0Ç…
 
 	int setEnds( int psx, int psy, int pex, int pey, int dccnt, void *dcurve );
 	void initEnds();
 
 	// ------------------------- rectify -------------------------------------------
 
-	int gets1e1( int *_s1, int *_e1, int semax, int mgn, int flg_src_s1e1  );
+	static void setDefault( rectify_param *rp );
+	
+	int gets1e1( int flg_src_s1e1, double thres, int mgn, int *_s1, int *_e1, int semax );
 	static int gets1e1( int Xcnt, int Xs, int Xe, double *val, double thres, int mgn,
 		int *_s1, int *_e1, int semax );
-	int rectifyTau();
+	static int gets2e2( int Xcnt, int *s1, int *e1, int scnt, double *alpha, int *s2, int *e2 );
+
+	int rectifyTau( double rectifyT_kvthres, int rectifyT_mgn );
+	int rectifyTau2( int src_s1e1, double rectifyT_kvthres, int rectifyT_mgn ); // êœï™ílÇ™ìØÇ∂Ç…Ç»ÇÈÇÊÇ§Ç…
 	static int rectifyTau( int Xcnt, int *s1, int *e1, int scnt, double *tr, double *kv );
-	int rectifyAlpha();
-	int rectifyTauBezier();
-	int rectifyTauBezier2();
-	int rectifyAlphaBezier( int src_s1e1 ); // 0:k2d, 1:kv*cos(alpha)
-	static int rectifyAlphaBezier( int Xcnt, int *s1, int *e1, int scnt, double *alpha );
-	int rectifyTau2(); // êœï™ílÇ™ìØÇ∂Ç…Ç»ÇÈÇÊÇ§Ç…
+	int rectifyTauBezier( rectify_param *rp );
+	int rectifyTauBezier2( rectify_param *rp );
+
+	int rectifyAlpha( rectify_param *rp );
+	int rectifyAlphaBezier( rectify_param *rp );
+	static int rectifyAlphaBezier( int Xcnt, double *alpha0, rectify_param *rp );
 };
 
 #endif

@@ -193,6 +193,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ControlPanel_Rectify.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ControlPanel_Trim.cpp"
 				>
 			</File>

@@ -176,6 +176,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\crease_rectifyA.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\crease_rectifyT.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\crease_TNB.cpp"
 				>
 			</File>

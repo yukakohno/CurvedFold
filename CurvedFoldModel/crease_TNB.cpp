@@ -37,6 +37,13 @@ int crease::calcTN2d( int Xsidx0, int Xeidx0 )
 	int ret=0;
 	int size=Xeidx-Xsidx+1;
 
+	memset( Tx2d, 0, sizeof(double)*Xcnt );
+	memset( Ty2d, 0, sizeof(double)*Xcnt );
+	memset( Nx2d, 0, sizeof(double)*Xcnt );
+	memset( Ny2d, 0, sizeof(double)*Xcnt );
+	memset(  d2d, 0, sizeof(double)*Xcnt );
+	memset(  k2d, 0, sizeof(double)*Xcnt );
+
 	ret = calcTN2d( size, &(Xx2d[Xsidx]), &(Xy2d[Xsidx]),
 		&(Tx2d[Xsidx]), &(Ty2d[Xsidx]), &(d2d[Xsidx]),
 		&(Nx2d[Xsidx]), &(Ny2d[Xsidx]), &(k2d[Xsidx]) );
@@ -78,10 +85,24 @@ int crease::calcTN2d(int Xcnt0, double *Xx2d0, double *Xy2d0,
 		d2d1[i] = sqrt( dx[i]*dx[i] + dy[i]*dy[i] );
 	}
 	for( i=1; i<Xcnt0-1; i++ ){
+		if( d2d1[i-1]<=0.0 && d2d1[i]<=0.0 ){
+			Tx2d0[i] = Ty2d0[i] = d2d0[i] = 0.0;
+			continue;
+		}
+		if( d2d1[i-1]>0.0 && d2d1[i]>0.0 ){
 		Tx2d0[i] = (dx[i-1]/d2d1[i-1] + dx[i]/d2d1[i])*0.5;
 		Ty2d0[i] = (dy[i-1]/d2d1[i-1] + dy[i]/d2d1[i])*0.5;
-		normalize_v2( &Tx2d0[i], &Ty2d0[i] );
 		d2d0[i] = (d2d1[i-1]+d2d1[i])*0.5;
+		} else if( d2d1[i-1]>0.0 ) {
+			Tx2d0[i] = dx[i-1];
+			Ty2d0[i] = dy[i-1];
+			d2d0[i] = d2d1[i-1];
+		} else {
+			Tx2d0[i] = dx[i];
+			Ty2d0[i] = dy[i];
+			d2d0[i] = d2d1[i];
+		}
+		normalize_v2( &Tx2d0[i], &Ty2d0[i] );
 	}
 	for( i=2; i<Xcnt0-2; i++ ){
 		double d0 = d2d1[i];
@@ -91,13 +112,31 @@ int crease::calcTN2d(int Xcnt0, double *Xx2d0, double *Xy2d0,
 		double ny0 = Ty2d0[i+1] - Ty2d0[i];
 		double ny1 = Ty2d0[i]   - Ty2d0[i-1];
 
+		if( d0==0.0 && d1==0.0 ){
+			Nx2d0[i] = Ny2d0[i] = k2d0[i] = 0.0;
+			continue;
+		}
+		if( d0>0.0 && d1>0.0 ){
 		Nx2d0[i] = (nx0/d0 + nx1/d1)*0.5;
 		Ny2d0[i] = (ny0/d0 + ny1/d1)*0.5;
+		} else if( d0>0.0 ){
+			Nx2d0[i] = nx0;
+			Ny2d0[i] = ny0;
+		} else {
+			Nx2d0[i] = nx1;
+			Ny2d0[i] = ny1;
+		}
 		k2d0[i] = sqrt( Nx2d0[i]*Nx2d0[i] + Ny2d0[i]*Ny2d0[i] );
+#if 1
+		if( Tx2d0[i]*Ny2d0[i] - Ty2d0[i]*Nx2d0[i] < 0 ){
+			k2d0[i] = -k2d0[i];
+		}
+#else
 		if((i==2 && Nx2d0[i]*Nx2d0[0] + Ny2d0[i]*Ny2d0[0] < 0 )
 			|| (i>2 && Nx2d0[i]*Nx2d0[i-1] + Ny2d0[i]*Ny2d0[i-1] < 0 )){ // ”½“]
 				k2d0[i] = -k2d0[i];
 		}
+#endif
 		if( fabs(k2d0[i]) > 0.0/*ZERO*/ ){
 			Nx2d0[i] /= k2d0[i];
 			Ny2d0[i] /= k2d0[i];
@@ -112,11 +151,11 @@ end:
 //	double Tx[MAX_SPCNT], Ty[MAX_SPCNT], Tz[MAX_SPCNT];
 //	double Nx[MAX_SPCNT], Ny[MAX_SPCNT], Nz[MAX_SPCNT], kv[MAX_SPCNT];
 //	double Bx[MAX_SPCNT], By[MAX_SPCNT], Bz[MAX_SPCNT], tr[MAX_SPCNT];
-int crease::calcTNB( int flg_rectifyT )
+int crease::calcTNB()
 {
 	int ret=0;
 
-	calcTNB( Xcnt, Xx, Xy, Xz, Tx, Ty, Tz, dx, Nx, Ny, Nz, kv, Bx, By, Bz, tr, flg_rectifyT );
+	calcTNB( Xcnt, Xx, Xy, Xz, Tx, Ty, Tz, dx, Nx, Ny, Nz, kv, Bx, By, Bz, tr );
 #if 0
 	{
 		FILE *fp=fopen("dump_TNB.csv","w");
@@ -134,7 +173,7 @@ end:
 	return ret;
 }
 
-int crease::calcTNB( int flg_rectifyT, int Xsidx0, int Xeidx0 )
+int crease::calcTNB( int Xsidx0, int Xeidx0 )
 {
 	int ret=0;
 	int size=Xeidx0-Xsidx0+1;
@@ -142,7 +181,7 @@ int crease::calcTNB( int flg_rectifyT, int Xsidx0, int Xeidx0 )
 	calcTNB( size, &(Xx[Xsidx0]), &(Xy[Xsidx0]), &(Xz[Xsidx0]),
 		&(Tx[Xsidx0]), &(Ty[Xsidx0]), &(Tz[Xsidx0]), &(dx[Xsidx0]),
 		&(Nx[Xsidx0]), &(Ny[Xsidx0]), &(Nz[Xsidx0]), &(kv[Xsidx0]),
-		&(Bx[Xsidx0]), &(By[Xsidx0]), &(Bz[Xsidx0]), &(tr[Xsidx0]), flg_rectifyT );
+		&(Bx[Xsidx0]), &(By[Xsidx0]), &(Bz[Xsidx0]), &(tr[Xsidx0]) );
 	//Xsidx = Xsidx0;
 	//Xeidx = Xeidx0;
 #if 0
@@ -165,7 +204,7 @@ end:
 int crease::calcTNB( int Xcnt0, double *Xx0, double *Xy0, double *Xz0,
 					double *Tx0, double *Ty0, double *Tz0,	double *dx0,
 					double *Nx0, double *Ny0, double *Nz0, double *kv0,
-					double *Bx0, double *By0, double *Bz0, double *tr0, int flg_rectifyT )
+					double *Bx0, double *By0, double *Bz0, double *tr0 )
 {
 	int i, sign=1, ret=0;
 	double dx1[MAX_SPCNT], dx[MAX_SPCNT], dy[MAX_SPCNT], dz[MAX_SPCNT];
@@ -190,11 +229,27 @@ int crease::calcTNB( int Xcnt0, double *Xx0, double *Xy0, double *Xz0,
 	}
 
 	for( i=1; i<Xcnt0-1; i++ ){
+		if( dx1[i-1]==0.0 && dx1[i]==0.0 ){
+			Tx0[i] = Ty0[i] = Tz0[i] = dx0[i] = 0.0;
+			continue;
+		}
+		if( dx1[i-1]>0.0 && dx1[i]>0.0 ){
 		Tx0[i] = (dx[i-1]/dx1[i-1] + dx[i]/dx1[i])*0.5;
 		Ty0[i] = (dy[i-1]/dx1[i-1] + dy[i]/dx1[i])*0.5;
 		Tz0[i] = (dz[i-1]/dx1[i-1] + dz[i]/dx1[i])*0.5;
-		normalize_v3( &Tx0[i], &Ty0[i], &Tz0[i] );
 		dx0[i] = (dx1[i-1]+dx1[i])*0.5;
+		} else if( dx1[i-1]>0.0 ){
+			Tx0[i] = dx[i-1];
+			Ty0[i] = dy[i-1];
+			Tz0[i] = dz[i-1];
+			dx0[i] = dx1[i-1];
+		} else{
+			Tx0[i] = dx[i];
+			Ty0[i] = dy[i];
+			Tz0[i] = dz[i];
+			dx0[i] = dx1[i];
+		}
+		normalize_v3( &Tx0[i], &Ty0[i], &Tz0[i] );
 	}
 	for( i=2; i<Xcnt0-2; i++ ){
 		double d0 = dx1[i];
@@ -206,9 +261,23 @@ int crease::calcTNB( int Xcnt0, double *Xx0, double *Xy0, double *Xz0,
 		double nz0 = Tz0[i+1] - Tz0[i];
 		double nz1 = Tz0[i]   - Tz0[i-1];
 
+		if( d0<=0.0 && d1<=0.0 ){
+			Nx0[i] = Ny0[i] = Nz0[i] = kv0[i] = 0.0;
+			continue;
+		}
+		if( d0>0.0 && d1>0.0 ){
 		Nx0[i] = (nx0/d0 + nx1/d1)*0.5;
 		Ny0[i] = (ny0/d0 + ny1/d1)*0.5;
 		Nz0[i] = (nz0/d0 + nz1/d1)*0.5;
+		} else if( d0>0.0 ){
+			Nx0[i] = nx0;
+			Ny0[i] = ny0;
+			Nz0[i] = nz0;
+		} else {
+			Nx0[i] = nx1;
+			Ny0[i] = ny1;
+			Nz0[i] = nz1;
+		}
 		kv0[i] = sqrt( Nx0[i]*Nx0[i] + Ny0[i]*Ny0[i] + Nz0[i]*Nz0[i] );
 		if((i==2 && Nx0[i]*Nx0[0] + Ny0[i]*Ny0[0] + Nz0[i]*Nz0[0] < 0)
 			|| (i>2 && Nx0[i]*Nx0[i-1] + Ny0[i]*Ny0[i-1] + Nz0[i]*Nz0[i-1] < 0))
@@ -228,7 +297,7 @@ int crease::calcTNB( int Xcnt0, double *Xx0, double *Xy0, double *Xz0,
 		Bz0[i] = Tx0[i]*Ny0[i] - Ty0[i]*Nx0[i];
 	}
 
-	calcTau( Xcnt0, Xx0, Xy0, Xz0, Tx0, Ty0, Tz0, dx0, Nx0, Ny0, Nz0, kv0, Bx0, By0, Bz0, tr0, flg_rectifyT );
+	calcTau( Xcnt0, Xx0, Xy0, Xz0, Tx0, Ty0, Tz0, dx0, Nx0, Ny0, Nz0, kv0, Bx0, By0, Bz0, tr0 );
 #if 0
 	{
 		FILE *fp=fopen("output/dump_TNB.csv","w");
@@ -248,15 +317,15 @@ end:
 
 
 
-int crease::calcTau( int flg_rectifyT )
+int crease::calcTau()
 {
-	return calcTau( Xcnt, Xx, Xy, Xz, Tx, Ty, Tz, dx, Nx, Ny, Nz, kv, Bx, By, Bz, tr, flg_rectifyT );
+	return calcTau( Xcnt, Xx, Xy, Xz, Tx, Ty, Tz, dx, Nx, Ny, Nz, kv, Bx, By, Bz, tr );
 }
 
 int crease::calcTau( int Xcnt0, double *Xx0, double *Xy0, double *Xz0,
 					double *Tx0, double *Ty0, double *Tz0, double *dx0_,
 					double *Nx0, double *Ny0, double *Nz0, double *kv0,
-					double *Bx0, double *By0, double *Bz0, double *tr0, int flg_rectifyT )
+					double *Bx0, double *By0, double *Bz0, double *tr0 )
 {
 	int i, ret=0;
 	memset( tr0, 0, sizeof(double)*Xcnt0 );
@@ -365,13 +434,6 @@ int crease::calcTau( int Xcnt0, double *Xx0, double *Xy0, double *Xz0,
 			tr0[i] = 0.0;
 		}
 
-		if( flg_rectifyT ){
-			// curv=0 •t‹ß‚Å‚Í torsion=0
-			//rectifyTau( Xcnt0, kv0, alpha0, tr0 );
-			//rectifyTau2();
-			//rectifyTauBezier();
-			//rectifyTauBezier2();
-		}
 		if( fp ){
 			fprintf( fp, "%f,%f,,%f,%f,%f,,%f,%f,%f,,%f,%f,%f,,%f,%f,%f,,%f,%f,%f,,%f,%f,%f,,%f,%f,%f",
 				d0,d1,Tx0[i],Ty0[i],Tz0[i], Nx0[i],Ny0[i],Nz0[i], Bx0[i],By0[i],Bz0[i], dx0_[i],kv0[i],tr0[i],
@@ -387,7 +449,7 @@ int crease::calcTau( int Xcnt0, double *Xx0, double *Xy0, double *Xz0,
 }
 
 // kv,tr -> X*, T*, N*, B*
-int crease::calcXTNB( int flg_rectifyT, double m3[16] )
+int crease::calcXTNB( double m3[16] )
 {
 	int i,ret=0;
 	double len;
@@ -416,12 +478,6 @@ int crease::calcXTNB( int flg_rectifyT, double m3[16] )
 	}
 	for( i=0; i<Xcnt; i++ ){
 		dx[i] = XSPC;
-	}
-
-	if( flg_rectifyT ){
-		//rectifyTau2();
-		//rectifyTauBezier();
-		rectifyTauBezier2();
 	}
 
 	Xx[0] = m3[12]; Xy[0] = m3[13]; Xz[0] = m3[14];
@@ -520,7 +576,7 @@ int crease::calcXTNB( int flg_rectifyT, double m3[16] )
 	}
 #endif
 	// T,N,B,dx,kv,tr ‚ð‹‚ß‚È‚¨‚·
-	calcTNB( flg_rectifyT );
+	calcTNB();
 
 #if 0
 	{

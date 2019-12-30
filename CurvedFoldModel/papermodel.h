@@ -26,14 +26,14 @@ typedef enum _postproc_type {
 	PPTYPE_PPEDGE		//áH GraphWindowCP::handle(int event)		éÜí[èCê≥
 } postproc_type;
 
-typedef enum _evaltype { EVTYPE_TORSION, EVTYPE_BETALR, EVTYPE_RULCROSS } evaltype;
+//typedef enum _evaltype { EVTYPE_TORSION, EVTYPE_BETALR, EVTYPE_RULCROSS } evaltype;
 
 class papermodel
 {
 public:
 	postproc_type flg_postproc_type;
 	int flg_interpolate;	// 0: use X*[] as is, 1: re-generate X*[] from P*[]
-	int flg_rectifyA, flg_rectifyT, flg_rectifyR;	// 1: rectify alpha, torsion, ruling length
+	rectify_params rp;
 
 	// for B-spline, array size=1000
 	double *hSx, *hSy, *hL, *ht1;
@@ -88,7 +88,7 @@ public:
 	int loadcv0( char *fname );
 
 	int check180( char *fname );	// í∏ì_é¸ÇËÇÃäpìx
-	int checkquatplane( char *fname );	// quad ÇÃïΩñ ìx
+	int checkquadplane( char *fname );	// quad ÇÃïΩñ ìx
 
 	// ------------------------- procseq -------------------------------------------
 

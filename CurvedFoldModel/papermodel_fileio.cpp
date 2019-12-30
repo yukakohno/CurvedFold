@@ -255,7 +255,7 @@ end:
 }
 
 // quad ‚Ì•½–Ê“x
-int papermodel::checkquatplane( char *fname )
+int papermodel::checkquadplane( char *fname )
 {
 	int ret=0;
 	FILE *fp=fopen(fname, "w");

@@ -18,10 +18,10 @@ end:
 }
 
 // TNB -> ÉøéZèo
-int crease::calcAlpha( int flg_rectifyA )
+int crease::calcAlpha( int flg_rectifyA, rectify_param *rp )
 {
 	int ret=0;
-	ret = calcAlpha( Xcnt, Xx, Xy, Xz, kv, k2d, cosa, sina, tana, alpha, da, flg_rectifyA );
+	ret = calcAlpha( Xcnt, Xx, Xy, Xz, kv, k2d, cosa, sina, tana, alpha, da, flg_rectifyA, rp );
 #if 0
 	{
 		FILE *fp=fopen("output/dump_alpha.csv","w");
@@ -41,7 +41,7 @@ end:
 
 int crease::calcAlpha( int Xcnt0, double *Xx0, double *Xy0, double *Xz0, double *kv0, double *k2d0,
 					  double *cosa0, double *sina0, double *tana0, double *alpha0, double *da0,
-					  int flg_rectifyA0 )
+					  int flg_rectifyA, rectify_param *rp )
 {
 	int i, ret=0;
 	memset(  cosa0, 0, sizeof(double)*Xcnt0 );
@@ -59,11 +59,10 @@ int crease::calcAlpha( int Xcnt0, double *Xx0, double *Xy0, double *Xz0, double 
 		if( cosa0[i]<-1.0 ){ cosa0[i]=-1.0; }
 		alpha0[i] = acos(cosa0[i]);
 	}
-	if( flg_rectifyA0 ){
-		int s1[10],e1[10], scnt=0;
-		scnt = gets1e1( Xcnt0, CEMGN, Xcnt0-CEMGN-1, k2d0, MIN_CURV, 10, s1, e1, 10 );
-		if( scnt>0 ){
-			rectifyAlphaBezier( Xcnt0, s1, e1, scnt, alpha0 );
+	if( flg_rectifyA && rp ){
+		rp->scnt = gets1e1( Xcnt0, CEMGN, Xcnt0-CEMGN-1, k2d0, rp->kvthres, rp->s1mgn, rp->s1, rp->e1, RECT_ASIZE );
+		if( rp->scnt>0 ){
+			rectifyAlphaBezier( Xcnt0, alpha0, rp );
 		}
 	}
 	for( i=0; i<Xcnt0; i++ ){
@@ -90,13 +89,9 @@ end:
 }
 
 // alpha, kv -> sina, cosa, tana, da, k2d
-int crease::calcAK_K2D( int flg_rectifyA )
+int crease::calcAK_K2D()
 {
 	int i, ret=0;
-
-	if( flg_rectifyA ){
-		rectifyAlphaBezier( 1 );
-	}
 
 	memset( cosa, 0, sizeof(double)*MAX_SPCNT );
 	memset( sina, 0, sizeof(double)*MAX_SPCNT );
@@ -152,14 +147,9 @@ end:
 }
 
 // alpha, k2d -> (rectifyAlpha) -> kv
-int crease::calcAK2D_K( int flg_rectifyA )
+int crease::calcAK2D_K()
 {
 	int i, ret=0;
-
-	if( flg_rectifyA ){
-		rectifyAlphaBezier( 0 );
-	}
-
 	memset( cosa, 0, sizeof(double)*MAX_SPCNT );
 	memset( sina, 0, sizeof(double)*MAX_SPCNT );
 	memset( tana, 0, sizeof(double)*MAX_SPCNT );
@@ -212,7 +202,17 @@ int crease::calcDA()
 		double d1 = sqrt( dx1*dx1 + dy1*dy1 + dz1*dz1 );
 		double da0 = alpha[i+1] - alpha[i];
 		double da1 = alpha[i]   - alpha[i-1];
+		if( d0<=0.0 && d1<=0.0 ){
+			da[i] = 0.0;
+			continue;
+		}
+		if( d0>0.0 && d1>0.0 ){
 		da[i] = (da0/d0 + da1/d1)*0.5;
+		} else if( d0>0.0 ){
+			da[i] = da0;
+		} else {
+			da[i] = da1;
+		}
 	}
 #else // 5ì_î˜ï™
 	for( i=6; i<Xcnt-6; i++ ){

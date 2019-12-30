@@ -13,7 +13,7 @@
 //	double rlx[MAX_SPCNT], rly[MAX_SPCNT], rlz[MAX_SPCNT];
 //	double rrx[MAX_SPCNT], rry[MAX_SPCNT], rrz[MAX_SPCNT];
 //	double rllen[MAX_SPCNT], rrlen[MAX_SPCNT]; // crease pattern ÇÇ‡Ç∆Ç…í∑Ç≥ãÅÇﬂÇÈ
-int crease::calcRuling( int flg_rectifyR )
+int crease::calcRuling( int flg_rectifyR, double rectifyR_kvthres )
 {
 	int i, ret=0;
 	memset( betal, 0, sizeof(double)*MAX_SPCNT );
@@ -41,12 +41,15 @@ int crease::calcRuling( int flg_rectifyR )
 	//memset( Bl, 0, sizeof(double)*MAX_SPCNT );
 	//memset( Br, 0, sizeof(double)*MAX_SPCNT );
 
-	calcRuling2D( flg_rectifyR );
+	calcRuling2D( flg_rectifyR, rectifyR_kvthres );
 	calcRuling3D();
 
 	for( i=CEMGN; i<Xcnt-CEMGN; i++ ){
-		rllen[i] = maxrlen;
-		rrlen[i] = maxrlen;
+		if( flg_rectifyR && fabs(k2d[i]) < rectifyR_kvthres ){
+			rllen[i] = rrlen[i] = 0;
+		} else{
+			rllen[i] = rrlen[i] = maxrlen;
+		}
 	}
 #if 0
 	{
@@ -115,20 +118,25 @@ int crease::calcRuling( int cxcnt0,
 }
 
 
-int crease::calcRuling2D( int flg_rectifyR )
+int crease::calcRuling2D( int flg_rectifyR, double rectifyR_kvthres )
 {
 	int i, ret=0;
 
 	for( i=CEMGN; i<Xcnt-CEMGN; i++ ){
-
-		if( flg_rectifyR && fabs(k2d[i]) < MIN_CURV ){
+		if( flg_rectifyR && fabs(k2d[i]) < rectifyR_kvthres ){
 			cotbl[i] = 0.0;
 			cotbr[i] = 0.0;
 			betal[i] = M_PI/2.0;
 			betar[i] = M_PI/2.0;
-		} else {
-			//cotbl[i] = (da[i]-tr[i])/(sina[i]*kv[i]); // +:[0,pi/2], -:[pi/2,pi]
-			//cotbr[i] = (-da[i]-tr[i])/(sina[i]*kv[i]);
+			continue;
+		}
+		if( sina[i]*kv[i]==0.0 ){
+			betal[i] = betar[i] = M_PI/2.0;
+			cotbl[i] = cotbr[i] = 10000.0; // infinity, not used after this
+			sinbl[i] = sinbr[i] = 1.0;
+			cosbl[i] = cosbr[i] = 0.0;
+			continue;
+		}
 			cotbl[i] = (da[i]+tr[i])/(sina[i]*kv[i]); // +:[0,pi/2], -:[pi/2,pi]
 			cotbr[i] = (-da[i]+tr[i])/(sina[i]*kv[i]);
 			betal[i] = atan(1.0/cotbl[i]);
@@ -139,7 +147,6 @@ int crease::calcRuling2D( int flg_rectifyR )
 			if( betar[i] < 0.0 ){
 				betar[i] += M_PI;
 			}
-		}
 		sinbl[i] = 1.0/sqrt(1.0+cotbl[i]*cotbl[i]); // +:[0,pi]
 		sinbr[i] = 1.0/sqrt(1.0+cotbr[i]*cotbr[i]);
 		cosbl[i] = cotbl[i]/sqrt(1.0+cotbl[i]*cotbl[i]); // +:[0,pi/2], -:[pi/2,pi]
@@ -209,13 +216,14 @@ end:
 	return ret;
 }
 
-int crease::calcRuling2DH( int flg_rectifyR )
+int crease::calcRuling2DH( int flg_rectifyR, double rectifyR_kvthres )
 {
 	int i, ret=0;
-	double rx=1.0,ry=0.0, dx,dy,len,ip,op;
-
+	double rx,ry, dx,dy,len,ip,op;
+	//rx=1.0;	ry=0.0;
+	rx=cos(M_PI*0.25);	ry=-sin(M_PI*0.25);
 	for( i=CEMGN; i<Xcnt-CEMGN; i++ ){
-		if( flg_rectifyR && fabs(k2d[i]) < MIN_CURV ){
+		if( flg_rectifyR && fabs(k2d[i]) < rectifyR_kvthres ){
 			cotbl[i] = cotbr[i] = 0.0;
 			cosbl[i] = cosbr[i] = 0.0;
 			sinbl[i] = sinbr[i] = 1.0;

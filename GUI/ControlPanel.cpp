@@ -15,13 +15,19 @@ ControlPanel::ControlPanel(int X, int Y, int W, int H, const char *L, GraphWindo
 {
 	gwin = _gwin;
 
-	kmin = tmin = -0.05;
-	kmax = tmax = 0.05;
-	kstep = tstep = 0.0025;
-	kstepk = tstepk = 0.01;
+	kmin = -0.05;
+	kmax = 0.05;
+	kstep = 0.0005;
+	kstepk = 0.01;
+
+	tmin = -0.1;
+	tmax = 0.1;
+	tstep = 0.0005;
+	tstepk = 0.01;
+
 	amin = 0.0;
 	amax = 90.0;
-	astep = 1.0;
+	astep = 0.25;
 	astepk = 3.0;
 	an_fcnt = 20;
 
@@ -70,19 +76,19 @@ void ControlPanel::refresh(int init)
 	switch( mode ){
 		case CMODE_A:	// A: 3D‹Èü‚ÆÜ‚èŠp“x‚©‚çAÜ‚èü‚ğ‹‚ß‚é
 			if( prm==P_CV3D || prm==P_TRSN || prm==P_FLDA ){ // curvature, torsion, angle
-				_c->calcXA_CP( _ppm->flg_interpolate, _ppm->flg_rectifyT, _ppm->flg_rectifyA, _ppm->flg_rectifyR );
+				_c->calcXA_CP( _ppm->flg_interpolate, &_ppm->rp );
 				_ppm->postproc();
 			}
 			break;
 		case CMODE_B:	// B: Ü‚èü‚ÆÜ‚èŠp“x‚©‚çA3D‹Èü‚ğ‹‚ß‚é
 			if( prm==P_CV2D || prm==P_FLDA ){ // curv2d, angle
-				_c->calcCPA_X( _ppm->flg_interpolate, _ppm->flg_rectifyT, _ppm->flg_rectifyA, _ppm->flg_rectifyR );
+				_c->calcCPA_X( _ppm->flg_interpolate, &_ppm->rp );
 				_ppm->postproc();
 			}
 			break;
 		case CMODE_C:	// C: Ü‚èü‚Æ3D‹Èü‚©‚çAÜ‚èŠp“x‚ğ‹‚ß‚é
 			if( prm==P_CV2D || prm==P_CV3D || prm==P_TRSN ){ // curv2d, curvature, torsion
-				_c->calcCPX_A( _ppm->flg_interpolate, _ppm->flg_rectifyT, _ppm->flg_rectifyA, _ppm->flg_rectifyR );
+				_c->calcCPX_A( _ppm->flg_interpolate, &_ppm->rp );
 				_ppm->postproc();
 			}
 			break;
@@ -239,7 +245,7 @@ void ControlPanel::createPanel()
 		g->end();
 	}
 	{
-		Fl_Group* g = new Fl_Group(0, 20, this->w(), this->h()-20, "DESIGN1");
+		Fl_Group* g = new Fl_Group(0, 20, this->w(), this->h()-20, "DSGN1");
 		g->hide();
 		{ 
 			// ------------------------- DESIGN -------------------------------------------
@@ -304,21 +310,6 @@ void ControlPanel::createPanel()
 
 			wgt_y+=y_space;
 
-			Fl_Box *bx_RECTIFY= new Fl_Box(0, wgt_y, g->w(), 20, "--- RECTIFY ---");	wgt_y+=20;
-
-			cb_rectifyA = new Fl_Check_Button(wgt_x, wgt_y, 45, 20, "FOLDING ANGLE");	wgt_y+=y_space;
-			cb_rectifyA->value( this->ppm.flg_rectifyA );
-			cb_rectifyA->callback(cb_cb_rectifyA, (void*)this);
-			cb_rectifyT = new Fl_Check_Button(wgt_x, wgt_y, 45, 20, "TORSION");	wgt_y+=y_space;
-			cb_rectifyT->value( this->ppm.flg_rectifyT );
-			cb_rectifyT->callback(cb_cb_rectifyT, (void*)this);
-			cb_rectifyR = new Fl_Check_Button(wgt_x, wgt_y, 45, 20, "Eliminate RULINGS");	wgt_y+=y_space;
-			cb_rectifyR->value( this->ppm.flg_rectifyR );
-			cb_rectifyR->callback(cb_cb_rectifyR, (void*)this);
-			g->add(cb_rectifyA);
-			g->add(cb_rectifyT);
-			g->add(cb_rectifyR);
-
 			// ------------------------- FOLD_MOTION -------------------------------------------
 			Fl_Box *bx_FMOTION= new Fl_Box(0, wgt_y, g->w(), 20, "--- FOLDING_MOTION ---");	wgt_y+=20;
 			vs_fmot = new Fl_Value_Slider(wgt_x, wgt_y, 180, 20);
@@ -327,35 +318,27 @@ void ControlPanel::createPanel()
 			vs_fmot->type(FL_HORIZONTAL);
 			vs_fmot->callback(cb_vs_fmot, (void*)this);
 			g->add( vs_fmot );
-		}
-		g->end();
-	}
-	{
-		Fl_Group* g = new Fl_Group(0, 20, this->w(), this->h()-20, "DESIGN2");
-		g->hide();
-		{ 
+
+			wgt_y+=y_space;
 
 			// ------------------------- ADD CREASE & TRIM ------------------------------------
 
-			wgt_x = 10;	wgt_y = 20;
-			int y_space = 25, grp_num=0;
-
 			Fl_Box *bx_TRIM= new Fl_Box(0, wgt_y, g->w(), 20, "--- ADD FOLD / TRIM ---");
 
-			wgt_y+=25;
+			wgt_y+=y_space;
 
 			cb_foldcurve = new Fl_Check_Button(wgt_x, wgt_y, 50, 20, "FOLD");
 			cb_foldcurve->value( (int)(this->gwin->flg_addcurve == 2) );
 			cb_foldcurve->callback(cb_cb_addcurve, (void*)this);
 			cb_foldcurve->deactivate();
 
-			wgt_y+=25;
+			wgt_y+=y_space;
 
 			cb_trimcurve = new Fl_Check_Button(wgt_x, wgt_y, 50, 20, "TRIM");
 			cb_trimcurve->value( (int)(this->gwin->flg_addcurve == 1) );
 			cb_trimcurve->callback(cb_cb_addcurve, (void*)this);
 
-			wgt_y -= 25;
+			wgt_y -= y_space;
 			wgt_x = 80;
 
 			btn_proccurve = new Fl_Button(wgt_x, wgt_y, 100, 20, "ADD CREASE");
@@ -364,10 +347,166 @@ void ControlPanel::createPanel()
 			g->add(cb_trimcurve);
 			g->add(cb_foldcurve);
 			g->add(btn_proccurve);
-
 		}
 		g->end();
 	}
+	{
+		Fl_Group* g = new Fl_Group(0, 20, this->w(), this->h()-20, "DSGN2");
+		g->hide();
+		{
+			// ------------------------- RECTIFY ------------------------------------
+
+			wgt_x = 10;	wgt_y = 20;
+			int y_space = 25, grp_num=0;
+			
+			Fl_Box *bx_RECTIFY= new Fl_Box(0, wgt_y, g->w(), 20, "--- RECTIFY ---");	wgt_y+=20;
+			cb_rectifyA = new Fl_Check_Button(wgt_x, wgt_y, 45, 20, "FOLDING ANGLE");	wgt_y+=y_space;
+			cb_rectifyA->value( this->ppm.rp.flg_rectifyA );
+			cb_rectifyA->callback(cb_cb_rectifyA, (void*)this );
+			cb_rectifyT = new Fl_Check_Button(wgt_x, wgt_y, 45, 20, "TORSION");	wgt_y+=y_space;
+			cb_rectifyT->value( this->ppm.rp.flg_rectifyT );
+			cb_rectifyT->callback(cb_cb_rectifyT, (void*)this );
+			cb_rectifyR = new Fl_Check_Button(wgt_x, wgt_y, 45, 20, "Eliminate RULINGS");	wgt_y+=y_space;
+			cb_rectifyR->value( this->ppm.rp.flg_rectifyR );
+			cb_rectifyR->callback(cb_cb_rectifyR, (void*)this );
+			g->add(cb_rectifyA);
+			g->add(cb_rectifyT);
+			g->add(cb_rectifyR);		
+		
+			btn_updateChoice = new Fl_Button(wgt_x, wgt_y, 90, 20, "update prm");
+			btn_updateChoice->callback( cb_btn_updateChoice, (void*)this );
+			g->add(btn_updateChoice);
+
+			btn_setSEParam = new Fl_Button(wgt_x+90, wgt_y, 90, 20, "set prm");
+			btn_setSEParam->callback( cb_btn_setSEParam, (void*)this );
+			g->add(btn_setSEParam);
+
+			wgt_y+=y_space;
+
+			Fl_Box *bx_FANGLE= new Fl_Box(0, wgt_y, g->w(), 20, "--- FOLDING ANGLE PARAMS ---");	wgt_y+=20;
+
+			ch_A_method = new Fl_Choice(wgt_x+50, wgt_y, 50, 20, "method");
+			ch_A_method->add("Linear");
+			ch_A_method->add("Bezier");
+			ch_A_method->value( this->ppm.rp.rectT.method-1 );
+			ch_A_method->callback( cb_ch_A_method, (void*)this );
+
+			vi_A_kvthres = new Fl_Value_Input(wgt_x+140, wgt_y, 40, 20, "thres");
+			vi_A_kvthres->value( this->ppm.rp.rectT.kvthres );
+			vi_A_kvthres->callback( cb_vi_A_kvthres, (void*)this );
+
+			wgt_y+=y_space;
+
+			vi_A_s1mgn = new Fl_Value_Input(wgt_x+50, wgt_y, 40, 20, "s1 mgn");
+			vi_A_s1mgn->value( this->ppm.rp.rectT.s1mgn );
+			vi_A_s1mgn->callback( cb_vi_A_s1mgn, (void*)this );
+			vi_A_s2mgn = new Fl_Value_Input(wgt_x+140, wgt_y, 40, 20, "s2 mgn"); 
+			vi_A_s2mgn->value( this->ppm.rp.rectT.s2mgn );
+			vi_A_s2mgn->callback( cb_vi_A_s2mgn, (void*)this );
+
+			wgt_y+=y_space;
+
+			ch_A_se = new Fl_Choice(wgt_x+50, wgt_y, 50, 20, "se idx");
+			ch_A_se->clear();
+			ch_A_se->callback( cb_ch_A_se, (void*)this );
+
+			ch_A_src = new Fl_Choice(wgt_x+140, wgt_y, 50, 20, "src");
+			ch_A_src->add("0");
+			ch_A_src->add("1");
+			ch_A_src->add("2");
+			ch_A_src->value(0);
+			ch_A_src->callback( cb_ch_A_src, (void*)this );
+
+			wgt_y+=y_space;
+
+			vi_A_s2 = new Fl_Value_Input(wgt_x+40, wgt_y, 35, 20, "s1e2");	vi_A_s2->callback( cb_vi_A_s2, (void*)this );
+			vi_A_s1 = new Fl_Value_Input(wgt_x+75, wgt_y, 35, 20 );			vi_A_s1->callback( cb_vi_A_s1, (void*)this );
+			vi_A_e1 = new Fl_Value_Input(wgt_x+110, wgt_y, 35, 20 );		vi_A_e1->callback( cb_vi_A_e1, (void*)this );
+			vi_A_e2 = new Fl_Value_Input(wgt_x+145, wgt_y, 35, 20 );		vi_A_e2->callback( cb_vi_A_e2, (void*)this );
+
+			wgt_y+=y_space;
+
+			vi_A_sv2 = new Fl_Value_Input(wgt_x+40, wgt_y, 35, 20, "veclen");	vi_A_sv2->callback( cb_vi_A_sv2, (void*)this );
+			vi_A_sv1 = new Fl_Value_Input(wgt_x+75, wgt_y, 35, 20 );		vi_A_sv1->callback( cb_vi_A_sv1, (void*)this );
+			vi_A_ev1 = new Fl_Value_Input(wgt_x+110, wgt_y, 35, 20 );		vi_A_ev1->callback( cb_vi_A_ev1, (void*)this );
+			vi_A_ev2 = new Fl_Value_Input(wgt_x+145, wgt_y, 35, 20 );		vi_A_ev2->callback( cb_vi_A_ev2, (void*)this );
+
+			wgt_y+=y_space;
+
+			g->add(ch_A_method);
+			g->add(vi_A_kvthres);
+			g->add(vi_A_s1mgn);	g->add(vi_A_s2mgn);
+			g->add(ch_A_se);	g->add(ch_A_src);
+			g->add(vi_A_s2);	g->add(vi_A_s1);	g->add(vi_A_e1);	g->add(vi_A_e2);
+			g->add(vi_A_sv2);	g->add(vi_A_sv1);	g->add(vi_A_ev1);	g->add(vi_A_ev2);
+
+			Fl_Box *bx_TORSION= new Fl_Box(0, wgt_y, g->w(), 20, "--- TORSION PARAMS ---");	wgt_y+=20;
+
+			ch_T_method = new Fl_Choice(wgt_x+50, wgt_y, 50, 20, "method");
+			ch_T_method->add("Linear");
+			ch_T_method->add("Bezier");
+			ch_T_method->value( this->ppm.rp.rectT.method-1 );
+			ch_T_method->callback( cb_ch_T_method, (void*)this );
+
+			vi_T_kvthres = new Fl_Value_Input(wgt_x+140, wgt_y, 40, 20, "thres");
+			vi_T_kvthres->value( this->ppm.rp.rectT.kvthres );
+			vi_T_kvthres->callback( cb_vi_T_kvthres, (void*)this );
+
+			wgt_y+=y_space;
+
+			vi_T_s1mgn = new Fl_Value_Input(wgt_x+50, wgt_y, 40, 20, "s1 mgn");
+			vi_T_s1mgn->value( this->ppm.rp.rectT.s1mgn );
+			vi_T_s1mgn->callback( cb_vi_T_s1mgn, (void*)this );
+			vi_T_s2mgn = new Fl_Value_Input(wgt_x+140, wgt_y, 40, 20, "s2 mgn"); 
+			vi_T_s2mgn->value( this->ppm.rp.rectT.s2mgn );
+			vi_T_s2mgn->callback( cb_vi_T_s2mgn, (void*)this );
+
+			wgt_y+=y_space;
+
+			ch_T_se = new Fl_Choice(wgt_x+50, wgt_y, 50, 20, "se idx");
+			ch_T_se->clear();
+			ch_T_se->callback( cb_ch_T_se, (void*)this );
+
+			ch_T_src = new Fl_Choice(wgt_x+140, wgt_y, 50, 20, "src");
+			ch_T_src->add("0");
+			ch_T_src->add("1");
+			ch_T_src->add("2");
+			ch_T_src->value(0);
+			ch_T_src->callback( cb_ch_T_src, (void*)this );
+
+			wgt_y+=y_space;
+
+			vi_T_s2 = new Fl_Value_Input(wgt_x+40, wgt_y, 35, 20, "s1e2");	vi_T_s2->callback( cb_vi_T_s2, (void*)this );
+			vi_T_s1 = new Fl_Value_Input(wgt_x+75, wgt_y, 35, 20 );			vi_T_s1->callback( cb_vi_T_s1, (void*)this );
+			vi_T_e1 = new Fl_Value_Input(wgt_x+110, wgt_y, 35, 20 );		vi_T_e1->callback( cb_vi_T_e1, (void*)this );
+			vi_T_e2 = new Fl_Value_Input(wgt_x+145, wgt_y, 35, 20 );		vi_T_e2->callback( cb_vi_T_e2, (void*)this );
+
+			wgt_y+=y_space;
+		
+			vi_T_sv2 = new Fl_Value_Input(wgt_x+40, wgt_y, 35, 20, "veclen");	vi_T_sv2->callback( cb_vi_T_sv2, (void*)this );
+			vi_T_sv1 = new Fl_Value_Input(wgt_x+75, wgt_y, 35, 20 );		vi_T_sv1->callback( cb_vi_T_sv1, (void*)this );
+			vi_T_ev1 = new Fl_Value_Input(wgt_x+110, wgt_y, 35, 20 );		vi_T_ev1->callback( cb_vi_T_ev1, (void*)this );
+			vi_T_ev2 = new Fl_Value_Input(wgt_x+145, wgt_y, 35, 20 );		vi_T_ev2->callback( cb_vi_T_ev2, (void*)this );
+
+			wgt_y+=y_space;
+
+			g->add(ch_T_method);
+			g->add(vi_T_kvthres);
+			g->add(vi_T_s1mgn);	g->add(vi_T_s2mgn);
+			g->add(ch_T_se);	g->add(ch_T_src);
+			g->add(vi_T_sv2);	g->add(vi_T_sv1);	g->add(vi_T_ev1);	g->add(vi_T_ev2);
+			g->add(vi_T_s2);	g->add(vi_T_s1);	g->add(vi_T_e1);	g->add(vi_T_e2);
+
+			Fl_Box *bx_RULING= new Fl_Box(0, wgt_y, g->w(), 20, "--- RULING PARAMS ---");	wgt_y+=20;
+
+			vi_R_kvthres = new Fl_Value_Input(wgt_x+50, wgt_y, 40, 20, "thres");
+			vi_R_kvthres->value( this->ppm.rp.rectifyR_kvthres );
+			vi_R_kvthres->callback( cb_vi_R_kvthres, (void*)this );
+
+			g->add(vi_R_kvthres);
+		}
+		g->end();
+	}	
 	tab->end();
 }
 

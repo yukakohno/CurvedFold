@@ -37,10 +37,10 @@ void ControlPanel::cb_btn_load(Fl_Widget *wgt, void *idx)
 				This->ppm.set_postproc_type( PPTYPE_OPEN );
 				//gwin->initObject();
 
-				if(filetype == 1){ // xy(CP),xyz(3D)
+				if(filetype == 1){ // xy(sCP),xyz(3D)
 					This->ppm.crs[0].interpolate_spline2(0);
 					This->ppm.crs[0].calcTN2d();
-					This->ppm.crs[0].calcTNB( This->ppm.flg_rectifyT );
+					This->ppm.crs[0].calcTNB();
 					This->ppm.crs[0].Pcnt = 10;
 					This->ppm.crs[0].setP_k(-1); // kv -> Px[_Pcnt]
 					This->ppm.crs[0].setP_t(-1); // tr -> Py[_Pcnt]
@@ -64,7 +64,7 @@ void ControlPanel::cb_btn_load(Fl_Widget *wgt, void *idx)
 					This->refresh(1);
 				} else if( filetype == 4) { // xyz(3D),a
 					This->ppm.crs[0].interpolate_spline2(2); // 2:xyzのみ補間
-					This->ppm.crs[0].calcTNB( This->ppm.flg_rectifyT ); // X -> T,N,B,kv,tr
+					This->ppm.crs[0].calcTNB(); // X -> T,N,B,kv,tr
 					This->ppm.crs[0].Pcnt = 10;
 					This->ppm.crs[0].setP_k(-1); // kv -> Px[_Pcnt]
 					This->ppm.crs[0].setP_t(-1); // tr -> Py[_Pcnt]
@@ -124,7 +124,7 @@ void ControlPanel::cb_btn_dump( Fl_Widget *wgt, void *idx)
 	ppm->dumpObj("output/CP.obj", 0.4);
 
 	ppm->check180( "output/d180.csv" );	// 頂点周りの角度
-	ppm->checkquatplane( "output/quat.csv" );	// quad の平面度
+	ppm->checkquadplane( "output/quat.csv" );	// quad の平面度
 
 	This->gwin_gr->redraw();
 }

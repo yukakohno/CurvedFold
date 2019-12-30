@@ -14,6 +14,7 @@
 #include <FL/Fl_Round_Button.h>
 #include <FL/Fl_Value_Slider.h>
 #include <FL/Fl_Value_Input.H>
+#include <FL/Fl_Choice.h>
 #include <FL/Fl_Tabs.H>
 #include "GraphWindow3DCF.h"
 #include "GraphWindowCP.h"
@@ -102,11 +103,6 @@ public:
 	Fl_Group *grp_fix;
 	Fl_Round_Button *rb_fix[N_C_MODE];
 
-	// ï‚ê≥Ç†ÇËÅ^Ç»Çµ
-	Fl_Check_Button *cb_rectifyA;
-	Fl_Check_Button *cb_rectifyT;
-	Fl_Check_Button *cb_rectifyR;
-
 	// PARAMETER
 	Fl_Group *grp_param;
 	Fl_Round_Button *rb_param[N_P_IDX];
@@ -117,20 +113,77 @@ public:
 
 private:
 	static void cb_rb_gwin(Fl_Widget *wgt, void *idx);
-	static void cb_cb_rectifyA(Fl_Widget *wgt, void *idx);
-	static void cb_cb_rectifyT(Fl_Widget *wgt, void *idx);
-	static void cb_cb_rectifyR(Fl_Widget *wgt, void *idx);
 	static void cb_vs_ppos(Fl_Widget *wgt, void *idx);
 	static void cb_vs_pval(Fl_Widget *wgt, void *idx);
 	static void cb_btn_R2TA(Fl_Widget *wgt, void *idx);
 	static void cb_btn_RPar(Fl_Widget *wgt, void *idx);
+
+	// ------------------------- RECTIFY -------------------------------------------
+public:
+	// ï‚ê≥Ç†ÇËÅ^Ç»Çµ
+	Fl_Check_Button *cb_rectifyA;
+	Fl_Check_Button *cb_rectifyT;
+	Fl_Check_Button *cb_rectifyR;
+	Fl_Button *btn_updateChoice;
+	Fl_Button *btn_setSEParam;
+
+	Fl_Choice *ch_T_method, *ch_T_se, *ch_T_src;
+	Fl_Value_Input *vi_T_kvthres, *vi_T_s1mgn, *vi_T_s2mgn; 
+	Fl_Value_Input *vi_T_s2, *vi_T_s1, *vi_T_e1, *vi_T_e2;
+	Fl_Value_Input *vi_T_sv2, *vi_T_sv1, *vi_T_ev1, *vi_T_ev2;
+
+	Fl_Choice *ch_A_method, *ch_A_se, *ch_A_src;
+	Fl_Value_Input *vi_A_kvthres, *vi_A_s1mgn, *vi_A_s2mgn;
+	Fl_Value_Input *vi_A_s2, *vi_A_s1, *vi_A_e1, *vi_A_e2;
+	Fl_Value_Input *vi_A_sv2, *vi_A_sv1, *vi_A_ev1, *vi_A_ev2;
+
+	Fl_Value_Input *vi_R_kvthres;
+
+private:
+	static void cb_cb_rectifyA(Fl_Widget *wgt, void *idx);
+	static void cb_cb_rectifyT(Fl_Widget *wgt, void *idx);
+	static void cb_cb_rectifyR(Fl_Widget *wgt, void *idx);
+
+	static void cb_btn_updateChoice(Fl_Widget *wgt, void *idx);
+	static void cb_btn_setSEParam(Fl_Widget *wgt, void *idx);
+
+	static void cb_ch_T_method(Fl_Widget *wgt, void *idx);
+	static void cb_ch_T_se(Fl_Widget *wgt, void *idx);
+	static void cb_ch_T_src(Fl_Widget *wgt, void *idx);
+	static void cb_vi_T_kvthres(Fl_Widget *wgt, void *idx);
+	static void cb_vi_T_s1mgn(Fl_Widget *wgt, void *idx);
+	static void cb_vi_T_s2mgn(Fl_Widget *wgt, void *idx);
+	static void cb_vi_T_s2(Fl_Widget *wgt, void *idx);
+	static void cb_vi_T_s1(Fl_Widget *wgt, void *idx);
+	static void cb_vi_T_e1(Fl_Widget *wgt, void *idx);
+	static void cb_vi_T_e2(Fl_Widget *wgt, void *idx);
+	static void cb_vi_T_sv2(Fl_Widget *wgt, void *idx);
+	static void cb_vi_T_sv1(Fl_Widget *wgt, void *idx);
+	static void cb_vi_T_ev1(Fl_Widget *wgt, void *idx);
+	static void cb_vi_T_ev2(Fl_Widget *wgt, void *idx);
+
+	static void cb_ch_A_method(Fl_Widget *wgt, void *idx);
+	static void cb_ch_A_se(Fl_Widget *wgt, void *idx);
+	static void cb_ch_A_src(Fl_Widget *wgt, void *idx);
+	static void cb_vi_A_kvthres(Fl_Widget *wgt, void *idx);
+	static void cb_vi_A_s1mgn(Fl_Widget *wgt, void *idx);
+	static void cb_vi_A_s2mgn(Fl_Widget *wgt, void *idx);
+	static void cb_vi_A_s2(Fl_Widget *wgt, void *idx);
+	static void cb_vi_A_s1(Fl_Widget *wgt, void *idx);
+	static void cb_vi_A_e1(Fl_Widget *wgt, void *idx);
+	static void cb_vi_A_e2(Fl_Widget *wgt, void *idx);
+	static void cb_vi_A_sv2(Fl_Widget *wgt, void *idx);
+	static void cb_vi_A_sv1(Fl_Widget *wgt, void *idx);
+	static void cb_vi_A_ev1(Fl_Widget *wgt, void *idx);
+	static void cb_vi_A_ev2(Fl_Widget *wgt, void *idx);
+
+	static void cb_vi_R_kvthres(Fl_Widget *wgt, void *idx);
 
 	// ------------------------- ADD CREASE & TRIM ------------------------------------
 public:
 	Fl_Check_Button *cb_trimcurve;
 	Fl_Check_Button *cb_foldcurve;
 	Fl_Button *btn_proccurve;
-
 
 private:
 	static void cb_cb_addcurve( Fl_Widget *wgt, void *idx);

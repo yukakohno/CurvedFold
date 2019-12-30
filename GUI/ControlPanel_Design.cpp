@@ -4,33 +4,6 @@
 #include <Windows.h>
 #include "ControlPanel.h"
 
-void ControlPanel::cb_cb_rectifyA(Fl_Widget *wgt, void *idx)
-{
-	ControlPanel *This = (ControlPanel *)idx;
-	This->ppm.flg_rectifyA = ((Fl_Check_Button*)wgt)->value();
-	This->ppm.set_postproc_type( PPTYPE_PRICURVE );
-	This->refresh(1);
-	This->ppm.set_postproc_type( PPTYPE_UNDEF );
-}
-
-void ControlPanel::cb_cb_rectifyT(Fl_Widget *wgt, void *idx)
-{
-	ControlPanel *This = (ControlPanel *)idx;
-	This->ppm.flg_rectifyT = ((Fl_Check_Button*)wgt)->value();
-	This->ppm.set_postproc_type( PPTYPE_PRICURVE );
-	This->refresh(1);
-	This->ppm.set_postproc_type( PPTYPE_UNDEF );
-}
-
-void ControlPanel::cb_cb_rectifyR(Fl_Widget *wgt, void *idx)
-{
-	ControlPanel *This = (ControlPanel *)idx;
-	This->ppm.flg_rectifyR = ((Fl_Check_Button*)wgt)->value();
-	This->ppm.set_postproc_type( PPTYPE_PRICURVE );
-	This->refresh(1);
-	This->ppm.set_postproc_type( PPTYPE_UNDEF );
-}
-
 void ControlPanel::cb_rb_gwin(Fl_Widget *wgt, void *idx)
 {
 	ControlPanel *This = (ControlPanel *)idx;

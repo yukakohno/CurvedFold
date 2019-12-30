@@ -18,7 +18,6 @@ void crease::init()
 {
 	rl=0;
 	flg_org=0;
-	flg_src_s1e1=0;
 
 	org_idx = -1;
 	org_cnt = 0;

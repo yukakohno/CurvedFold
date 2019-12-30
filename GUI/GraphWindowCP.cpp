@@ -478,7 +478,7 @@ int GraphWindowCP::handle(int event)
 			}
 			if( ppm ){
 				ppm->set_postproc_type( PPTYPE_RTCURVE );
-				ppm->crs[0].calcXA_CP( ppm->flg_interpolate, ppm->flg_rectifyT, ppm->flg_rectifyA, ppm->flg_rectifyR );
+				ppm->crs[0].calcXA_CP( ppm->flg_interpolate, &ppm->rp );
 				ppm->postproc();
 				ppm->set_postproc_type( PPTYPE_UNDEF );
 			}
@@ -578,7 +578,7 @@ int GraphWindowCP::handle(int event)
 		}
 		if( ppm ){
 			ppm->set_postproc_type( PPTYPE_RTCURVE );
-			ppm->crs[0].calcXA_CP( ppm->flg_interpolate, ppm->flg_rectifyT, ppm->flg_rectifyA, ppm->flg_rectifyR );
+			ppm->crs[0].calcXA_CP( ppm->flg_interpolate, &ppm->rp );
 			ppm->postproc();
 			ppm->set_postproc_type( PPTYPE_UNDEF );
 		}
