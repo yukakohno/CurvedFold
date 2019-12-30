@@ -57,6 +57,18 @@ int ControlPanel::value_grpparam()
 	return prm;
 }
 
+int ControlPanel::value_grpopt()
+{
+	int opt = -1;
+	for( int i=0; i<3; i++ ){
+		if( this->rb_opt[i]->value() > 0 ){
+			opt = i;
+			break;
+		}
+	}
+	return opt;
+}
+
 void ControlPanel::refresh(int init)
 {
 	// A: 3D‹Èü‚ÆÜ‚èŠp“x‚©‚çAÜ‚èü‚ð‹‚ß‚é
@@ -347,7 +359,6 @@ void ControlPanel::createPanel()
 			cb_foldcurve = new Fl_Check_Button(wgt_x, wgt_y, 50, 20, "FOLD");
 			cb_foldcurve->value( (int)(this->gwin->flg_addcurve == 2) );
 			cb_foldcurve->callback(cb_cb_addcurve, (void*)this);
-			cb_foldcurve->deactivate();
 
 			wgt_y+=25;
 
@@ -361,10 +372,91 @@ void ControlPanel::createPanel()
 			btn_proccurve = new Fl_Button(wgt_x, wgt_y, 100, 20, "ADD CREASE");
 			btn_proccurve->callback(cb_btn_proccurve, (void*)this);
 
+			wgt_y+=25;
+
+			btn_resetcurve = new Fl_Button(wgt_x, wgt_y, 100, 20, "REMOVE");
+			btn_resetcurve->callback(cb_btn_resetcurve, (void*)this);
+
 			g->add(cb_trimcurve);
 			g->add(cb_foldcurve);
 			g->add(btn_proccurve);
+			g->add(btn_resetcurve);
 
+			wgt_x = 10;	wgt_y += 25;
+
+			Fl_Box *bx_CRSIDX= new Fl_Box(0, wgt_y, g->w(), 20, "--- CREASE INDEX ---");
+
+			wgt_y += 25;
+
+			vs_cidx = new Fl_Value_Slider(wgt_x, wgt_y, 180, 20 );
+			vs_cidx->bounds(-MAX_CRS_CNT,MAX_CRS_CNT);
+			vs_cidx->step(1);
+			vs_cidx->value(0);
+			vs_cidx->align(FL_ALIGN_LEFT);
+			vs_cidx->type(FL_HORIZONTAL);
+			vs_cidx->callback(cb_vs_cidx, (void*)this);
+			g->add( vs_cidx );
+
+			wgt_x = 10;	wgt_y += 25;
+
+			Fl_Box *bx_COSTFUNC = new Fl_Box(0, wgt_y, g->w(), 20, "--- COST FUNCTION ---");
+
+			wgt_y += 25;
+
+			grp_opt = new Fl_Group(0, wgt_y, g->w(), 3*y_space);	grp_num = 0;
+			rb_opt[0] = new Fl_Round_Button(wgt_x, wgt_y, 60, 20, "TORSION");	wgt_y+=y_space; grp_num++;
+			rb_opt[1] = new Fl_Round_Button(wgt_x, wgt_y, 60, 20, "RULING ANGLE");	wgt_y+=y_space; grp_num++;
+			rb_opt[2] = new Fl_Round_Button(wgt_x, wgt_y, 60, 20, "RULING CROSSING"); grp_num++;
+
+			for( int i=0; i<grp_num; i++ ){
+				rb_opt[i]->type(FL_RADIO_BUTTON);
+				grp_opt->add(rb_opt[i]);
+				rb_opt[i]->callback(cb_vs_otype, (void*)this);
+			}
+			grp_opt->end();
+			rb_opt[this->ppm.hCrs_evaltype]->setonly();
+			g->add(grp_opt);
+
+			wgt_x = 10;	wgt_y += 25;
+
+			Fl_Box *bx_OPTMODE = new Fl_Box(0, wgt_y, g->w(), 20, "--- ADJUSTMENT SUPPORT ---");
+
+			wgt_y += 25;
+
+			cb_rectifyC = new Fl_Check_Button(wgt_x, wgt_y, 45, 20, "RESTRICT");
+			cb_rectifyC->value( this->ppm.hCrs_cridx );
+			g->add(cb_rectifyC);
+
+#if 0
+			vs_otype = new Fl_Value_Slider(wgt_x+70, wgt_y, 130, 20);
+			vs_otype->bounds(0,MAX_CRS_OTYPE);
+			vs_otype->step(1);
+			vs_otype->value(this->ppm.hCrs_evaltype);
+			vs_otype->align(FL_ALIGN_LEFT);
+			vs_otype->type(FL_HORIZONTAL);
+			vs_otype->callback(cb_vs_otype, (void*)this);
+			g->add( vs_otype );
+#endif
+			wgt_y += 25;
+
+			btn_rectifyC = new Fl_Button(wgt_x, wgt_y, 100, 20, "OPTIMIZE");
+			btn_rectifyC->callback(cb_btn_rectifyC, (void*)this);
+
+			wgt_y += 25;
+#if 1
+			btn_resetC = new Fl_Button(wgt_x, wgt_y, 100, 20, "RESET");
+			btn_resetC->callback(cb_btn_resetC, (void*)this);
+
+			wgt_y += 25;
+
+			btn_fixC = new Fl_Button(wgt_x, wgt_y, 100, 20, "FIX");
+			btn_fixC->callback(cb_btn_fixC, (void*)this);
+
+			g->add(btn_rectifyC);
+			g->add(btn_resetC);
+			g->add(btn_fixC);
+#endif
+			//wgt_x = 10;	wgt_y += 25;
 		}
 		g->end();
 	}
@@ -373,7 +465,7 @@ void ControlPanel::createPanel()
 
 int ControlPanel::handle(int event)
 {
-	int key, pos=-1, prm=-1;
+	int i, key, pos=-1, prm=-1;
 	crease *c = &(this->ppm.crs[0]);
 
 	switch(event){

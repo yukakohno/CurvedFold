@@ -44,6 +44,9 @@ public:
 	int org_cnt;
 	double *org_x, *org_y;
 
+	// control points of B-spline curve
+	double CPx[CCNT], CPy[CCNT];
+
 	// control points on the crease
 	int Pcnt;
 	double Px2d[MAX_CPCNT], Py2d[MAX_CPCNT]; // Px2d <- k2d
@@ -226,6 +229,18 @@ public:
 	int rectifyAlphaBezier( int src_s1e1 ); // 0:k2d, 1:kv*cos(alpha)
 	static int rectifyAlphaBezier( int Xcnt, int *s1, int *e1, int scnt, double *alpha );
 	int rectifyTau2(); // Ï•ª’l‚ª“¯‚¶‚É‚È‚é‚æ‚¤‚É
+
+	// ------------------------- RL -------------------------------------------
+	int setL2R( crease *c ); // copy c->rl* to this->rr*, set Xsidx Xeidx
+	int setR2L( crease *c ); // copy c->rr* to this->rl*, set Xsidx Xeidx
+	int calcLeft();
+	int calcRight();
+	int calcLeft0();	// no folding (for debug)
+	int calcRight0();	// no folding (for debug)
+	int calcLeft1();	// 
+	int calcRight1();	// 
+	int calcLeftK();	// 
+	int calcRightK();	// 
 };
 
 #endif

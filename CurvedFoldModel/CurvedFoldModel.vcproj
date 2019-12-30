@@ -176,6 +176,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\crease_RL.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\crease_TNB.cpp"
 				>
 			</File>
@@ -192,7 +196,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\papermodel_curve.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\papermodel_fileio.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\papermodel_optRulLength.cpp"
 				>
 			</File>
 			<File
@@ -201,6 +213,10 @@
 			</File>
 			<File
 				RelativePath=".\papermodel_procseq.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\papermodel_rulLength.cpp"
 				>
 			</File>
 			<Filter

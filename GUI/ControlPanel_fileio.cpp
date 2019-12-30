@@ -118,6 +118,7 @@ void ControlPanel::cb_btn_dump( Fl_Widget *wgt, void *idx)
 	//c0->checkCP3D("output/checkCP3D.csv");
 
 	ppm->dumpcv0( "output/cv0.txt" );
+	ppm->dumpBsplineCP( "output/bspline.txt" );
 	ppm->dumpsvg0("output/CP0.svg");
 	ppm->dumpsvg1("output/CP1.svg");
 	ppm->makeObj3( 10.0 );

@@ -17,16 +17,18 @@ GraphWindowParam::GraphWindowParam(int X, int Y, int W, int H) : Fl_Double_Windo
 void GraphWindowParam::init()
 {
 	ppm = NULL;
+	cidx = 0;
 }
 
-#define MAXV 7
+#define MAXV 9
 void GraphWindowParam::draw()
 {
-	int i,j, gflg[MAXV]={1,1,1,1,1,1,1};
+	int i,j, gflg[MAXV]={1,1,1,1,1,1,1,1,1};
 	int gsx[MAXV], gsy[MAXV], gw[MAXV], gh[MAXV], goy[MAXV], lw[MAXV];
 	double *gcp[MAXV], *gv[MAXV], go[MAXV], gc[MAXV];
 	unsigned char col[MAXV][3]={ {255,0,255}, {0,200,0}, {127,127,255}, {255,0,0},
-	{255,0,0}, {82, 32, 118}/*{150,100,230}*/, {230,0,100}};
+	{255,0,0}, {82, 32, 118}/*{150,100,230}*/, {230,0,100},
+	{255,0,0}, {150,100,230}};//, {150,100,230}, {230,0,100}, {230,0,100}};
 	crease *c = NULL;
 	int Pcnt = ppm->crs[0].Pcnt;
 	int Xcnt = ppm->crs[0].Xcnt;
@@ -52,27 +54,39 @@ void GraphWindowParam::draw()
 	gsy[2] = gsy[3] = gsy[0] + gh[0] +10;
 	gsy[4] = gsy[2] + gh[2] +10;
 	gsy[5] = gsy[6] = gsy[4] + gh[4] +10;
+	gsy[7] = gsy[8] = gsy[6] + gh[6] +10;
 
 	goy[0] = goy[1] = gsy[0]+gh[0]/2;
 	goy[2] = goy[3] = gsy[2]+gh[2]/2;
 	goy[4] = gsy[4]+gh[4]/2;
 	goy[5] = goy[6] = gsy[5]+gh[5]/2;
+	goy[7] = goy[8] = gsy[7] + gh[7];
 
 	for( i=0; i<MAXV; i++ ){ lw[i]=2; }
 	for( i=0; i<MAXV; i++ ){ gcp[i]=NULL; }
 	for( i=0; i<MAXV; i++ ){ gv[i]=NULL; }
-	c = &(ppm->crs[0]);
-	gcp[0] = c->Px2d;
-	gcp[1] = c->Px;
-	gcp[2] = c->Py;
-	gcp[4] = c->Pa;
-	gv[0] = c->k2d;		go[0] = goy[0];			gc[0] = -gh[0]/0.1;
-	gv[1] = c->kv;		go[1] = goy[1];			gc[1] = -gh[1]/0.1;		lw[1]=1;
-	gv[2] = c->tr;		go[2] = goy[2];			gc[2] = -gh[2]/0.1;
-	gv[3] = c->da;		go[3] = goy[3];			gc[3] = -gh[3]/0.1;		lw[3]=1;
-	gv[4] = c->alpha;	go[4] = goy[4];			gc[4] = -gh[4]/M_PI;
-	gv[5] = c->betal;	go[5] = gsy[5]+gh[5];	gc[5] = -gh[5]/M_PI;
-	gv[6] = c->betar;	go[6] = gsy[6]+gh[6];	gc[6] = -gh[6]/M_PI;
+	if( -ppm->lcrcnt<cidx && cidx<ppm->rcrcnt ){
+		if( cidx==0 ){
+			c = &(ppm->crs[0]);
+			gcp[0] = c->Px2d;
+			gcp[1] = c->Px;
+			gcp[2] = c->Py;
+			gcp[4] = c->Pa;
+		} else if( cidx<0 ){
+			c = ppm->lcrs[-cidx];
+		} else if( 0<cidx ){
+			c = ppm->rcrs[cidx];
+		}
+		gv[0] = c->k2d;		go[0] = goy[0];			gc[0] = -gh[0]/0.1;
+		gv[1] = c->kv;		go[1] = goy[1];			gc[1] = -gh[1]/0.1;		lw[1]=1;
+		gv[2] = c->tr;		go[2] = goy[2];			gc[2] = -gh[2]/0.1;
+		gv[3] = c->da;		go[3] = goy[3];			gc[3] = -gh[3]/0.1;		lw[3]=1;
+		gv[4] = c->alpha;	go[4] = goy[4];			gc[4] = -gh[4]/M_PI;
+		gv[5] = c->betal;	go[5] = gsy[5]+gh[5];	gc[5] = -gh[5]/M_PI;
+		gv[6] = c->betar;	go[6] = gsy[6]+gh[6];	gc[6] = -gh[6]/M_PI;
+		gv[7] = ppm->cverr;		go[7] = goy[7];		gc[7] = -gh[7];
+		gv[8] = ppm->cvminerr;	go[8] = goy[8];		gc[8] = -gh[8];			lw[8]=1;
+	}
 
 #if 0	// labels -> ‚È‚º‚©•\Ž¦‚³‚ê‚È‚¢
 	char label[10][64] = { "0.1", "-0.1", "90", "0", "90", "-90", "", "", "", "" };

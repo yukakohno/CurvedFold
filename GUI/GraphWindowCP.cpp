@@ -36,6 +36,7 @@ void GraphWindowCP::init()
 	ofs_cosa = 1.0;
 	ofs_psx = ofs_psy = ofs_pex = ofs_pey = 0;
 
+	cridx = cpidx = -1;
 	ccnt = 0;
 
 	if( jpg ){ delete jpg; }
@@ -69,6 +70,8 @@ void GraphWindowCP::fixCurve()
 	ppm->dcurve[ppm->dccnt].cvcnt = ccnt;
 	if( flg_addcurve == 1 ){
 		ppm->dcurve[ppm->dccnt].ctype = CTYPE_TRIM;
+	} else if( flg_addcurve == 2 ){ // fold
+		ppm->dcurve[ppm->dccnt].ctype = CTYPE_FOLD;
 	} else {
 		ppm->dcurve[ppm->dccnt].ctype = CTYPE_UNDEF;
 	}
@@ -160,7 +163,16 @@ void GraphWindowCP::draw()
 	}
 
 	fl_line_style( FL_SOLID, 2 );
-
+	fl_color(0, 127, 0);
+	for( int i=0; i<ppm->fccnt; i++ ){
+		curveintersect *fc = &(ppm->fcurve[i]);
+		for( int j=0; j<fc->cvcnt-1; j++ ){
+			fl_line((int)(mt[0]*fc->cvx[j] + mt[1]*fc->cvy[j] +mt[2]),
+				(int)(mt[3]*fc->cvx[j  ] + mt[4]*fc->cvy[j  ] +mt[5]),
+				(int)(mt[0]*fc->cvx[j+1] + mt[1]*fc->cvy[j+1] +mt[2]),
+				(int)(mt[3]*fc->cvx[j+1] + mt[4]*fc->cvy[j+1] +mt[5]) );
+		}
+	}
 	fl_color(127, 0, 0);
 	for( int i=0; i<ppm->tccnt; i++ ){
 		curveintersect *tc = &(ppm->tcurve[i]);
@@ -205,17 +217,42 @@ void GraphWindowCP::draw()
 		fl_color(0, 0, 0);
 		fl_line_style( FL_SOLID, 2 );
 
-		for( int j=0; j<ppm->crcnt; j++ ){
-			crease *c = &(ppm->crs[j]);
+		crease *c = &(ppm->crs[0]);
+		double *cpx0 = c->Xx2d, *cpy0 = c->Xy2d;
+		x0=c->Xxs2d;	y0=c->Xys2d;	x1=cpx0[c->Xsidx];	y1=cpy0[c->Xsidx];
+		fl_line((int)(mtofs[0]*x0+mtofs[1]*y0+mtofs[2]), (int)(mtofs[3]*x0+mtofs[4]*y0+mtofs[5]), (int)(mtofs[0]*x1+mtofs[1]*y1+mtofs[2]), (int)(mtofs[3]*x1+mtofs[4]*y1+mtofs[5]));
+		for( int i=c->Xsidx; i<c->Xeidx; i++ ){
+			x0=cpx0[i];	y0=cpy0[i];	x1=cpx0[i+1];	y1=cpy0[i+1];
+			fl_line((int)(mtofs[0]*x0+mtofs[1]*y0+mtofs[2]), (int)(mtofs[3]*x0+mtofs[4]*y0+mtofs[5]), (int)(mtofs[0]*x1+mtofs[1]*y1+mtofs[2]), (int)(mtofs[3]*x1+mtofs[4]*y1+mtofs[5]));
+		}
+		x0=cpx0[c->Xeidx];	y0=cpy0[c->Xeidx];	x1=c->Xxe2d;	y1=c->Xye2d;
+		fl_line((int)(mtofs[0]*x0+mtofs[1]*y0+mtofs[2]), (int)(mtofs[3]*x0+mtofs[4]*y0+mtofs[5]), (int)(mtofs[0]*x1+mtofs[1]*y1+mtofs[2]), (int)(mtofs[3]*x1+mtofs[4]*y1+mtofs[5]));
+
+		// crease left
+		for( int j=1; j<ppm->lcrcnt; j++ ){
+			crease *c = ppm->lcrs[j];
 			double *cpx0 = c->Xx2d, *cpy0 = c->Xy2d;
 			x0=c->Xxs2d;	y0=c->Xys2d;	x1=cpx0[c->Xsidx];	y1=cpy0[c->Xsidx];
-			fl_line((int)(mtofs[0]*x0+mtofs[1]*y0+mtofs[2]), (int)(mtofs[3]*x0+mtofs[4]*y0+mtofs[5]), (int)(mtofs[0]*x1+mtofs[1]*y1+mtofs[2]), (int)(mtofs[3]*x1+mtofs[4]*y1+mtofs[5]));
+			fl_line((int)(mt[0]*x0+mt[1]*y0+mt[2]), (int)(mt[3]*x0+mt[4]*y0+mt[5]), (int)(mt[0]*x1+mt[1]*y1+mt[2]), (int)(mt[3]*x1+mt[4]*y1+mt[5]));
 			for( int i=c->Xsidx; i<c->Xeidx; i++ ){
 				x0=cpx0[i];	y0=cpy0[i];	x1=cpx0[i+1];	y1=cpy0[i+1];
-				fl_line((int)(mtofs[0]*x0+mtofs[1]*y0+mtofs[2]), (int)(mtofs[3]*x0+mtofs[4]*y0+mtofs[5]), (int)(mtofs[0]*x1+mtofs[1]*y1+mtofs[2]), (int)(mtofs[3]*x1+mtofs[4]*y1+mtofs[5]));
+				fl_line((int)(mt[0]*x0+mt[1]*y0+mt[2]), (int)(mt[3]*x0+mt[4]*y0+mt[5]), (int)(mt[0]*x1+mt[1]*y1+mt[2]), (int)(mt[3]*x1+mt[4]*y1+mt[5]));
 			}
 			x0=cpx0[c->Xeidx];	y0=cpy0[c->Xeidx];	x1=c->Xxe2d;	y1=c->Xye2d;
-			fl_line((int)(mtofs[0]*x0+mtofs[1]*y0+mtofs[2]), (int)(mtofs[3]*x0+mtofs[4]*y0+mtofs[5]), (int)(mtofs[0]*x1+mtofs[1]*y1+mtofs[2]), (int)(mtofs[3]*x1+mtofs[4]*y1+mtofs[5]));
+			fl_line((int)(mt[0]*x0+mt[1]*y0+mt[2]), (int)(mt[3]*x0+mt[4]*y0+mt[5]), (int)(mt[0]*x1+mt[1]*y1+mt[2]), (int)(mt[3]*x1+mt[4]*y1+mt[5]));
+		} // j
+		// crease right
+		for( int j=1; j<ppm->rcrcnt; j++ ){
+			crease *c = ppm->rcrs[j];
+			double *cpx0 = c->Xx2d, *cpy0 = c->Xy2d;
+			x0=c->Xxs2d;	y0=c->Xys2d;	x1=cpx0[c->Xsidx];	y1=cpy0[c->Xsidx];
+			fl_line((int)(mt[0]*x0+mt[1]*y0+mt[2]), (int)(mt[3]*x0+mt[4]*y0+mt[5]), (int)(mt[0]*x1+mt[1]*y1+mt[2]), (int)(mt[3]*x1+mt[4]*y1+mt[5]));
+			for( int i=c->Xsidx; i<c->Xeidx; i++ ){
+				x0=cpx0[i];	y0=cpy0[i];	x1=cpx0[i+1];	y1=cpy0[i+1];
+				fl_line((int)(mt[0]*x0+mt[1]*y0+mt[2]), (int)(mt[3]*x0+mt[4]*y0+mt[5]), (int)(mt[0]*x1+mt[1]*y1+mt[2]), (int)(mt[3]*x1+mt[4]*y1+mt[5]));
+			}
+			x0=cpx0[c->Xeidx];	y0=cpy0[c->Xeidx];	x1=c->Xxe2d;	y1=c->Xye2d;
+			fl_line((int)(mt[0]*x0+mt[1]*y0+mt[2]), (int)(mt[3]*x0+mt[4]*y0+mt[5]), (int)(mt[0]*x1+mt[1]*y1+mt[2]), (int)(mt[3]*x1+mt[4]*y1+mt[5]));
 		} // j
 	}
 
@@ -223,8 +260,8 @@ void GraphWindowCP::draw()
 
 	// crease ruling
 	if(	disp_R ){
-		for( int j=0; j<ppm->crcnt; j++ ){
-			crease *c = &(ppm->crs[j]);
+		for( int j=0; j<ppm->lcrcnt; j++ ){
+			crease *c = ppm->lcrs[j];
 			//fl_color(150, 100, 230); // Lavender: B57EDC
 			fl_color(82, 32, 118); // Dark Violet: 522076
 			//fl_color(255, 255, 0); // YELLOW
@@ -238,6 +275,9 @@ void GraphWindowCP::draw()
 					(int)(mt[0]*tmpx1 + mt[1]*tmpy1 +mt[2]),
 					(int)(mt[3]*tmpx1 + mt[4]*tmpy1 +mt[5]) );
 			} // i
+		} // j
+		for( int j=0; j<ppm->rcrcnt; j++ ){
+			crease *c = ppm->rcrs[j];
 			fl_color(230, 0, 100); // Raspberry: E30B5D
 			//fl_color(255, 255, 0); // YELLOW
 			for( int i=c->Xsidx; i<c->Xeidx+1; i++ ){
@@ -284,6 +324,31 @@ void GraphWindowCP::draw()
 					(int)(mt[3]*tmpx1 +mt[4]*tmpy1 +mt[5]) );
 			} // i
 		} // j
+	}
+
+	if( disp_CP ){
+		// control points of crease curve
+		for( int j=1; j<ppm->crcnt; j++ ){
+			crease *c = &(ppm->crs[j]);
+			for( int i=0; i<CCNT; i++ ){
+				if( j==cridx && i==cpidx ){
+					fl_color(255, 0, 0);
+				} else {
+					fl_color(127, 127, 127);
+				}
+				fl_line_style( FL_SOLID, 3 );
+				fl_circle( (int)(mt[0]*c->CPx[i]+mt[1]*c->CPy[i]+mt[2]),
+					(int)(mt[3]*c->CPx[i]+mt[4]*c->CPy[i]+mt[5]), 4 );
+			}
+			fl_line_style( FL_SOLID, 1 );
+			fl_color(127, 127, 127);
+			for( int i=0; i<CCNT-1; i++ ){
+				fl_line((int)(mt[0]*c->CPx[i]+mt[1]*c->CPy[i]+mt[2]),
+					(int)(mt[3]*c->CPx[i]+mt[4]*c->CPy[i]+mt[5]),
+					(int)(mt[0]*c->CPx[i+1]+mt[1]*c->CPy[i+1]+mt[2]),
+					(int)(mt[3]*c->CPx[i+1]+mt[4]*c->CPy[i+1]+mt[5]) );
+			}
+		}
 	}
 
 	// control points
@@ -401,8 +466,34 @@ int GraphWindowCP::handle(int event)
 
 			if( Fl::event_button() == FL_LEFT_MOUSE ){
 				int thres=8;
+				if( this->flg_addcurve==0 && disp_CP){ // 曲線追加でない＆CP表示中
+					// control point
+					cridx = cpidx = -1;
+					for( int i=1; i<ppm->crcnt; i++ ){
+						for( int j=0; j<CCNT; j++ ){
+							double cpx = ox + ppm->crs[i].CPx[j] *wscl;
+							double cpy = oy + ppm->crs[i].CPy[j] *hscl;
+							double d2 = (cpx-push_x)*(cpx-push_x) + (cpy-push_y)*(cpy-push_y);
+							if( d2<thres*thres ){
+								cridx = i;
+								cpidx = j;
+								org_cpx = ppm->crs[i].CPx[j];
+								org_cpy = ppm->crs[i].CPy[j];
+								break; // j
+							}
+						}
+						if( cridx>-1 ){
+							break; // i
+						}
+					}
+				}
 				if( this->flg_addcurve ){
 					flg_psize = 5;	ccnt=0;
+				} else if( cridx>-1 && cpidx>-1 && ((ControlPanel*)cwin)->cb_rectifyC->value() ){
+					//ppm->hCrs_mindiff = 1000.0;
+					flg_psize = 7;
+				} else if( cridx>-1 && cpidx>-1 ){
+					flg_psize = 6;
 				} else if( abs( (ox+psx*wscl) - push_x ) < thres ){
 					flg_psize = 1;
 				} else if( abs( (ox+pex*wscl) - push_x ) < thres ){
@@ -449,6 +540,36 @@ int GraphWindowCP::handle(int event)
 				//printf( "FL_DRAG: cx[%d]=%d, cy[%d]=%d\n", ccnt, cx[ccnt], ccnt, cy[ccnt] );
 				ccnt++;
 			}
+		}
+		break;
+	case 6: // control point 位置修正
+		dx = Fl::event_x() - push_x;
+		dy = Fl::event_y() - push_y;
+		if( cridx>-1 && cpidx>-1 ){
+
+			ppm->set_postproc_type( PPTYPE_MOVECP0 );
+			ppm->set_rectifyCrs12( cridx, cpidx, org_cpx+dx/wscl, org_cpy+dy/hscl );
+			ppm->crs[cridx].CPx[cpidx] = org_cpx + dx/wscl;
+			ppm->crs[cridx].CPy[cpidx] = org_cpy + dy/hscl;
+			ppm->postproc();
+			ppm->set_resetCrs12();
+			ppm->set_postproc_type( PPTYPE_UNDEF );
+
+			((ControlPanel*)cwin)->gwin_gr->redraw();
+		}
+		break;
+	case 7: // control point 位置修正（最適化）
+		dx = Fl::event_x() - push_x;
+		dy = Fl::event_y() - push_y;
+		if( cridx>-1 && cpidx>-1 ){
+
+			ppm->set_postproc_type( PPTYPE_MOVECP1 );
+			ppm->set_rectifyCrs12( cridx, cpidx, org_cpx+dx/wscl, org_cpy+dy/hscl );
+			ppm->postproc();
+			ppm->set_resetCrs12();
+			ppm->set_postproc_type( PPTYPE_UNDEF );
+
+			((ControlPanel*)cwin)->gwin_gr->redraw();
 		}
 		break;
 	default:
@@ -549,6 +670,39 @@ int GraphWindowCP::handle(int event)
 			}
 			fixCurve();
 		}
+		break;
+	case 6: // control point 位置修正
+		dx = Fl::event_x() - push_x;
+		dy = Fl::event_y() - push_y;
+		if( cridx>-1 && cpidx>-1 ){
+
+			ppm->set_postproc_type( PPTYPE_MOVECP0 );
+			ppm->crs[cridx].CPx[cpidx] = org_cpx + dx/wscl;
+			ppm->crs[cridx].CPy[cpidx] = org_cpy + dy/hscl;
+			ppm->set_rectifyCrs12( cridx, cpidx, org_cpx+dx/wscl, org_cpy+dy/hscl );
+			ppm->postproc();
+			ppm->set_resetCrs12();
+			ppm->set_postproc_type( PPTYPE_UNDEF );
+
+			((ControlPanel*)cwin)->gwin_gr->redraw();
+		}
+		cridx = cpidx = -1;
+		break;
+	case 7: // control point 位置修正（最適化）
+		dx = Fl::event_x() - push_x;
+		dy = Fl::event_y() - push_y;
+		if( cridx>-1 && cpidx>-1 ){
+
+			ppm->set_postproc_type( PPTYPE_MOVECP1 );
+			ppm->set_rectifyCrs12( cridx, cpidx, org_cpx+dx/wscl, org_cpy+dy/hscl );
+			ppm->postproc();
+			ppm->set_resetCrs12();
+			ppm->set_postproc_type( PPTYPE_UNDEF );
+
+			((ControlPanel*)cwin)->gwin_gr->redraw();
+		}
+		cridx = cpidx = -1;
+		//ppm->hCrs_mindiff = 1000.0;
 		break;
 	default:
 		ofs_a = (Fl::event_y() - push_y) * M_PI/this->h();

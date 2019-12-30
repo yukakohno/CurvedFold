@@ -112,53 +112,101 @@ int papermodel::dumpsvg1( char *fname )
 		fprintf( fp, "<line stroke=\"#f00\" opacity=\"1\" x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" stroke-width=\"2\"/>\n",
 			c->Xx2d[c->Xeidx]*sc, c->Xy2d[c->Xeidx]*sc, c->Xxe2d*sc, c->Xye2d*sc );
 
-		// rulings left
-		for( int i=c->Xsidx; i<=c->Xeidx; i++ ){
-			if( c->rlflg[i]==RETYPE_UNDEF || c->rllen[i]==0.0 ){
-				continue;
+		// crease left
+		for( int j=1; j<lcrcnt; j++ ){
+			crease *c = lcrs[j];
+			if( j%2 ){
+				sprintf( strcol, "#00f" );
+			} else {
+				sprintf( strcol, "#f00" );
 			}
-			fprintf( fp, "<line stroke=\"#ff0\" opacity=\"1\" x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" stroke-width=\"2\"/>\n",
-				c->Xx2d[i]*sc, c->Xy2d[i]*sc,
-				(c->Xx2d[i] + c->rlx_cp[i] * c->rllen[i]) *sc,
-				(c->Xy2d[i] + c->rly_cp[i] * c->rllen[i]) *sc );
+			fprintf( fp, "<line stroke=\"%s\" opacity=\"1\" x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" stroke-width=\"2\"/>\n",
+				strcol, c->Xxs2d*sc, c->Xys2d*sc, c->Xx2d[c->Xsidx]*sc, c->Xy2d[c->Xsidx]*sc );
+			for( int i=c->Xsidx+1, li=c->Xsidx; i<=c->Xeidx; i++ ){
+				fprintf( fp, "<line stroke=\"%s\" opacity=\"1\" x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" stroke-width=\"2\"/>\n",
+					strcol, c->Xx2d[li]*sc, c->Xy2d[li]*sc, c->Xx2d[ i]*sc, c->Xy2d[ i]*sc );
+				li=i;
+			}
+			fprintf( fp, "<line stroke=\"%s\" opacity=\"1\" x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" stroke-width=\"2\"/>\n",
+				strcol, c->Xx2d[c->Xeidx]*sc, c->Xy2d[c->Xeidx]*sc, c->Xxe2d*sc, c->Xye2d*sc );
+		} // j
+
+		// crease right
+		for( int j=1; j<rcrcnt; j++ ){
+			crease *c = rcrs[j];
+			if( j%2 ){
+				sprintf( strcol, "#00f" );
+			} else {
+				sprintf( strcol, "#f00" );
+			}
+			fprintf( fp, "<line stroke=\"%s\" opacity=\"1\" x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" stroke-width=\"2\"/>\n",
+				strcol, c->Xxs2d*sc, c->Xys2d*sc, c->Xx2d[c->Xsidx]*sc, c->Xy2d[c->Xsidx]*sc );
+			for( int i=c->Xsidx+1, li=c->Xsidx; i<=c->Xeidx; i++ ){
+				fprintf( fp, "<line stroke=\"%s\" opacity=\"1\" x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" stroke-width=\"2\"/>\n",
+					strcol, c->Xx2d[li]*sc, c->Xy2d[li]*sc, c->Xx2d[ i]*sc, c->Xy2d[ i]*sc );
+				li=i;
+			}
+			fprintf( fp, "<line stroke=\"%s\" opacity=\"1\" x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" stroke-width=\"2\"/>\n",
+				strcol, c->Xx2d[c->Xeidx]*sc, c->Xy2d[c->Xeidx]*sc, c->Xxe2d*sc, c->Xye2d*sc );
+		} // j
+
+		// rulings left
+		for( int j=0; j<lcrcnt; j++ ){
+			crease *c = lcrs[j];
+			for( int i=c->Xsidx; i<=c->Xeidx; i++ ){
+				if( c->rlflg[i]==RETYPE_UNDEF || c->rllen[i]==0.0 ){
+					continue;
+				}
+				fprintf( fp, "<line stroke=\"#ff0\" opacity=\"1\" x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" stroke-width=\"2\"/>\n",
+					c->Xx2d[i]*sc, c->Xy2d[i]*sc,
+					(c->Xx2d[i] + c->rlx_cp[i] * c->rllen[i]) *sc,
+					(c->Xy2d[i] + c->rly_cp[i] * c->rllen[i]) *sc );
+			}
 		}
 
 		// rulings right
-		for( int i=c->Xsidx; i<=c->Xeidx; i++ ){
-			if( c->rrflg[i]==RETYPE_UNDEF || c->rrlen[i]==0.0 ){
-				continue;
+		for( int j=0; j<rcrcnt; j++ ){
+			crease *c = rcrs[j];
+			for( int i=c->Xsidx; i<=c->Xeidx; i++ ){
+				if( c->rrflg[i]==RETYPE_UNDEF || c->rrlen[i]==0.0 ){
+					continue;
+				}
+				fprintf( fp, "<line stroke=\"#ff0\" opacity=\"1\" x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" stroke-width=\"2\"/>\n",
+					c->Xx2d[i]*sc, c->Xy2d[i]*sc,
+					(c->Xx2d[i] + c->rrx_cp[i] * c->rrlen[i]) *sc,
+					(c->Xy2d[i] + c->rry_cp[i] * c->rrlen[i]) *sc );
 			}
-			fprintf( fp, "<line stroke=\"#ff0\" opacity=\"1\" x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" stroke-width=\"2\"/>\n",
-				c->Xx2d[i]*sc, c->Xy2d[i]*sc,
-				(c->Xx2d[i] + c->rrx_cp[i] * c->rrlen[i]) *sc,
-				(c->Xy2d[i] + c->rry_cp[i] * c->rrlen[i]) *sc );
 		}
 
-		// edge left
-		for( int i=c->Xsidx+1, li=c->Xsidx; i<=c->Xeidx; i++ ){
-			if( c->rlflg[i]==RETYPE_UNDEF || c->rllen[i]==0.0 || c->rlflg[li]==RETYPE_UNDEF || c->rllen[li]==0.0 ){
+		{	// edge left
+			crease *c = lcrs[lcrcnt-1];
+			for( int i=c->Xsidx+1, li=c->Xsidx; i<=c->Xeidx; i++ ){
+				if( c->rlflg[i]==RETYPE_UNDEF || c->rllen[i]==0.0 || c->rlflg[li]==RETYPE_UNDEF || c->rllen[li]==0.0 ){
+					li=i;
+					continue;
+				}
+				fprintf( fp, "<line stroke=\"#000\" opacity=\"1\" x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" stroke-width=\"2\"/>\n",
+					(c->Xx2d[li] + c->rlx_cp[li] * c->rllen[li]) *sc,
+					(c->Xy2d[li] + c->rly_cp[li] * c->rllen[li]) *sc,
+					(c->Xx2d[ i] + c->rlx_cp[ i] * c->rllen[ i]) *sc,
+					(c->Xy2d[ i] + c->rly_cp[ i] * c->rllen[ i]) *sc );
 				li=i;
-				continue;
 			}
-			fprintf( fp, "<line stroke=\"#000\" opacity=\"1\" x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" stroke-width=\"2\"/>\n",
-				(c->Xx2d[li] + c->rlx_cp[li] * c->rllen[li]) *sc,
-				(c->Xy2d[li] + c->rly_cp[li] * c->rllen[li]) *sc,
-				(c->Xx2d[ i] + c->rlx_cp[ i] * c->rllen[ i]) *sc,
-				(c->Xy2d[ i] + c->rly_cp[ i] * c->rllen[ i]) *sc );
-			li=i;
 		}
-		// edge right
-		for( int i=c->Xsidx+1, li=c->Xsidx; i<=c->Xeidx; i++ ){
-			if( c->rrflg[i]==RETYPE_UNDEF || c->rrlen[i]==0.0 || c->rrflg[li]==RETYPE_UNDEF || c->rrlen[li]==0.0 ){
+		{	// edge right
+			crease *c = rcrs[rcrcnt-1];
+			for( int i=c->Xsidx+1, li=c->Xsidx; i<=c->Xeidx; i++ ){
+				if( c->rrflg[i]==RETYPE_UNDEF || c->rrlen[i]==0.0 || c->rrflg[li]==RETYPE_UNDEF || c->rrlen[li]==0.0 ){
+					li=i;
+					continue;
+				}
+				fprintf( fp, "<line stroke=\"#000\" opacity=\"1\" x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" stroke-width=\"2\"/>\n",
+					(c->Xx2d[li] + c->rrx_cp[li] * c->rrlen[li]) *sc,
+					(c->Xy2d[li] + c->rry_cp[li] * c->rrlen[li]) *sc,
+					(c->Xx2d[ i] + c->rrx_cp[ i] * c->rrlen[ i]) *sc,
+					(c->Xy2d[ i] + c->rry_cp[ i] * c->rrlen[ i]) *sc );
 				li=i;
-				continue;
 			}
-			fprintf( fp, "<line stroke=\"#000\" opacity=\"1\" x1=\"%f\" y1=\"%f\" x2=\"%f\" y2=\"%f\" stroke-width=\"2\"/>\n",
-				(c->Xx2d[li] + c->rrx_cp[li] * c->rrlen[li]) *sc,
-				(c->Xy2d[li] + c->rry_cp[li] * c->rrlen[li]) *sc,
-				(c->Xx2d[ i] + c->rrx_cp[ i] * c->rrlen[ i]) *sc,
-				(c->Xy2d[ i] + c->rry_cp[ i] * c->rrlen[ i]) *sc );
-			li=i;
 		}
 
 		// trim
@@ -249,6 +297,16 @@ int papermodel::check180( char *fname )
 	}
 
 	ret = crs[0].check180( fp );
+	for( int j=1; j<lcrcnt; j++ )
+	{
+		fprintf( fp, "lcrs[%d]\n", j );
+		ret = lcrs[j]->check180( fp );
+	}
+	for( int j=1; j<rcrcnt; j++ )
+	{
+		fprintf( fp, "rcrs[%d]\n", j );
+		ret = rcrs[j]->check180( fp );
+	}
 end:
 	if( fp ){ fclose(fp); }
 	return ret;
@@ -263,6 +321,16 @@ int papermodel::checkquatplane( char *fname )
 		ret = -1; goto end;
 	}
 	ret = crs[0].checkquadplane( fp );
+	for( int j=1; j<lcrcnt; j++ )
+	{
+		fprintf( fp, "lcrs[%d]\n", j );
+		ret = lcrs[j]->checkquadplane( fp );
+	}
+	for( int j=1; j<rcrcnt; j++ )
+	{
+		fprintf( fp, "rcrs[%d]\n", j );
+		ret = rcrs[j]->checkquadplane( fp );
+	}
 end:
 	if( fp ){ fclose(fp); }
 	return ret;
@@ -312,6 +380,125 @@ int papermodel::loadcv0( char *fname )
 		}
 	} else {
 		dccnt = 0;
+	}
+	return ret;
+}
+
+#if 0
+int papermodel::dumpcv1( char *fname )
+{
+	int ret=0;
+	FILE *fp=fopen(fname, "w");
+	if( fp ){
+		//int ccnt1, ctype1[MAXCN], cvcnt1[MAXCN], cvtype[MAXCN][MAX_SPCNT], cvidx[MAXCN][MAX_SPCNT];
+		//double cvlen[MAXCN][MAX_SPCNT], cvx1[MAXCN][MAX_SPCNT], cvy1[MAXCN][MAX_SPCNT];
+		//double cvrllen[MAXCN][MAX_SPCNT], cvrrlen[MAXCN][MAX_SPCNT];	// 曲線で切った後のruling長さ
+		fprintf(fp, "%d	// ccnt1\n", ccnt1);
+		for( int i=0; i<ccnt1; i++ ){
+			fprintf(fp, "%d // ctype1[%d]\n", ctype1[i], i);
+			fprintf(fp, "%d // cvcnt1[%d]\n", cvcnt1[i], i);
+			for( int j=0; j<cvcnt1[i]; j++ ){
+				fprintf(fp, "%f %f %f %d %d // cvx1, cvy1, cvlen, cvtype, cvidx\n",
+					cvx1[i][j], cvy1[i][j], cvlen[i][j], cvtype[i][j], cvidx[i][j]);
+			}
+		}
+		fclose(fp); fp=NULL;
+	}
+	return ret;
+}
+
+int papermodel::loadcv1( char *fname )
+{
+	int ret=0, tmp_cvtype=0;
+	char buf[1024];
+	FILE *fp=fopen(fname, "r");
+	if( fp ){
+		fgets(buf, 1024, fp);	sscanf( buf, "%d", &ccnt1 );
+		for( int i=0; i<ccnt1; i++ ){
+			fgets(buf, 1024, fp);	sscanf( buf, "%d", &(ctype1[i]) );
+			fgets(buf, 1024, fp);	sscanf( buf, "%d", &(cvcnt1[i]) );
+			for( int j=0; j<cvcnt1[i]; j++ ){
+				fgets(buf, 1024, fp);
+				sscanf(buf, "%lf %lf %lf %d %d",
+					&(cvx1[i][j]), &(cvy1[i][j]), &(cvlen[i][j]), &(tmp_cvtype), &(cvidx[i][j]));
+				// 交差対称 0:rl, 1:rr, 2:曲線始点, 3:曲線終点, 4:紙端
+				switch( tmp_cvtype){
+					case 1: cvtype[i][j] = CVTYPE_RUL_LEFT; break;
+					case 2: cvtype[i][j] = CVTYPE_RUL_RIGHT; break;
+					case 3: cvtype[i][j] = CVTYPE_FCURVE_START; break;
+					case 4: cvtype[i][j] = CVTYPE_FCURVE_END; break;
+					case 5: cvtype[i][j] = CVTYPE_PAPER_EDGE; break;
+					default: cvtype[i][j] = CVTYPE_UNDEF; break;
+				}
+			}
+		}
+		fclose(fp); fp=NULL;
+	}
+	return ret;
+}
+#endif
+
+int papermodel::dumpBsplineCP( char *fname )
+{
+	int ret=0;
+	FILE *fp=fopen(fname, "w");
+	if( fp ){
+		fprintf( fp, "%d %d // lcrcnt rcrcnt\n", lcrcnt-1, rcrcnt-1 );
+		for( int i=1; i<lcrcnt; i++ ){
+			crease *c = lcrs[i];
+			fprintf(fp, "%d %d %d // c0/CP rl org_c0_idx\n", c->flg_org, c->rl, c->org_idx);
+			for( int j=0; j<CCNT; j++ ){
+				fprintf(fp, "%f %f\n", c->CPx[j], c->CPy[j]);
+			}
+		}
+		for( int i=1; i<rcrcnt; i++ ){
+			crease *c = rcrs[i];
+			fprintf(fp, "%d %d %d // c0/CP rl org_c0_idx\n", c->flg_org, c->rl, c->org_idx);
+			for( int j=0; j<CCNT; j++ ){
+				fprintf(fp, "%f %f\n", c->CPx[j], c->CPy[j]);
+			}
+		}
+		fclose(fp); fp=NULL;
+	}
+	return ret;
+}
+
+int papermodel::loadBsplineCP( char *fname )
+{
+	int cnt=1, ret=0;
+	char buf[1024];
+	FILE *fp=fopen(fname, "r");
+	if( fp ){
+		//fprintf( fp, "%d %d// lcrcnt rcrcnt\n", lcrcnt-1, rcrcnt-1 );
+		fgets(buf,1024,fp); sscanf( buf, "%d %d", &lcrcnt, &rcrcnt );
+		crcnt = lcrcnt+rcrcnt+cnt; lcrcnt+=cnt; rcrcnt+=cnt;
+		for( int i=1; i<lcrcnt; i++ ){
+			crease *c = lcrs[i] = &(crs[cnt]);
+			//fprintf(fp, "%d %d %d // c0/CP rl org_c0_idx\n", c->flg_org, c->rl, c->org_idx);
+			fgets(buf,1024,fp); sscanf( buf, "%d %d %d", &(c->flg_org), &(c->rl), &(c->org_idx) );
+			c->org_cnt = fcurve[c->org_idx].cvcnt;
+			c->org_x = fcurve[c->org_idx].cvx;
+			c->org_y = fcurve[c->org_idx].cvy;
+			for( int j=0; j<CCNT; j++ ){
+				//fprintf(fp, "%f %f\n", c->CPx[j], c->CPy[j]);
+				fgets(buf,1024,fp); sscanf( buf, "%lf %lf", &(c->CPx[j]), &(c->CPy[j]) );
+			}
+			cnt++;
+		}
+		for( int i=1; i<rcrcnt; i++ ){
+			crease *c = rcrs[i] = &(crs[cnt]);
+			//fprintf(fp, "%d %d %d // c0/CP rl org_c0_idx\n", c->flg_org, c->rl, c->org_idx);
+			fgets(buf,1024,fp); sscanf( buf, "%d %d %d", &(c->flg_org), &(c->rl), &(c->org_idx) );
+			c->org_cnt = fcurve[c->org_idx].cvcnt;
+			c->org_x = fcurve[c->org_idx].cvx;
+			c->org_y = fcurve[c->org_idx].cvy;
+			for( int j=0; j<CCNT; j++ ){
+				//fprintf(fp, "%f %f\n", c->CPx[j], c->CPy[j]);
+				fgets(buf,1024,fp); sscanf( buf, "%lf %lf", &(c->CPx[j]), &(c->CPy[j]) );
+			}
+			cnt++;
+		}
+		fclose(fp); fp=NULL;
 	}
 	return ret;
 }

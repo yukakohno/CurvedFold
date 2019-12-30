@@ -130,13 +130,31 @@ public:
 	Fl_Check_Button *cb_trimcurve;
 	Fl_Check_Button *cb_foldcurve;
 	Fl_Button *btn_proccurve;
+	Fl_Button *btn_resetcurve;
 
+	Fl_Value_Slider *vs_cidx;
+
+	// OPT MODE
+	//Fl_Value_Slider *vs_otype;
+	Fl_Group *grp_opt;
+	Fl_Round_Button *rb_opt[10];
+
+	Fl_Check_Button *cb_rectifyC;
+	Fl_Button *btn_rectifyC;
+	Fl_Button *btn_resetC;
+	Fl_Button *btn_fixC;
 
 private:
 	static void cb_cb_addcurve( Fl_Widget *wgt, void *idx);
 	static void cb_btn_proccurve( Fl_Widget *wgt, void *idx);
 	static void cb_btn_resetcurve( Fl_Widget *wgt, void *idx);
 	void trimfold();
+	static void cb_vs_cidx(Fl_Widget *wgt, void *idx);
+	static void cb_vs_otype(Fl_Widget *wgt, void *idx);
+	//static void cb_cb_rectifyC(Fl_Widget *wgt, void *idx);
+	static void cb_btn_rectifyC(Fl_Widget *wgt, void *idx);
+	static void cb_btn_resetC(Fl_Widget *wgt, void *idx);
+	static void cb_btn_fixC(Fl_Widget *wgt, void *idx);
 
 	// ------------------------- FOLD_MOTION -------------------------------------------
 public:
