@@ -76,7 +76,7 @@ void ControlPanel::cb_vs_ppos(Fl_Widget *wgt, void *idx)
 {
 	ControlPanel *This = (ControlPanel *)idx;
 	int pos = This->vs_ppos->value();
-	int prm = This->value_grpparam();	//P_CV2D, P_CV3D, P_TRSN, P_FLDA
+	int prm = This->value_grpparam();	//P_CV2D, P_CV3D, P_TRSN, P_FLDA, P_RULL, P_RULR
 	if( prm == -1 ){
 		return;
 	}
@@ -102,6 +102,16 @@ void ControlPanel::cb_vs_ppos(Fl_Widget *wgt, void *idx)
 			This->vs_pval->step( This->astep );
 			This->vs_pval->value( (int)(This->ppm.crs[0].Pa[pos]*180.0/M_PI) );
 			break;
+		case P_RULL: // Rl
+			This->vs_pval->bounds( 0, 180 );
+			This->vs_pval->step( 1 );
+			This->vs_pval->value( This->ppm.crs[0].Pbl[pos]*180/M_PI );
+			break;
+		case P_RULR: // Rr
+			This->vs_pval->bounds( 0, 180 );
+			This->vs_pval->step( 1 );
+			This->vs_pval->value( This->ppm.crs[0].Pbr[pos]*180/M_PI );
+			break;
 	}
 
 	This->gwin->pprm = This->gwin_cp->pprm = prm;
@@ -115,7 +125,7 @@ void ControlPanel::cb_vs_pval(Fl_Widget *wgt, void *idx)
 	ControlPanel *This = (ControlPanel *)idx;
 	crease *c = &(This->ppm.crs[0]);
 	int pos = This->vs_ppos->value();
-	int prm = This->value_grpparam();	//P_CV2D, P_CV3D, P_TRSN, P_FLDA
+	int prm = This->value_grpparam();	//P_CV2D, P_CV3D, P_TRSN, P_FLDA, P_RULL, P_RULR
 	This->ppm.set_postproc_type( PPTYPE_PRICURVE );
 	switch( prm ){
 		case P_CV2D: // curv2d
@@ -134,14 +144,58 @@ void ControlPanel::cb_vs_pval(Fl_Widget *wgt, void *idx)
 			c->Pa[pos] = This->vs_pval->value()*M_PI/180.0;
 			This->refresh(1);
 			break;
+		case P_RULL: // ruling left
+			c->Pbl[pos] = This->vs_pval->value()*M_PI/180.0;
+			c->interpolate_spline_RulAngle( c->Pbl, c->Pcnt, c->betal, c->Xcnt, c->cotbl, c->cosbl, c->sinbl );
+			c->calcRuling3D();
+			This->gwin->redraw();
+			This->gwin_cp->redraw();
+			break;
+		case P_RULR: // ruling right
+			c->Pbr[pos] = This->vs_pval->value()*M_PI/180.0;
+			c->interpolate_spline_RulAngle( c->Pbr, c->Pcnt, c->betar, c->Xcnt, c->cotbr, c->cosbr, c->sinbr );
+			c->calcRuling3D();
+			This->gwin->redraw();
+			This->gwin_cp->redraw();
+			break;
 	}
 	This->ppm.set_postproc_type( PPTYPE_UNDEF );
+}
+
+void ControlPanel::cb_btn_R2TA(Fl_Widget *wgt, void *idx)
+{
+	ControlPanel *This = (ControlPanel *)idx;
+	int mode = This->value_grpfix();	// CMODE_A, CMODE_B, CMODE_C, CMODE_R
+	int prm = This->value_grpparam();	// P_CV2D, P_CV3D, P_TRSN, P_FLDA, P_RULL, P_RULR
+	if( mode == CMODE_R && ( prm == P_RULL || prm == P_RULR ))
+	{
+		This->ppm.set_postproc_type( PPTYPE_PRICURVE );
+		This->refresh(0);
+		This->ppm.set_postproc_type( PPTYPE_UNDEF );
+	}
+}
+
+void ControlPanel::cb_btn_RPar(Fl_Widget *wgt, void *idx)
+{
+	ControlPanel *This = (ControlPanel *)idx;
+	crease *c = &(This->ppm.crs[0]);
+	int mode = This->value_grpfix();	// CMODE_A, CMODE_B, CMODE_C, CMODE_R
+	if( mode == CMODE_R ){
+		c->calcRuling2DH( This->ppm.rp.flg_rectifyR, This->ppm.rp.rectifyR_kvthres );
+		c->calcRuling3D();
+		c->setP_Bl(-1);
+		c->setP_Br(-1);
+		//This->refresh(1);
+		This->gwin->redraw();
+		This->gwin_cp->redraw();
+		This->gwin_gr->redraw();
+	}
 }
 
 void ControlPanel::cb_btn_apply(Fl_Widget *wgt, void *idx)
 {
 	ControlPanel *This = (ControlPanel *)idx;
 	crease *c = &(This->ppm.crs[0]);
-	int mode = This->value_grpfix();	// CMODE_A, CMODE_B, CMODE_C
+	int mode = This->value_grpfix();	// CMODE_A, CMODE_B, CMODE_C, CMODE_R
 
 }

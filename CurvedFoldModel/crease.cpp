@@ -38,6 +38,8 @@ void crease::init()
 	memset( Py, 0, sizeof(double)*MAX_CPCNT );
 	memset( Pz, 0, sizeof(double)*MAX_CPCNT );
 	memset( Pa, 0, sizeof(double)*MAX_CPCNT );
+	memset( Pbl, 0, sizeof(double)*MAX_CPCNT );
+	memset( Pbr, 0, sizeof(double)*MAX_CPCNT );
 
 	unit_m44( m3 );
 	unit_m33( m2 );
@@ -132,6 +134,8 @@ int crease::copy( crease *c )
 	memcpy(  Py,  c->Py, sizeof(double)*MAX_CPCNT );
 	memcpy(  Pz,  c->Pz, sizeof(double)*MAX_CPCNT );
 	memcpy(  Pa,  c->Pa, sizeof(double)*MAX_CPCNT );
+	memcpy( Pbl, c->Pbl, sizeof(double)*MAX_CPCNT );
+	memcpy( Pbr, c->Pbr, sizeof(double)*MAX_CPCNT );
 
 	memcpy( m3, c->m3, sizeof(double)*16 );
 	memcpy( m2, c->m2, sizeof(double)*9 );

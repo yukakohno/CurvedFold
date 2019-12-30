@@ -157,8 +157,18 @@ public:
 	double stx1[2][MAX_STP_CNT], sty1[2][MAX_STP_CNT], stz1[2][MAX_STP_CNT];
 	double stxm[2][MAX_STP_CNT], stym[2][MAX_STP_CNT], stzm[2][MAX_STP_CNT];
 
+	// length at ruling end
+	int re_sidx, re_eidx;
+	double Pre[MAX_CPCNT];
+	double re_clen[MAX_SPCNT];
+	int setP_re( int Pidx ); // crlen_rulend[] -> Pre[]
+	//int interpolate_spline_RulEnd( double *_P, int _Pcnt, double *_X, int _Xcnt );
+
 	int getMat_stitch( int divnum, int maxpcnt, double *mObj );
 	int getMat_stitch1( int divnum, int maxpcnt, double *mObj );
+	int getParam_stitch( int divnum, int rulingOnly );
+	int getParam_calcRE();
+	int getParam_optimize( int divnum );
 };
 
 #endif

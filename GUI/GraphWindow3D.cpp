@@ -40,6 +40,7 @@ void GraphWindow3D::init()
 {
 	n_plane = 20;
 	f_plane = 4000;
+	projection = 0;
 	sts_alt = sts_sft = sts_ctrl = 0;
 	push_button = 0;
 	push_x = push_y = 0;

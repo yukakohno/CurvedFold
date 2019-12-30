@@ -58,6 +58,8 @@ void ControlPanel::cb_btn_load(Fl_Widget *wgt, void *idx)
 					This->ppm.crs[0].setP_k(-1); // kv -> Px[_Pcnt]
 					This->ppm.crs[0].setP_t(-1); // tr -> Py[_Pcnt]
 					This->ppm.crs[0].setP_k2(-1); // kv2d -> Px2d[_Pcnt]
+					This->ppm.crs[0].setP_Bl(-1);
+					This->ppm.crs[0].setP_Br(-1);
 					This->rb_fix[CMODE_C]->setonly();
 					if( This->rb_param[P_FLDA]->value() ){
 						This->rb_param[P_CV3D]->setonly();
@@ -83,6 +85,8 @@ void ControlPanel::cb_btn_load(Fl_Widget *wgt, void *idx)
 					This->ppm.crs[0].setP_t(-1); // tr -> Py[_Pcnt]
 					This->ppm.crs[0].setA( 45.0/180.0*M_PI ); // alpha
 					This->ppm.crs[0].setP_a(-1); // alpha -> Pa[_Pcnt]
+					This->ppm.crs[0].setP_Bl(-1);
+					This->ppm.crs[0].setP_Br(-1);
 					This->rb_fix[CMODE_A]->setonly();
 					if( This->rb_param[P_CV2D]->value() ){ // kv2d
 						This->rb_param[P_CV3D]->setonly(); // kv

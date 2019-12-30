@@ -70,6 +70,8 @@ void GraphWindowParam::draw()
 			gcp[1] = c->Px;
 			gcp[2] = c->Py;
 			gcp[4] = c->Pa;
+			gcp[5] = c->Pbl;
+			gcp[6] = c->Pbr;
 		} else if( cidx<0 ){
 			c = ppm->lcrs[-cidx];
 		} else if( 0<cidx ){
@@ -116,7 +118,7 @@ void GraphWindowParam::draw()
 	{
 		crease *c0 = &(ppm->crs[0]);
 		int sx=gsx[7];
-		double o=go[7], c=-gh[7]/0.02, x;
+		double o=go[7], c=-gh[7]/0.01, x;
 		double dxP = (double)gw[7]/(double)(Pcnt-1);
 		double dxX = (double)gw[7]/(double)(Xcnt-1);
 		for( int k=c0->FM_fidx_min; k<=c0->FM_fidx_max; k++ )

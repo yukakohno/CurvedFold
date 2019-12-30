@@ -216,3 +216,187 @@ int crease::calcDA()
 end:
 	return ret;
 }
+
+#define MAX_ALPHA_LOOP 100
+#define DIF_ALPHA 2.0/180.0*M_PI
+#define MIN_ALPHA -90.0/180.0*M_PI
+#define MAX_ALPHA 90.0/180.0*M_PI
+//#define MIN_ALPHA -85.0/180.0*M_PI
+//#define MAX_ALPHA 85.0/180.0*M_PI
+
+// crease->tr,alpha算出
+int crease::calcRul2TA( int besteffort, int mini, int maxi )
+{
+	int i, m=Xcnt/2, flg, ret=0;
+	double datana[MAX_SPCNT], ttana[MAX_SPCNT], alpha_[MAX_SPCNT], da_[MAX_SPCNT], tr_[MAX_SPCNT];
+	double tan_a, minalpha, maxalpha;
+
+	if( mini < 0 ){ mini = 0; }
+	if( maxi < 0 ){ maxi = Xcnt; }
+	m = (maxi+mini)/2;
+
+	memset( datana, 0, sizeof(double)*MAX_SPCNT ); 
+	memset( ttana, 0, sizeof(double)*MAX_SPCNT );
+	for( i=0; i<Xcnt; i++ ){
+		if( cotbl[i]==0.0 || cotbr[i]==0.0 ){
+			datana[i] = 0.0;
+			ttana[i] = 0.0;
+		} else {
+			datana[i] = 0.5 * k2d[i] * (cotbl[i]-cotbr[i]);
+			ttana[i] = 0.5 * k2d[i] * (cotbl[i]+cotbr[i]);
+		}
+		alpha_[i] = da_[i] = tr_[i] = 0.0;
+	}
+
+	if( alpha[m] > 0){
+		minalpha = MIN_ALPHA;
+		maxalpha = MAX_ALPHA;
+	} else {
+		minalpha = -MAX_ALPHA;
+		maxalpha = -MIN_ALPHA;
+	}
+
+	flg=0;
+	for( int c=0; c<MAX_ALPHA_LOOP; c++ ){
+		//printf( "c = %d\n", c );
+		switch( flg ){
+			case 0:
+				alpha_[m] = alpha[m];	// 今の値をそのまま使う（1回目）
+				//printf( " alpha_[m=%d] = %f\n", m, alpha_[m] );
+				break;
+			case -1:
+				alpha_[m] -= DIF_ALPHA;
+				if( alpha_[m]<minalpha ){
+					printf( " alpha_[m=%d] = %f < minalpha()\n", m, alpha_[m], minalpha );
+				} else {
+					//printf( " alpha_[m=%d] = %f\n", m, alpha_[m] );
+					flg = 0;
+				}
+				break;
+			case -2:
+				alpha_[m] += DIF_ALPHA;
+				if( alpha_[m]>maxalpha ){
+					printf( " alpha_[m=%d] = %f > maxalpha()\n", m, alpha_[m], maxalpha );
+				} else {
+					//printf( " alpha_[m=%d] = %f\n", m, alpha_[m] );
+					flg = 0;
+				}
+				break;
+		}
+		if( flg!=0 ){
+			ret = 1;
+			break; // for(c)
+		}
+		tan_a = tan(alpha_[m]);
+		da_[m] = datana[m]*tan_a;
+		tr_[m] = ttana[m]*tan_a;
+
+		for( i=m-1; i>=mini; i-- ){
+			alpha_[i] = alpha_[i+1] - da_[i+1]*XspcOrg;
+			if( alpha_[i] >= maxalpha ){
+				printf( " alpha_[%d] = %f >= maxalpha(%f)\n", i, alpha_[i], maxalpha );
+				flg = -1;	break; // for(i)
+			} else if( alpha_[i] < minalpha ){
+				printf( " alpha_[%d] = %f < minalpha(%f)\n", i, alpha_[i], minalpha );
+				flg = -2;	break; // for(i)
+			} else {
+				tan_a = tan(alpha_[i]);
+				da_[i] = datana[i]*tan_a;
+				tr_[i] = ttana[i]*tan_a;
+			}
+		}
+		if( flg<0 ){
+			if( besteffort ){
+				// とりあえず同じ値で埋める
+				int ii = i+1;
+				for( ; i>=mini; i-- ){
+					alpha_[i] = alpha_[ii];
+					da_[i] = 0;
+					tr_[i] = tr_[ii];
+				}
+				ret = flg;
+				flg = 0;
+			} else {
+				continue; // for(c) alpha[m]修正してリトライ
+			}
+		}
+		for( i=m+1; i<maxi; i++ ){
+			alpha_[i] = alpha_[i-1] + da_[i-1]*XspcOrg;
+			if( alpha_[i] >= maxalpha ){
+				printf( " alpha_[%d] = %f >= maxalpha(%f)\n", i, alpha_[i], maxalpha );
+				flg = -1;	break; // for(i)
+			} else if( alpha_[i] < minalpha ){
+				printf( " alpha_[%d] = %f < minalpha(%f)\n", i, alpha_[i], minalpha );
+				flg = -2;	break; // for(i)
+			} else {
+				tan_a = tan(alpha_[i]);
+				da_[i] = datana[i]*tan_a;
+				tr_[i] = ttana[i]*tan_a;
+			}
+		}
+		if( flg<0 ){
+			if( besteffort ){
+				// とりあえず同じ値で埋める
+				int ii = i-1;
+				for( ; i<mini; i++ ){
+					alpha_[i] = alpha_[ii];
+					da_[i] = 0;
+					tr_[i] = tr_[ii];
+				}
+				ret = flg;
+				flg = 0;
+			} else {
+				continue; // for(c) alpha[m]修正してリトライ
+			}
+		}
+		if( flg==0 ){
+			// とりあえず同じ値で埋める
+			for( i=mini; i>=0; i-- ){
+				alpha_[i] = alpha_[mini];
+				da_[i] = 0;
+				tr_[i] = tr_[mini];
+			}
+			for( i=maxi; i<Xcnt; i++ ){
+				alpha_[i] = alpha_[maxi-1];
+				da_[i] = 0;
+				tr_[i] = tr_[maxi-1];
+			}
+			break; // for(c) 
+		}
+	}
+
+#if 0
+	FILE *fp = fopen("output/Rul2TA0.csv","w");
+	if(fp){
+		fprintf(fp, "cotbl,cotbr,cotbl-cotbr,cotbl+cotbr,k2d,datana,ttana,alpha,tana,da,tr,alpha1,da1,tr1\n");
+		for( int i=0; i<Xcnt; i++ ){
+			fprintf(fp, "%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
+				cotbl[i], cotbr[i], cotbl[i]-cotbr[i], cotbl[i]+cotbr[i], k2d[i],
+				datana[i], ttana[i], alpha[i], tan(alpha[i]), da[i], tr[i],
+				alpha_[i], da_[i], tr_[i]);
+		}
+		fclose(fp); fp=NULL;
+	}
+#endif
+	if( flg==0 ){
+		memcpy( alpha, alpha_, sizeof(double)*MAX_SPCNT );
+		memcpy( da, da_, sizeof(double)*MAX_SPCNT );
+		memcpy( tr, tr_, sizeof(double)*MAX_SPCNT );
+	} else {
+		printf("crease::calcRul2TA(): using original parameters\n");
+	}
+#if 0
+	FILE *fp = fopen("output/Rul2TA.csv","w");
+	if(fp){
+		fprintf(fp, "cotbl,cotbr,cotbl-cotbr,cotbl+cotbr,k2d,datana,ttana,alpha,tana,da,tr\n");
+		for( int i=0; i<Xcnt; i++ ){
+			fprintf(fp, "%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
+				cotbl[i], cotbr[i], cotbl[i]-cotbr[i], cotbl[i]+cotbr[i], k2d[i],
+				datana[i], ttana[i], alpha[i], tan(alpha[i]), da[i], tr[i]);
+		}
+		fclose(fp); fp=NULL;
+	}
+#endif
+	return ret;
+}
+

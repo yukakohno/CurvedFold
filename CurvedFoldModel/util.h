@@ -38,6 +38,8 @@ extern int inv_m33(float *m);
 extern int inv_m33(double *m);
 extern int m_inverse( double *m, int l );
 
+extern int transpose_m44(double *m);
+
 // dst=0 : q2[4] = q1[4] * q2[4]
 // dst=1 : q1[4] = q1[4] * q2[4]
 extern void mult_quat(float *q1, float *q2, int dst = 0);

@@ -26,7 +26,8 @@ void ControlPanel::cb_vs_fmot( Fl_Widget *wgt, void *idx)
 	This->rb_fix[CMODE_B]->setonly();
 	This->rb_param[P_FLDA]->setonly();
 
-	if( 0<=f && f<fcnt ){
+	//if( 0<=f && f<fcnt ){
+	if( 0<=f ){
 		for( i=0; i<c->Xcnt; i++ ){
 			c->k2d[i] = This->k2d_org[i] - This->k2d_dif0[i]*f;
 			c->tr[i] = This->tr_org[i] - This->tr_dif0[i]*f;
@@ -76,6 +77,18 @@ void ControlPanel::cb_vs_ppos2(Fl_Widget *wgt, void *idx)
 			This->vs_pval2->step( This->tstep );
 			This->vs_pval2->value( c->FM_Pt[frm][pos] );
 			break;
+		case P_RULL:
+		case P_RULL1:
+			This->vs_pval2->bounds( 0, 180 );
+			This->vs_pval2->step( 1 );
+			This->vs_pval2->value( c->Pbl[pos]*180/M_PI );
+			break;
+		case P_RULR:
+		case P_RULR1:
+			This->vs_pval2->bounds( 0, 180 );
+			This->vs_pval2->step( 1 );
+			This->vs_pval2->value( c->Pbr[pos]*180/M_PI );
+			break;
 	}
 	This->gwin->pprm = This->gwin_cp->pprm = prm;
 	This->gwin->ppos = This->gwin_cp->ppos = pos;
@@ -112,6 +125,49 @@ void ControlPanel::cb_vs_pval2(Fl_Widget *wgt, void *idx)
 			This->refresh( 0 );
 			This->ppm.set_postproc_type( PPTYPE_UNDEF );
 			break;
+		case P_RULL:
+		case P_RULL1:
+			c->Pbl[pos] = val*M_PI/180.0;
+			c->interpolate_spline_RulAngle( c->Pbl, c->Pcnt, c->betal, c->Xcnt, c->cotbl, c->cosbl, c->sinbl );
+			c->calcRuling3D();
+			This->rb_param[P_RULL]->setonly();
+			This->gwin->redraw();
+			This->gwin_cp->redraw();
+			break;
+		case P_RULR:
+		case P_RULR1:
+			c->Pbr[pos] = val*M_PI/180.0;
+			c->interpolate_spline_RulAngle( c->Pbr, c->Pcnt, c->betar, c->Xcnt, c->cotbr, c->cosbr, c->sinbr );
+			c->calcRuling3D();
+
+			c->init_rlflg();
+			c->init_rrflg();
+			c->calcRLenP( ppm->psx, ppm->psy, ppm->pex, ppm->pey);
+
+			//This->rb_param[P_RULR]->setonly();
+			This->gwin->redraw();
+			This->gwin_cp->redraw();
+			This->gwin_gr->redraw();
+			break;
+	}
+}
+
+void ControlPanel::cb_btn_R2TA2(Fl_Widget *wgt, void *idx)
+{
+	ControlPanel *This = (ControlPanel *)idx;
+	int prm = This->value_grpparam();	// P_CV2D, P_CV3D, P_TRSN, P_FLDA, P_RULL, P_RULR, ...
+	if( prm == P_RULL1 || prm == P_RULR1 )
+	{
+		papermodel *ppm = &(This->ppm);
+		crease *c = &(ppm->crs[0]);
+		c->calcR_TA( 0/*flg_interpolate*/, &ppm->rp, ppm->re_sidx, ppm->re_eidx, 2*M_PI );
+		ppm->set_postproc_type( PPTYPE_PRICURVE );
+		ppm->postproc();
+		ppm->set_postproc_type( PPTYPE_UNDEF );
+
+		This->gwin->redraw();
+		This->gwin_cp->redraw();
+		This->gwin_gr->redraw();
 	}
 }
 

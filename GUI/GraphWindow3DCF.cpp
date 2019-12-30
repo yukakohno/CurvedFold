@@ -159,8 +159,6 @@ void GraphWindow3DCF::init()
 
 	ppm = NULL;
 
-	projection=0;
-
 	push_button2 = 0;
 	push_x2 = push_y2 = 0;
 	initObject();
@@ -292,13 +290,17 @@ void GraphWindow3DCF::draw3DCurveFold()
 	// control points
 	//
 	if( disp_CP && ppos>-1 && pprm>-1 ){
-		switch(pprm){	// P_CV2D, P_CV3D, P_TRSN, P_FLDA
+		switch(pprm){	// P_CV2D, P_CV3D, P_TRSN, P_FLDA, P_RULL, P_RULR
 			case P_CV2D:	glColor3f( 1.0, 0.0, 1.0 );	break;
 			case P_CV3D:	glColor3f( 0.0, 1.0, 0.0 );	break;
 			case P_TRSN:	glColor3f( 0.0, 0.0, 1.0 );	break;
 			case P_FLDA:	glColor3f( 1.0, 0.0, 0.0 );	break;
+			case P_RULL:	glColor3f( 0.32, 0.12, 0.46 );	break; // Dark Violet: 522076
+			case P_RULR:	glColor3f( 0.9, 0.0, 0.4 );	break; // Raspberry: E30B5D
 			case P_TRSN1:	glColor3f( 0.0, 0.0, 1.0 );	break;
 			case P_FLDA1:	glColor3f( 1.0, 0.0, 0.0 );	break;
+			case P_RULL1:	glColor3f( 0.32, 0.12, 0.46 );	break; // Dark Violet: 522076
+			case P_RULR1:	glColor3f( 0.9, 0.0, 0.4 );	break; // Raspberry: E30B5D
 		}
 		crease *c = &(ppm->crs[0]);
 		int ii = (int) ( (double)ppos/(double)(Pcnt-1) * (double)(Xcnt-1) ) ;
@@ -508,7 +510,7 @@ void GraphWindow3DCF::draw3DCurveFold()
 			glPushMatrix();
 			glMultMatrixd( &(ppm->plmat[i*16]) );
 			glBegin(GL_POLYGON);
-			glNormal3f( 0.0, 0.0, 1.0 );
+			glNormal3f( 0.0, 0.0, -1.0 );
 			for( j=0; j<ppm->plvcnt[i]; j++ ){
 				//glTexCoord2d( (ppm->plx_cp[i*4+j]-ppm->psx)/(double)PPWIDTH, (ppm->ply_cp[i*4+j]-ppm->psy)/(double)PPHEIGHT );
 				double x0 = ppm->plx_cp[i*4+j]-ppm->psx;

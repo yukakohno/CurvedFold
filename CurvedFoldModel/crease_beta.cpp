@@ -216,6 +216,49 @@ end:
 	return ret;
 }
 
+int crease::calcRuling2DH( int flg_rectifyR, double rectifyR_kvthres )
+{
+	int i, ret=0;
+	double rx,ry, dx,dy,len,ip,op;
+	//rx=1.0;	ry=0.0;
+	rx=cos(M_PI*0.25);	ry=-sin(M_PI*0.25);
+	for( i=CEMGN; i<Xcnt-CEMGN; i++ ){
+		if( flg_rectifyR && fabs(k2d[i]) < rectifyR_kvthres ){
+			cotbl[i] = cotbr[i] = 0.0;
+			cosbl[i] = cosbr[i] = 0.0;
+			sinbl[i] = sinbr[i] = 1.0;
+			betal[i] = betar[i] = M_PI/2.0;
+		} else {
+			dx = Xx2d[i+1]-Xx2d[i];
+			dy = Xy2d[i+1]-Xy2d[i];
+			len = sqrt(dx*dx+dy*dy); dx/=len; dy/=len;
+			ip = dx*rx+dy*ry;
+			op = dx*ry-dy*rx;
+			if( op<0 ){ 
+				cosbl[i] = -ip;
+				cosbr[i] = ip;
+			} else {
+				cosbl[i] = ip;
+				cosbr[i] = -ip;
+			}
+			sinbl[i] = sinbr[i] = sqrt(1.0-ip*ip);
+			cotbl[i] = cosbl[i]/sinbl[i];
+			cotbr[i] = cosbr[i]/sinbr[i];
+
+			betal[i] = atan(1.0/cotbl[i]);
+			if( betal[i] < 0.0 ){
+				betal[i] += M_PI;
+			}
+			betar[i] = atan(1.0/cotbr[i]);
+			if( betar[i] < 0.0 ){
+				betar[i] += M_PI;
+			}
+		}
+	}
+end:
+	return ret;
+}
+
 int crease::calcRuling3D()
 {
 	int i, ret=0;

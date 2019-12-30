@@ -343,8 +343,12 @@ void GraphWindowCP::draw()
 			case P_CV3D:	fl_color(0, 255, 0);	break;
 			case P_TRSN:	fl_color(0, 0, 255);	break;
 			case P_FLDA:	fl_color(255, 0, 0);	break;
+			case P_RULL:	fl_color(82, 32, 118);	break;	// Dark Violet: 522076
+			case P_RULR:	fl_color(230, 0, 100);	break;	// Raspberry: E30B5D
 			case P_TRSN1:	fl_color(0, 0, 255);	break;
 			case P_FLDA1:	fl_color(255, 0, 0);	break;
+			case P_RULL1:	fl_color(82, 32, 118);	break;	// Dark Violet: 522076
+			case P_RULR1:	fl_color(230, 0, 100);	break;	// Raspberry: E30B5D
 		}
 		int ii = (int) ( (double)ppos/(double)(Pcnt-1) * (double)(Xcnt-1) ) ;
 		fl_line_style( FL_SOLID, 5 );

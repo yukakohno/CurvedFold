@@ -401,6 +401,18 @@ int m_inverse( double *m, int l )
 	return( 0 );
 }
 
+int transpose_m44(double *m)
+{
+	double m1[16];
+	for( int j=0; j<4; j++ ){
+		for( int i=0; i<4; i++ ){
+			m1[j+i*4] = m[i+j*4];
+		}
+	}
+	memcpy( m, m1, sizeof(double)*16 );
+	return( 0 );
+}
+
 int mat_quat(float *mat, float *quat, int matsize)
 {
 	float m11,m12,m13, m21,m22,m23, m31,m32,m33, qx,qy,qz,qw;

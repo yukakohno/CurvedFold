@@ -424,7 +424,8 @@ int crease::calcRLenHoseiR( int Xcnt, double *k2d, double rectifyR_kvthres, doub
 int crease::setEnds( int psx, int psy, int pex, int pey, int dccnt, void *_dcurve )
 {
 	crease *c = this;
-	curvedraw *dcurve = (curvedraw *)_dcurve;
+	curvedraw *dcurve = NULL;
+	if( _dcurve ){ dcurve = (curvedraw *)_dcurve; }
 	// ‰Šú’l
 	//c->Xsidx = c->Xsidx > _Xsidx ? c->Xsidx : _Xsidx; // “à‘¤‚ð‚Æ‚é
 	//c->Xeidx = c->Xeidx < _Xeidx ? c->Xeidx : _Xeidx; // “à‘¤‚ð‚Æ‚é

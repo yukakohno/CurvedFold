@@ -70,6 +70,7 @@ public:
 	double Px2d[MAX_CPCNT], Py2d[MAX_CPCNT]; // Px2d <- k2d
 	double Px[MAX_CPCNT], Py[MAX_CPCNT], Pz[MAX_CPCNT]; // Px <- kv, Py <- tr
 	double Pa[MAX_CPCNT];	// alpha
+	double Pbl[MAX_CPCNT], Pbr[MAX_CPCNT];
 
 	// foldmotion
 	double Px2d_org[MAX_CPCNT], Px_org[MAX_CPCNT], Py_org[MAX_CPCNT], Pa_org[MAX_CPCNT], m3_org[16];
@@ -162,15 +163,21 @@ public:
 	int calcXA_CP( int flg_interpolate, rectify_params *rp );
 	int calcCPA_X( int flg_interpolate, rectify_params *rp );
 	int calcCPX_A( int flg_interpolate, rectify_params *rp );
+	int calcR_TA( int flg_interpolate, rectify_params *rp, int mini, int maxi, double ma );
+	int calcR_TA2( rectify_params *rp, int mini, int maxi ); // calcR_TA( flg_interpolate=0 ) と同じなので不使用
 
 	// ------------------------- interpolate -------------------------------------------
 
 	static int interpolate_spline( double *P, int Pcnt, double *X, int Xcnt ); // スプライン補間
+	static int interpolate_spline_RulAngle( double *_P, int _Pcnt,
+		double *_B, int _Xcnt, double *cotB, double *cosB, double *sinB );
 
 	int setP_k( int Pidx ); // kv -> Px[_Pcnt]
 	int setP_t( int Pidx ); // tr -> Py[_Pcnt]
 	int setP_a( int Pidx );  // alpha -> Pa[_Pcnt]
 	int setP_k2( int Pidx ); // kt -> Px2d[_Pcnt]
+	int setP_Bl( int Pidx ); // betal -> Pbl[_Pcnt]
+	int setP_Br( int Pidx ); // betar -> Pbr[_Pcnt]
 
 	// P*->X* スプライン補間（sに関して等間隔）, mode=0:CP&3D 1:CP 2:3D
 	// used only in file open
@@ -210,6 +217,8 @@ public:
 	int calcAK2D_K(); // alpha, k2d -> kv
 	int calcDA(); // alpha, X -> da
 
+	int calcRul2TA( int besteffort, int mini, int maxi ); // papermodel->tr,alpha
+
 	// ------------------------- beta -------------------------------------------
 
 	int calcRuling( int flg_rectifyR, double rectifyR_kvthres ); // ruling算出
@@ -231,6 +240,8 @@ public:
 		double *sina, double *cosa, double *sinbl, double *sinbr, double *cosbl, double *cosbr,
 		double *rlx, double *rly, double *rlz, double *rrx, double *rry, double *rrz,
 		double *rlx_cp, double *rly_cp, double *rrx_cp, double *rry_cp, int rl );
+
+	int calcRuling2DH( int flg_rectifyR, double rectifyR_kvthres ); // ruling horizontal
 
 	// ------------------------- length -------------------------------------------
 

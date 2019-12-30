@@ -319,6 +319,7 @@ int crease::dumpAll( char *fname )
 			case ALPHA: fprintf( fp, "alpha,"); break;
 			case ALPHA0: fprintf( fp, "cosa,sina,tana,da,"); break;
 			case DA: fprintf( fp, "da,"); break;
+			case PB: fprintf( fp, "Pbl,Pbr,"); break;
 			case BETA: fprintf( fp, "betal, betar,"); break;
 			case BETA0: fprintf( fp, "cotbl,cotbr,cosbl,sinbl,cosbr,sinbr,"); break;
 			case R3: fprintf( fp, "rlx,rly,rlz,rrx,rry,rrz,"); break;
@@ -370,6 +371,13 @@ int crease::dumpAll( char *fname )
 				case ALPHA: fprintf( fp, "%f,", alpha[j] ); break;
 				case ALPHA0: fprintf( fp, "%f,%f,%f,%f,", cosa[j], sina[j], tana[j], da[j] ); break;
 				case DA: fprintf( fp, "%f,", da[j] ); break;
+				case PB:
+					if( j<Pcnt ){
+						fprintf( fp, "%f,%f,", Pbl[j], Pbr[j] );
+					} else {
+						fprintf( fp, ",,");
+					}
+					break;
 				case BETA: fprintf( fp, "%f,%f,", betal[j], betar[j] ); break;
 				case BETA0: fprintf( fp, "%f,%f,%f,%f,%f,%f,", cotbl[j], cotbr[j], cosbl[j], sinbl[j], cosbr[j], sinbr[j] ); break;
 				case R3: fprintf( fp, "%f,%f,%f,%f,%f,%f,", rlx[j], rly[j], rlz[j], rrx[j], rry[j], rrz[j] ); break;
@@ -834,6 +842,8 @@ int crease::checkCP3D( char *fname )
 	setP_t(-1); // tr -> Py[_Pcnt]
 	setP_a(-1);  // alpha -> Pa[_Pcnt]
 	setP_k2(-1); // kt -> Px2d[_Pcnt]
+	setP_Bl(-1);
+	setP_Br(-1);
 
 	if(fp){
 		fprintf( fp, "\ni,dffPx2d,dffPy2d,dffPx,dffPy,dffPz,dffPa\n" );

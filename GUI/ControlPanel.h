@@ -138,6 +138,8 @@ public:
 	Fl_Round_Button *rb_param[N_P_IDX];
 	Fl_Value_Slider *vs_ppos;
 	Fl_Value_Slider *vs_pval;
+	Fl_Button *btn_R2TA;
+	Fl_Button *btn_RPar;
 
 	Fl_Value_Slider *vs_fmot;
 	Fl_Button *btn_apply;
@@ -151,6 +153,8 @@ private:
 	static void cb_rb_param2(Fl_Widget *wgt, void* idx);
 	static void cb_vs_ppos(Fl_Widget *wgt, void *idx);
 	static void cb_vs_pval(Fl_Widget *wgt, void *idx);
+	static void cb_btn_R2TA(Fl_Widget *wgt, void *idx);
+	static void cb_btn_RPar(Fl_Widget *wgt, void *idx);
 	static void cb_btn_apply(Fl_Widget *wgt, void *idx);
 
 	// ------------------------- RECTIFY -------------------------------------------
@@ -180,6 +184,7 @@ public:
 	//Fl_Round_Button *rb_param[N_P_IDX];
 	Fl_Value_Slider *vs_ppos2;
 	Fl_Value_Slider *vs_pval2;
+	Fl_Button *btn_R2TA2;
 	Fl_Button *btn_paramopt;
 	Fl_Button *btn_paramset;
 	Fl_Button *btn_paramreset;
@@ -204,6 +209,7 @@ private:
 	static void cb_vs_fmot2(Fl_Widget *wgt, void *idx);
 	static void cb_vs_ppos2(Fl_Widget *wgt, void *idx);
 	static void cb_vs_pval2(Fl_Widget *wgt, void *idx);
+	static void cb_btn_R2TA2(Fl_Widget *wgt, void *idx);
 	static void cb_btn_paramopt(Fl_Widget *wgt, void *idx);
 	static void cb_btn_paramset(Fl_Widget *wgt, void *idx);
 	static void cb_btn_paramreset(Fl_Widget *wgt, void *idx);
