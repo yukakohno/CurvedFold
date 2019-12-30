@@ -24,14 +24,18 @@
 #define RECDIR "input/"
 
 //#define TEXFNAME "texture/no_tex.jpg"
-#define TEXFNAME "texture/grid_bw3.jpg"
+#define TEXFNAME "texture/grid_bw3.org.jpg"
+//#define TEXFNAME "texture/cp.jpg"
 #define TEXWIDTH  256	// texture width
 #define TEXHEIGHT 256	// texture height
+
+//#define EVERYOTHER	// ruling ÇÇPñ{Ç®Ç´Ç…ï\é¶
 
 #ifndef CPANEL
 #define CPANEL
 
-enum DISP { D_X, D_TNB, D_R, D_RLEN, D_PLY, D_PTN, D_CP, D_7, D_8, D_9 };
+enum DISP { D_X, D_TNB, D_R, D_RLEN, D_PLY, D_PTN, D_CP, D_AX2, D_ONE, D_PRI, D_R1, D_ST,
+			D_LSMT, D_OFST };
 
 class ControlPanel : public Fl_Window
 {
@@ -41,6 +45,7 @@ public:
 	GraphWindowParam *gwin_gr;
 
 	papermodel ppm;
+	char filepath[256];
 
 	// for animation
 	double kv_org[MAX_SPCNT], k2d_org[MAX_SPCNT], tr_org[MAX_SPCNT], alpha_org[MAX_SPCNT];
@@ -63,19 +68,32 @@ private:
 	int handle(int event);
 	int value_grpfix();
 	int value_grpparam();
-	int value_grpopt();
 
 	// ------------------------- fILE_IO -------------------------------------------
 public:
 	Fl_Button *btn_load;
 	Fl_File_Chooser *fc;
 	Fl_Button *btn_loadtex;
-	Fl_Button *btn_dump;
-	Fl_Button *btn_rlchk;
+	Fl_Button *btn_savelog;
+	Fl_Button *btn_savescreen;
+	Fl_Button *btn_saveerr;
 
 private:
 	static void cb_btn_load( Fl_Widget *wgt, void *idx);
-	static void cb_btn_dump( Fl_Widget *wgt, void *idx);
+	static void cb_btn_savelog( Fl_Widget *wgt, void *idx);
+	static void cb_btn_savescreen( Fl_Widget *wgt, void *idx);
+	static void cb_btn_saveerr( Fl_Widget *wgt, void *idx);
+
+	// ------------------------- EVALUATE -------------------------------------------
+public:
+	Fl_Button *btn_eval_gap;
+	Fl_Button *btn_eval_collision;
+	Fl_Button *btn_eval_rulingcross;
+
+private:
+	static void cb_btn_eval_gap( Fl_Widget *wgt, void *idx);
+	static void cb_btn_eval_collision( Fl_Widget *wgt, void *idx);
+	static void cb_btn_eval_rulingcross( Fl_Widget *wgt, void *idx);
 
 	// ------------------------- DISPLAY -------------------------------------------
 public:
@@ -91,10 +109,23 @@ private:
 	static void cb_cb_dispTNB(Fl_Widget *wgt, void *idx);
 	static void cb_cb_dispR(Fl_Widget *wgt, void *idx);
 	static void cb_cb_dispRlen(Fl_Widget *wgt, void *idx);
+	static void cb_cb_dispAx2(Fl_Widget *wgt, void *idx);
 	static void cb_cb_dispPLY(Fl_Widget *wgt, void *idx);
 	static void cb_cb_dispPTN(Fl_Widget *wgt, void *idx);
 	static void cb_cb_dispCP(Fl_Widget *wgt, void *idx);
 	static void cb_cb_CurveEnd(Fl_Widget *wgt, void *idx);
+	static void cb_cb_dispONE(Fl_Widget *wgt, void *idx);
+	static void cb_cb_dispPRI(Fl_Widget *wgt, void *idx);
+	static void cb_cb_dispST(Fl_Widget *wgt, void *idx);
+	static void cb_cb_dispLSMT(Fl_Widget *wgt, void *idx);
+	static void cb_cb_dispOFST(Fl_Widget *wgt, void *idx);
+
+	// ------------------------- CONFIGURATION -------------------------------------------
+public:
+	Fl_Value_Slider *vs_rulres;
+
+private:
+	static void cb_vs_rulres(Fl_Widget *wgt, void* idx);
 
 	// ------------------------- DESIGN -------------------------------------------
 public:
@@ -102,48 +133,87 @@ public:
 	Fl_Group *grp_fix;
 	Fl_Round_Button *rb_fix[N_C_MODE];
 
+	// PARAMETER
+	Fl_Group *grp_param0, *grp_param1;
+	Fl_Round_Button *rb_param[N_P_IDX];
+	Fl_Value_Slider *vs_ppos;
+	Fl_Value_Slider *vs_pval;
+
+	Fl_Value_Slider *vs_fmot;
+	Fl_Button *btn_apply;
+
+private:
+	static void cb_rb_gwin(Fl_Widget *wgt, void *idx);
+	static void cb_rb_fix0(Fl_Widget *wgt, void* idx);
+	//static void cb_rb_fix1(Fl_Widget *wgt, void* idx);
+	static void cb_rb_param0(Fl_Widget *wgt, void* idx);
+	//static void cb_rb_param1(Fl_Widget *wgt, void* idx);
+	static void cb_rb_param2(Fl_Widget *wgt, void* idx);
+	static void cb_vs_ppos(Fl_Widget *wgt, void *idx);
+	static void cb_vs_pval(Fl_Widget *wgt, void *idx);
+	static void cb_btn_apply(Fl_Widget *wgt, void *idx);
+
+	// ------------------------- RECTIFY -------------------------------------------
+public:
 	// ï‚ê≥Ç†ÇËÅ^Ç»Çµ
 	Fl_Check_Button *cb_rectifyA;
 	Fl_Check_Button *cb_rectifyT;
 	Fl_Check_Button *cb_rectifyR;
 
-	// PARAMETER
-	Fl_Group *grp_param;
-	Fl_Round_Button *rb_param[N_P_IDX];
-	Fl_Value_Slider *vs_ppos;
-	Fl_Value_Slider *vs_pval;
-	Fl_Button *btn_R2TA;
-	Fl_Button *btn_RPar;
-
 private:
-	static void cb_rb_gwin(Fl_Widget *wgt, void *idx);
 	static void cb_cb_rectifyA(Fl_Widget *wgt, void *idx);
 	static void cb_cb_rectifyT(Fl_Widget *wgt, void *idx);
 	static void cb_cb_rectifyR(Fl_Widget *wgt, void *idx);
-	static void cb_vs_ppos(Fl_Widget *wgt, void *idx);
-	static void cb_vs_pval(Fl_Widget *wgt, void *idx);
-	static void cb_btn_R2TA(Fl_Widget *wgt, void *idx);
-	static void cb_btn_RPar(Fl_Widget *wgt, void *idx);
-
-	// ------------------------- ADD CREASE & TRIM ------------------------------------
-public:
-	Fl_Check_Button *cb_trimcurve;
-	Fl_Check_Button *cb_foldcurve;
-	Fl_Button *btn_proccurve;
-
-
-private:
-	static void cb_cb_addcurve( Fl_Widget *wgt, void *idx);
-	static void cb_btn_proccurve( Fl_Widget *wgt, void *idx);
-	static void cb_btn_resetcurve( Fl_Widget *wgt, void *idx);
-	void trimfold();
 
 	// ------------------------- FOLD_MOTION -------------------------------------------
 public:
-	Fl_Value_Slider *vs_fmot;
-private:
-	static void cb_vs_fmot(Fl_Widget *wgt, void *idx);
+	Fl_Value_Slider *vs_divnum;
+	Fl_Group *grp_foldtrim;
+	Fl_Round_Button *rb_fold;
+	Fl_Round_Button *rb_trim;
+	Fl_Check_Button *cb_usecp;
+	Fl_Value_Slider *vs_divcrv;
+	Fl_Group *grp_divtype;
+	Fl_Round_Button *rb_divtype[10];
+	Fl_Value_Slider *vs_fmot2;
+	Fl_Group *grp_param2;
+	//Fl_Round_Button *rb_param[N_P_IDX];
+	Fl_Value_Slider *vs_ppos2;
+	Fl_Value_Slider *vs_pval2;
+	Fl_Button *btn_paramopt;
+	Fl_Button *btn_paramset;
+	Fl_Button *btn_paramreset;
+	Fl_Button *btn_matopt;
+	Fl_Button *btn_matset;
+	Fl_Button *btn_matreset;
+	Fl_Button *btn_saveframe;
+	Fl_Button *btn_loadframe;
+	Fl_Button *btn_savemotion;
+	Fl_Button *btn_loadmotion;
+	Fl_Box *bx_FM_Pt[MAX_FRAME];
+	Fl_Box *bx_FM_Pa[MAX_FRAME];
+	Fl_Box *bx_FM_m3[MAX_FRAME];
 
+	void update_bx_FM( crease *c, int frm );
+
+private:
+	static void cb_vs_divnum(Fl_Widget *wgt, void *idx);
+	static void cb_vs_divcrv(Fl_Widget *wgt, void *idx);
+	static void cb_rb_divtype(Fl_Widget *wgt, void *idx);
+	static void cb_vs_fmot(Fl_Widget *wgt, void *idx);
+	static void cb_vs_fmot2(Fl_Widget *wgt, void *idx);
+	static void cb_vs_ppos2(Fl_Widget *wgt, void *idx);
+	static void cb_vs_pval2(Fl_Widget *wgt, void *idx);
+	static void cb_btn_paramopt(Fl_Widget *wgt, void *idx);
+	static void cb_btn_paramset(Fl_Widget *wgt, void *idx);
+	static void cb_btn_paramreset(Fl_Widget *wgt, void *idx);
+	static void cb_btn_matopt(Fl_Widget *wgt, void *idx);
+	static void cb_btn_matset(Fl_Widget *wgt, void *idx);
+	static void cb_btn_matreset(Fl_Widget *wgt, void *idx);
+	static void cb_btn_saveframe(Fl_Widget *wgt, void *idx);
+	static void cb_btn_loadframe(Fl_Widget *wgt, void *idx);
+	static void cb_btn_savemotion(Fl_Widget *wgt, void *idx);
+	static void cb_btn_loadmotion(Fl_Widget *wgt, void *idx);
 };
 
 #endif	// CPANEL

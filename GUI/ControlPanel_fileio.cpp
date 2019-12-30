@@ -1,6 +1,11 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <sys\stat.h>
+#include <direct.h>
+#include <time.h>
+
 #include "ControlPanel.h"
+#include "../CurvedFoldModel/util.h"
 
 void ControlPanel::cb_btn_load(Fl_Widget *wgt, void *idx)
 {
@@ -27,20 +32,28 @@ void ControlPanel::cb_btn_load(Fl_Widget *wgt, void *idx)
 
 			if( strstr( fname, ".txt") )
 			{
-				strcpy(fname_m2m3, fname);
-				int fnamelen = strlen(fname_m2m3);
-				sprintf( &(fname_m2m3[ fnamelen-4 ]), "_m2m3.txt\0" );
+				strcpy( This->filepath, fname );
+				for( int i=strlen(This->filepath)-2; i>0; i-- ){
+					if( This->filepath[i]=='/' ){
+						This->filepath[i+1] = 0;
+						break;
+					}
+				}
+				sprintf( fname_m2m3, "%sm2m3.txt", This->filepath );
 
 				// load data
 				int filetype = This->ppm.crs[0].load(fname);
 				int ret0 = This->ppm.crs[0].loadm2m3(fname_m2m3);
+				//for( int i=0; i<16; i++ ){ This->gwin->mObject[i] = This->ppm.crs[0].m3[i]; }
+				//unit_m44( This->ppm.crs[0].m3 );
+
 				This->ppm.set_postproc_type( PPTYPE_OPEN );
 				//gwin->initObject();
 
 				if(filetype == 1){ // xy(CP),xyz(3D)
 					This->ppm.crs[0].interpolate_spline2(0);
 					This->ppm.crs[0].calcTN2d();
-					This->ppm.crs[0].calcTNB( This->ppm.flg_rectifyT );
+					This->ppm.crs[0].calcTNB();
 					This->ppm.crs[0].Pcnt = 10;
 					This->ppm.crs[0].setP_k(-1); // kv -> Px[_Pcnt]
 					This->ppm.crs[0].setP_t(-1); // tr -> Py[_Pcnt]
@@ -64,7 +77,7 @@ void ControlPanel::cb_btn_load(Fl_Widget *wgt, void *idx)
 					This->refresh(1);
 				} else if( filetype == 4) { // xyz(3D),a
 					This->ppm.crs[0].interpolate_spline2(2); // 2:xyzのみ補間
-					This->ppm.crs[0].calcTNB( This->ppm.flg_rectifyT ); // X -> T,N,B,kv,tr
+					This->ppm.crs[0].calcTNB(); // X -> T,N,B,kv,tr
 					This->ppm.crs[0].Pcnt = 10;
 					This->ppm.crs[0].setP_k(-1); // kv -> Px[_Pcnt]
 					This->ppm.crs[0].setP_t(-1); // tr -> Py[_Pcnt]
@@ -82,7 +95,6 @@ void ControlPanel::cb_btn_load(Fl_Widget *wgt, void *idx)
 						case CMODE_A: This->rb_param[P_CV3D]->setonly(); break;
 						case CMODE_B: This->rb_param[P_CV2D]->setonly(); break;
 						case CMODE_C: This->rb_param[P_CV3D]->setonly(); break;
-							//case CMODE_TFA: This->rb_param[P_RULL]->setonly(); break;
 					}
 					This->refresh(1);
 				}
@@ -104,27 +116,292 @@ void ControlPanel::cb_btn_load(Fl_Widget *wgt, void *idx)
 	}
 }
 
-void ControlPanel::cb_btn_dump( Fl_Widget *wgt, void *idx)
+void ControlPanel::cb_btn_savelog( Fl_Widget *wgt, void *idx)
 {
 	ControlPanel *This = (ControlPanel *)idx;
 	int mode = This->value_grpfix();	// CMODE_A, CMODE_B, CMODE_C, MODE_T, MODE_FA, MODE_TFA
 	papermodel *ppm = &(This->ppm);
 	crease *c0 = &(This->ppm.crs[0]);
+	int divnum = This->gwin->divnum = This->vs_divnum->value();
+	int frm = This->vs_fmot2->value() + c0->FM_fidx_org;
+	int flg_usecp = This->cb_usecp->value();
+	char dirname[128], fname[128];
+    struct stat statBuf;
+	time_t t0 = time(NULL);
+	struct tm *t1 = localtime(&t0);
 
-	c0->dumpm2m3("output/m2m3.txt");
-	c0->dumpP_("output/kta_current.txt", mode);
-	c0->dumpP("output/P.txt", mode);
-	c0->dumpX("output/X.csv");
-	//c0->checkCP3D("output/checkCP3D.csv");
+	sprintf( dirname, "output/%02d%02d%02d_f%02d/", t1->tm_hour, t1->tm_min, t1->tm_sec, frm );
+	if( stat(dirname, &statBuf)==0 || _mkdir( dirname )==0 ){
 
-	ppm->dumpcv0( "output/cv0.txt" );
-	ppm->dumpsvg0("output/CP0.svg");
-	ppm->dumpsvg1("output/CP1.svg");
-	ppm->makeObj3( 10.0 );
-	ppm->dumpObj("output/CP.obj", 0.4);
+		sprintf(fname, "%sm2m3.txt", dirname );	c0->dumpm2m3( fname );
+		//c0->dumpm2m3("output/m2m3.txt", This->gwin->mObject );
+		//c0->dumpP_("output/kta_current.txt", mode);
+		sprintf(fname, "%sP.txt", dirname );	c0->dumpP( fname, mode);
+		sprintf(fname, "%sX.csv", dirname );	c0->dumpX( fname );
+		//c0->checkCP3D("output/checkCP3D.csv");
+		//sprintf(fname, "%smotion.txt", dirname );	c0->dumpMotion( fname, flg_usecp );
+		if( flg_usecp ){
+			sprintf( fname, "%smotion_CP.txt", dirname );
+		} else {
+			sprintf( fname, "%smotion_ALL.txt", dirname );
+		}
+		c0->dumpMotion( fname, flg_usecp );
+		sprintf(fname, "%sCP00.svg", dirname );	ppm->dumpsvg00( fname, divnum );
+		sprintf(fname, "%sCP1.svg", dirname );	ppm->dumpsvg1( fname );
+		ppm->makeObj3( 10.0 );
+		sprintf(fname, "%sCP.obj", dirname );	ppm->dumpObj( fname, 0.4);
 
-	ppm->check180( "output/d180.csv" );	// 頂点周りの角度
-	ppm->checkquatplane( "output/quat.csv" );	// quad の平面度
+		//ppm->check180( "output/d180.csv" );	// 頂点周りの角度
+		//ppm->checkquadplane( "output/quad.csv" );	// quad の平面度
+		sprintf(fname, "%sd180_%02d.csv", dirname, frm );	c0->check180( fname );	// 頂点周りの角度
+		sprintf(fname, "%squad_%02d.csv", dirname, frm );	c0->checkquadplane( fname );	// quad の平面度
+		sprintf(fname, "%sgap_%02d.csv", dirname, frm );	ppm->checkGap( fname, divnum );	// ピース間の隙間
 
-	This->gwin_gr->redraw();
+		sprintf(fname, "%smodel.bmp", dirname );	This->gwin->exportImage( fname );
+	}
+	//This->gwin_gr->redraw();
+}
+
+void ControlPanel::cb_btn_savescreen( Fl_Widget *wgt, void *idx)
+{
+	ControlPanel *This = (ControlPanel *)idx;
+	crease *c0 = &(This->ppm.crs[0]);
+	int frm = This->vs_fmot2->value() + c0->FM_fidx_org;
+	time_t t0 = time(NULL);
+	struct tm *t1 = localtime(&t0);
+	char fname[128];
+
+	sprintf(fname, "output/model_%02d%02d%02d_f%02d.bmp", t1->tm_hour, t1->tm_min, t1->tm_sec, frm );
+	This->gwin->exportImage( fname );
+}
+
+void ControlPanel::cb_btn_saveerr( Fl_Widget *wgt, void *idx)
+{
+	ControlPanel *This = (ControlPanel *)idx;
+	papermodel *ppm = &(This->ppm);
+	crease *c0 = &(This->ppm.crs[0]);
+	int divnum = This->gwin->divnum = This->vs_divnum->value();
+	double errdata[ MAX_STP_CNT*21 ]; // max(MAX_SPCNT,MAX_STP_CNT)
+	double err180[ MAX_SPCNT*21 ];
+	double errquad[ MAX_SPCNT*21*2 ];
+	double errgap[ MAX_STP_CNT*21 ];
+	int edsize = MAX_STP_CNT*21;
+	int cntgap[21];
+	int ret=0;
+
+	for( int j=0; j<=20; j++ ){
+		printf( "errors on frame %d...\n", j );
+		This->vs_fmot2->value( j-c0->FM_fidx_org );
+		This->vs_fmot2->do_callback();
+		
+		memset( errdata, 0, sizeof(double)*edsize );
+		ret = c0->check180( errdata, c0->Xeidx+1, 9 );
+		for( int i=c0->Xsidx; i<=c0->Xeidx; i++ ){
+			err180[ MAX_SPCNT*j+i ] = errdata[i*9+8];	// atotal-2pi
+		}
+
+		memset( errdata, 0, sizeof(double)*edsize );
+		ret = c0->checkquadplane( errdata, c0->Xeidx+1, 17 );
+		for( int i=c0->Xsidx; i<c0->Xeidx; i++ ){
+			errquad[ (MAX_SPCNT*j*2  ) +i ] = errdata[i*17+9];	// ipL
+			errquad[ (MAX_SPCNT*j*2+1) +i ] = errdata[i*17+16];	// ipR
+		}
+
+		memset( errdata, 0, sizeof(double)*edsize );
+		cntgap[j] = ppm->checkGap( errdata, MAX_STP_CNT, 7, divnum );
+		for( int i=0; i<cntgap[j]; i++ ){
+			errgap[ MAX_STP_CNT*j +i ] = errdata[i*7];	// dif
+		}
+	}
+
+	FILE *fp = fopen( "output/d180_all.csv", "w" );
+	if( fp ){
+		int cnt=0;
+		double ave=0.0, max=0.0;
+		for( int j=0; j<=20; j++ ){
+			for( int i=c0->Xsidx; i<=c0->Xeidx; i++ ){
+				double err = fabs(err180[MAX_SPCNT*j+i]);
+				ave += err;
+				max = err > max ? err : max;
+				cnt++;
+			}
+		}
+		ave/=(double)cnt;
+		fprintf( fp, "ave,%f\n", ave );
+		fprintf( fp, "max,%f\n", max );
+#if 0
+		fprintf( fp, "frame,data\n" );
+		for( int j=0; j<=20; j++ ){
+			fprintf( fp, "%d,", j );
+			for( int i=c0->Xsidx; i<=c0->Xeidx; i++ ){
+				fprintf( fp, "%f,", err180[MAX_SPCNT*j+i] );
+			}
+			fprintf( fp, "\n" );
+		}
+#else
+		for( int j=0; j<=20; j++ ){
+			fprintf( fp, ",%d", j );
+		}
+		fprintf( fp, "\n" );
+		for( int i=c0->Xsidx; i<=c0->Xeidx; i++ ){
+			fprintf( fp, "%d,", i );
+			//for( int j=0; j<=20; j++ ){
+			for( int j=20; j>=0; j-- ){
+				fprintf( fp, "%f,", err180[ MAX_SPCNT*j+i ] );
+			}
+			fprintf( fp, "\n" );
+		}
+#endif
+		fclose( fp ); fp=NULL;
+	}
+
+	fp = fopen( "output/quad_all.csv", "w" );
+	if( fp ){
+		int cnt=0;
+		double ave=0.0, max=0.0;
+		for( int j=0; j<=20; j++ ){
+			for( int i=c0->Xsidx; i<c0->Xeidx; i++ ){
+				double errL = fabs(errquad[(MAX_SPCNT*j*2  )+i]);
+				double errR = fabs(errquad[(MAX_SPCNT*j*2+1)+i]);
+				ave += errL + errR;
+				max = errL > max ? errL : max;
+				max = errR > max ? errR : max;
+				cnt+=2;
+			}
+		}
+		ave/=(double)cnt;
+		fprintf( fp, "ave,%f\n", ave );
+		fprintf( fp, "max,%f\n", max );
+#if 0
+		fprintf( fp, "frame,data\n" );
+		for( int j=0; j<=20; j++ ){
+			fprintf( fp, "%dL,", j );
+			for( int i=c0->Xsidx; i<c0->Xeidx; i++ ){
+				fprintf( fp, "%f,", errquad[(MAX_SPCNT*j*2  )+i] );
+			}
+			fprintf( fp, "\n" );
+			fprintf( fp, "%dR,", j );
+			for( int i=c0->Xsidx; i<c0->Xeidx; i++ ){
+				fprintf( fp, "%f,", errquad[(MAX_SPCNT*j*2+1)+i] );
+			}
+			fprintf( fp, "\n" );
+		}
+#else
+		for( int j=0; j<=20; j++ ){
+			fprintf( fp, ",%dL,%dR", j, j );
+		}
+		fprintf( fp, "\n" );
+		for( int i=c0->Xsidx; i<c0->Xeidx; i++ ){
+			fprintf( fp, "%d,", i );
+			//for( int j=0; j<=20; j++ ){
+			for( int j=20; j>=0; j-- ){
+				fprintf( fp, "%f,%f,", errquad[ (MAX_SPCNT*j*2  ) +i ], errquad[ (MAX_SPCNT*j*2+1) +i ] );
+			}
+			fprintf( fp, "\n" );
+		}
+#endif
+		fclose( fp ); fp=NULL;
+	}
+
+	fp = fopen( "output/gap_all.csv", "w" );
+	if( fp ){
+#if 1
+		fprintf( fp, "frame,ave,max,data\n" );
+		//for( int j=0; j<=20; j++ ){
+		for( int j=20; j>=0; j-- ){
+			int cnt=0;
+			double ave=0.0, max=0.0;
+			for( int i=0; i<cntgap[j]; i++ ){
+				double gap=errgap[MAX_STP_CNT*j+i];
+				if( gap<0.0 ){
+					continue;
+				}
+				ave += gap;
+				max = gap > max ? gap : max;
+				cnt++;
+			}
+			ave/=(double)cnt;
+
+			fprintf( fp, "%d,%f,%f,", 20-j, ave, max );
+			for( int i=0; i<cntgap[j]; i++ ){
+				double gap=errgap[MAX_STP_CNT*j+i];
+				if( gap<0.0 ){
+					fprintf( fp, "," );
+				} else{
+					fprintf( fp, "%f,", gap );
+				}
+			}
+			fprintf( fp, "\n" );
+		}
+#else
+		for( int j=0; j<=20; j++ ){
+			fprintf( fp, ",%d", j );
+		}
+		fprintf( fp, "\n" );
+		for( int i=0; i<=MAX_STP_CNT; i++ ){
+			fprintf( fp, "%d,", i );
+			for( int j=0; j<=20; j++ ){
+				if( i<cntgap[j] ){
+					fprintf( fp, "%f,", errgap[ MAX_STP_CNT*j+i ] );
+				} else {
+					fprintf( fp, "," );
+				}
+			}
+			fprintf( fp, "\n" );
+		}
+#endif
+		fclose( fp ); fp=NULL;
+	}
+
+	//This->gwin_gr->redraw();
+}
+
+void ControlPanel::cb_btn_savemotion(Fl_Widget *wgt, void *idx)
+{
+	ControlPanel *This = (ControlPanel *)idx;
+	crease *c = &(This->ppm.crs[0]);
+	int flg_usecp = This->cb_usecp->value();
+	if( flg_usecp ){
+		c->dumpMotion("output/motion_CP.txt", flg_usecp);
+	} else {
+		c->dumpMotion("output/motion_ALL.txt", flg_usecp);
+	}
+}
+
+void ControlPanel::cb_btn_loadmotion(Fl_Widget *wgt, void *idx)
+{
+	ControlPanel *This = (ControlPanel *)idx;
+	crease *c = &(This->ppm.crs[0]);
+	char fname[256];
+	int flg_usecp = This->cb_usecp->value();
+	if( flg_usecp ){
+		sprintf( fname, "%smotion_CP.txt", This->filepath );
+	} else {
+		sprintf( fname, "%smotion_ALL.txt", This->filepath );
+	}
+	//int flg_usecp = c->loadMotion("input/motion.txt");
+	flg_usecp = c->loadMotion( fname );
+	This->cb_usecp->value( flg_usecp );
+	c->updateFM( flg_usecp );
+	int frm = This->vs_fmot2->value() + c->FM_fidx_org;
+	This->update_bx_FM(c, frm);
+}
+
+void ControlPanel::cb_btn_saveframe(Fl_Widget *wgt, void *idx)
+{
+	ControlPanel *This = (ControlPanel *)idx;
+	crease *c = &(This->ppm.crs[0]);
+	int frm = This->vs_fmot2->value() + c->FM_fidx_org;
+	int flg_usecp = This->cb_usecp->value();
+	c->dumpMotionFrame( frm, "output/motionframe.txt", flg_usecp );
+}
+
+void ControlPanel::cb_btn_loadframe(Fl_Widget *wgt, void *idx)
+{
+	ControlPanel *This = (ControlPanel *)idx;
+	crease *c = &(This->ppm.crs[0]);
+	int frm = This->vs_fmot2->value() + c->FM_fidx_org;
+	int flg_usecp = c->loadMotionFrame( frm, "output/motionframe.txt" );
+	c->updateFM( 1 );
+	This->update_bx_FM(c, frm);
 }

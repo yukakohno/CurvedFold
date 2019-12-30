@@ -134,7 +134,7 @@ int crease::calcRLen1_( double *rx_cp, double *ry_cp, double *rlen, char *logfil
 	}
 
 	// ‘¼‚Ìruling‚à’·‚³§ŒÀ‚³‚ê‚½ê‡‚ÉŒğ·‚µ‚È‚¢Å‘å’·‚³
-	for( int k=0; k<XCNT && proclen < maxrlen; k++, proclen += dl ){
+	for( int k=0; k<Xcnt && proclen < maxrlen; k++, proclen += dl ){
 
 		// ‚·‚×‚Ä’·‚³Šm’èH -> break
 		int flgsum=0;
@@ -402,19 +402,19 @@ end:
 }
 #endif
 // ‹È—¦¬‚³‚¢•”•ª‚Í’·‚³0‚É
-int crease::calcRLenHoseiR()
+int crease::calcRLenHoseiR( double rectifyR_kvthres )
 {
 	int ret=0;
-	ret = calcRLenHoseiR( Xcnt, k2d, rrlen, rrflg );
-	ret = calcRLenHoseiR( Xcnt, k2d, rllen, rlflg );
+	ret = calcRLenHoseiR( Xcnt, k2d, rectifyR_kvthres, rrlen, rrflg );
+	ret = calcRLenHoseiR( Xcnt, k2d, rectifyR_kvthres, rllen, rlflg );
 	return ret;
 }
 
-int crease::calcRLenHoseiR( int Xcnt, double *k2d, double *rlen, ruling_end_type *rflg )
+int crease::calcRLenHoseiR( int Xcnt, double *k2d, double rectifyR_kvthres, double *rlen, ruling_end_type *rflg )
 {
 	int ret=0;
 	for( int i=0; i<Xcnt; i++ ){
-		if( fabs(k2d[i]) < MIN_CURV ){
+		if( fabs(k2d[i]) < rectifyR_kvthres ){
 			rlen[i]=0;
 		}
 	}

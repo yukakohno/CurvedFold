@@ -23,8 +23,6 @@ GraphWindowCP::GraphWindowCP(int X, int Y, int W, int H) : Fl_Double_Window(X, Y
 
 void GraphWindowCP::init()
 {
-	flg_addcurve = 0;
-
 	ppm = NULL;
 
 	ox = w()*0.1;
@@ -40,49 +38,6 @@ void GraphWindowCP::init()
 
 	if( jpg ){ delete jpg; }
 	jpg = new Fl_JPEG_Image( TEXFNAME );
-}
-
-void GraphWindowCP::fixCurve()
-{
-	// INPUT:
-	//  int ccnt;
-	//  int cx[MAXCX], cy[MAXCX];
-	// OUTPUT
-	//  ppm->
-	//	int dccnt;
-	//	curvedraw dcurve[MAXCN];
-
-	if( ppm->dccnt >= MAXCN ){
-		return;
-	}
-
-	double imt[9];
-	memcpy( imt, mt, sizeof(double)*9 );
-	inv_m33( imt );
-
-	double *cvx0 = ppm->dcurve[ppm->dccnt].cvx;
-	double *cvy0 = ppm->dcurve[ppm->dccnt].cvy;
-	for( int i=0; i<ccnt; i++ ){
-		cvx0[i] = imt[0]*(double)cx[i] + imt[1]*(double)cy[i] + imt[2];
-		cvy0[i] = imt[3]*(double)cx[i] + imt[4]*(double)cy[i] + imt[5];
-	}
-	ppm->dcurve[ppm->dccnt].cvcnt = ccnt;
-	if( flg_addcurve == 1 ){
-		ppm->dcurve[ppm->dccnt].ctype = CTYPE_TRIM;
-	} else {
-		ppm->dcurve[ppm->dccnt].ctype = CTYPE_UNDEF;
-	}
-	ppm->dccnt++;
-
-	ccnt=0;
-	flg_addcurve = 0;
-	((ControlPanel*)cwin)->cb_trimcurve->value(0);
-	((ControlPanel*)cwin)->cb_foldcurve->value(0);
-	((ControlPanel*)cwin)->gwin_cp->flg_addcurve = 0;
-	//((ControlPanel*)cwin)->gwin_cp->redraw();
-	//((ControlPanel*)cwin)->gwin_gr->redraw();
-end:
-	return;
 }
 
 void GraphWindowCP::draw()
@@ -133,13 +88,12 @@ void GraphWindowCP::draw()
 	mult_m33_n33( mtofs, mt1, 1);
 
 	// addcurve
-	fl_line_style( FL_SOLID, 2 );
 	fl_color(0, 0, 0);
+	fl_line_style( FL_SOLID, 2 );
 	for( int i=1; i<ccnt; i++ ){
 		fl_line( cx[i-1], cy[i-1], cx[i], cy[i] );
 	}
 
-	fl_line_style( FL_SOLID, 1 );
 	for( int i=0; i<ppm->dccnt; i++ ){
 		curvedraw *dc = &(ppm->dcurve[i]);
 		switch( dc->ctype ){
@@ -151,6 +105,7 @@ void GraphWindowCP::draw()
 				break;
 			default: fl_color(127, 127, 127); break;
 		}
+		fl_line_style( FL_SOLID, 2 );
 		for( int j=0; j<dc->cvcnt-1; j++ ){
 			fl_line((int)(mt[0]*dc->cvx[j] + mt[1]*dc->cvy[j] +mt[2]),
 				(int)(mt[3]*dc->cvx[j  ] + mt[4]*dc->cvy[j  ] +mt[5]),
@@ -159,8 +114,17 @@ void GraphWindowCP::draw()
 		}
 	}
 
+	fl_color(0, 127, 0);
 	fl_line_style( FL_SOLID, 2 );
-
+	for( int i=0; i<ppm->fccnt; i++ ){
+		curveintersect *fc = &(ppm->fcurve[i]);
+		for( int j=0; j<fc->cvcnt-1; j++ ){
+			fl_line((int)(mt[0]*fc->cvx[j] + mt[1]*fc->cvy[j] +mt[2]),
+				(int)(mt[3]*fc->cvx[j  ] + mt[4]*fc->cvy[j  ] +mt[5]),
+				(int)(mt[0]*fc->cvx[j+1] + mt[1]*fc->cvy[j+1] +mt[2]),
+				(int)(mt[3]*fc->cvx[j+1] + mt[4]*fc->cvy[j+1] +mt[5]) );
+		}
+	}
 	fl_color(127, 0, 0);
 	for( int i=0; i<ppm->tccnt; i++ ){
 		curveintersect *tc = &(ppm->tcurve[i]);
@@ -177,6 +141,9 @@ void GraphWindowCP::draw()
 	if( disp_PLY && plcnt>0 && plvcnt && plx && ply ){
 		fl_color(0, 0, 0);
 		for( int i=0; i<plcnt; i++ ){
+			if( disp_PRI && ppm->pl_cridx[i]>0 ){
+				continue;
+			}
 			if( plvcnt[i]==4 ){
 				fl_loop((int)(mt[0] * plx[i*4  ] + mt[1] * ply[i*4  ] +mt[2]),
 					//fl_polygon((int)(mt[0] * plx[i*4  ] + mt[1] * ply[i*4  ] +mt[2]),
@@ -205,58 +172,113 @@ void GraphWindowCP::draw()
 		fl_color(0, 0, 0);
 		fl_line_style( FL_SOLID, 2 );
 
-		for( int j=0; j<ppm->crcnt; j++ ){
-			crease *c = &(ppm->crs[j]);
-			double *cpx0 = c->Xx2d, *cpy0 = c->Xy2d;
-			x0=c->Xxs2d;	y0=c->Xys2d;	x1=cpx0[c->Xsidx];	y1=cpy0[c->Xsidx];
+		crease *c = &(ppm->crs[0]);
+		double *cpx0 = c->Xx2d, *cpy0 = c->Xy2d;
+		x0=c->Xxs2d;	y0=c->Xys2d;	x1=cpx0[c->Xsidx];	y1=cpy0[c->Xsidx];
+		fl_line((int)(mtofs[0]*x0+mtofs[1]*y0+mtofs[2]), (int)(mtofs[3]*x0+mtofs[4]*y0+mtofs[5]), (int)(mtofs[0]*x1+mtofs[1]*y1+mtofs[2]), (int)(mtofs[3]*x1+mtofs[4]*y1+mtofs[5]));
+		for( int i=c->Xsidx; i<c->Xeidx; i++ ){
+			x0=cpx0[i];	y0=cpy0[i];	x1=cpx0[i+1];	y1=cpy0[i+1];
 			fl_line((int)(mtofs[0]*x0+mtofs[1]*y0+mtofs[2]), (int)(mtofs[3]*x0+mtofs[4]*y0+mtofs[5]), (int)(mtofs[0]*x1+mtofs[1]*y1+mtofs[2]), (int)(mtofs[3]*x1+mtofs[4]*y1+mtofs[5]));
-			for( int i=c->Xsidx; i<c->Xeidx; i++ ){
-				x0=cpx0[i];	y0=cpy0[i];	x1=cpx0[i+1];	y1=cpy0[i+1];
-				fl_line((int)(mtofs[0]*x0+mtofs[1]*y0+mtofs[2]), (int)(mtofs[3]*x0+mtofs[4]*y0+mtofs[5]), (int)(mtofs[0]*x1+mtofs[1]*y1+mtofs[2]), (int)(mtofs[3]*x1+mtofs[4]*y1+mtofs[5]));
-			}
-			x0=cpx0[c->Xeidx];	y0=cpy0[c->Xeidx];	x1=c->Xxe2d;	y1=c->Xye2d;
-			fl_line((int)(mtofs[0]*x0+mtofs[1]*y0+mtofs[2]), (int)(mtofs[3]*x0+mtofs[4]*y0+mtofs[5]), (int)(mtofs[0]*x1+mtofs[1]*y1+mtofs[2]), (int)(mtofs[3]*x1+mtofs[4]*y1+mtofs[5]));
-		} // j
+		}
+		x0=cpx0[c->Xeidx];	y0=cpy0[c->Xeidx];	x1=c->Xxe2d;	y1=c->Xye2d;
+		fl_line((int)(mtofs[0]*x0+mtofs[1]*y0+mtofs[2]), (int)(mtofs[3]*x0+mtofs[4]*y0+mtofs[5]), (int)(mtofs[0]*x1+mtofs[1]*y1+mtofs[2]), (int)(mtofs[3]*x1+mtofs[4]*y1+mtofs[5]));
+
+		if( !disp_PRI ){
+			// crease left
+			for( int j=1; j<ppm->lcrcnt; j++ ){
+				crease *c = ppm->lcrs[j];
+				double *cpx0 = c->Xx2d, *cpy0 = c->Xy2d;
+				x0=c->Xxs2d;	y0=c->Xys2d;	x1=cpx0[c->Xsidx];	y1=cpy0[c->Xsidx];
+				fl_line((int)(mt[0]*x0+mt[1]*y0+mt[2]), (int)(mt[3]*x0+mt[4]*y0+mt[5]), (int)(mt[0]*x1+mt[1]*y1+mt[2]), (int)(mt[3]*x1+mt[4]*y1+mt[5]));
+				for( int i=c->Xsidx; i<c->Xeidx; i++ ){
+					x0=cpx0[i];	y0=cpy0[i];	x1=cpx0[i+1];	y1=cpy0[i+1];
+					fl_line((int)(mt[0]*x0+mt[1]*y0+mt[2]), (int)(mt[3]*x0+mt[4]*y0+mt[5]), (int)(mt[0]*x1+mt[1]*y1+mt[2]), (int)(mt[3]*x1+mt[4]*y1+mt[5]));
+				}
+				x0=cpx0[c->Xeidx];	y0=cpy0[c->Xeidx];	x1=c->Xxe2d;	y1=c->Xye2d;
+				fl_line((int)(mt[0]*x0+mt[1]*y0+mt[2]), (int)(mt[3]*x0+mt[4]*y0+mt[5]), (int)(mt[0]*x1+mt[1]*y1+mt[2]), (int)(mt[3]*x1+mt[4]*y1+mt[5]));
+			} // j
+			// crease right
+			for( int j=1; j<ppm->rcrcnt; j++ ){
+				crease *c = ppm->rcrs[j];
+				double *cpx0 = c->Xx2d, *cpy0 = c->Xy2d;
+				x0=c->Xxs2d;	y0=c->Xys2d;	x1=cpx0[c->Xsidx];	y1=cpy0[c->Xsidx];
+				fl_line((int)(mt[0]*x0+mt[1]*y0+mt[2]), (int)(mt[3]*x0+mt[4]*y0+mt[5]), (int)(mt[0]*x1+mt[1]*y1+mt[2]), (int)(mt[3]*x1+mt[4]*y1+mt[5]));
+				for( int i=c->Xsidx; i<c->Xeidx; i++ ){
+					x0=cpx0[i];	y0=cpy0[i];	x1=cpx0[i+1];	y1=cpy0[i+1];
+					fl_line((int)(mt[0]*x0+mt[1]*y0+mt[2]), (int)(mt[3]*x0+mt[4]*y0+mt[5]), (int)(mt[0]*x1+mt[1]*y1+mt[2]), (int)(mt[3]*x1+mt[4]*y1+mt[5]));
+				}
+				x0=cpx0[c->Xeidx];	y0=cpy0[c->Xeidx];	x1=c->Xxe2d;	y1=c->Xye2d;
+				fl_line((int)(mt[0]*x0+mt[1]*y0+mt[2]), (int)(mt[3]*x0+mt[4]*y0+mt[5]), (int)(mt[0]*x1+mt[1]*y1+mt[2]), (int)(mt[3]*x1+mt[4]*y1+mt[5]));
+			} // j
+		}
 	}
 
 	fl_line_style( FL_SOLID, 1 );
 
 	// crease ruling
 	if(	disp_R ){
-		for( int j=0; j<ppm->crcnt; j++ ){
-			crease *c = &(ppm->crs[j]);
-			//fl_color(150, 100, 230); // Lavender: B57EDC
-			fl_color(82, 32, 118); // Dark Violet: 522076
+		for( int j=0; j<ppm->lcrcnt; j++ ){
+			if( disp_PRI && j>0 ){
+				break;
+			}
+			crease *c = ppm->lcrs[j];
+			if( j%2==0 ){
+				//fl_color(150, 100, 230); // Lavender: B57EDC
+				fl_color(82, 32, 118); // Dark Violet: 522076
+			} else {
+				fl_color(230, 0, 100); // Raspberry: E30B5D
+			}
 			//fl_color(255, 255, 0); // YELLOW
+			fl_line_style( FL_SOLID, 2 );
 			for( int i=c->Xsidx; i<c->Xeidx+1; i++ ){
+#ifdef EVERYOTHER
+				if( i%2 ) continue;
+#endif
+				if( c->rllen[i]==0.0 ) continue;
 				tmpx0 = c->Xx2d[i];
 				tmpy0 = c->Xy2d[i];
 				tmpx1 = c->Xx2d[i] + c->rlx_cp[i]*c->rllen[i];
 				tmpy1 = c->Xy2d[i] + c->rly_cp[i]*c->rllen[i];
-				fl_line((int)(mt[0]*tmpx0 + mt[1]*tmpy0 +mt[2]),
-					(int)(mt[3]*tmpx0 + mt[4]*tmpy0 +mt[5]),
-					(int)(mt[0]*tmpx1 + mt[1]*tmpy1 +mt[2]),
-					(int)(mt[3]*tmpx1 + mt[4]*tmpy1 +mt[5]) );
+				fl_line((int)(mt[0]*tmpx0 + mt[1]*tmpy0 +mt[2]), (int)(mt[3]*tmpx0 + mt[4]*tmpy0 +mt[5]),
+					(int)(mt[0]*tmpx1 + mt[1]*tmpy1 +mt[2]), (int)(mt[3]*tmpx1 + mt[4]*tmpy1 +mt[5]) );
 			} // i
-			fl_color(230, 0, 100); // Raspberry: E30B5D
+		} // j
+		for( int j=0; j<ppm->rcrcnt; j++ ){
+			if( disp_PRI && j>0 ){
+				break;
+			}
+			crease *c = ppm->rcrs[j];
+			if( j%2==0 ){
+				fl_color(230, 0, 100); // Raspberry: E30B5D
+			} else {
+				//fl_color(150, 100, 230); // Lavender: B57EDC
+				fl_color(82, 32, 118); // Dark Violet: 522076
+			}
 			//fl_color(255, 255, 0); // YELLOW
+			fl_line_style( FL_SOLID, 2 );
 			for( int i=c->Xsidx; i<c->Xeidx+1; i++ ){
+#ifdef EVERYOTHER
+				if( i%2 ) continue;
+#endif
+				if( c->rrlen[i]==0.0 ) continue;
 				tmpx0 = c->Xx2d[i];
 				tmpy0 = c->Xy2d[i];
 				tmpx1 = c->Xx2d[i] + c->rrx_cp[i]*c->rrlen[i];
 				tmpy1 = c->Xy2d[i] + c->rry_cp[i]*c->rrlen[i];
-				fl_line((int)(mt[0]*tmpx0 + mt[1]*tmpy0 +mt[2]),
-					(int)(mt[3]*tmpx0 + mt[4]*tmpy0 +mt[5]),
-					(int)(mt[0]*tmpx1 + mt[1]*tmpy1 +mt[2]),
-					(int)(mt[3]*tmpx1 + mt[4]*tmpy1 +mt[5]) );
+				fl_line((int)(mt[0]*tmpx0 + mt[1]*tmpy0 +mt[2]), (int)(mt[3]*tmpx0 + mt[4]*tmpy0 +mt[5]),
+					(int)(mt[0]*tmpx1 + mt[1]*tmpy1 +mt[2]), (int)(mt[3]*tmpx1 + mt[4]*tmpy1 +mt[5]) );
 			} // i
 		} // j
 	}
+	fl_line_style( FL_SOLID, 1 );
 
 	// TN
 	if(	disp_TNB ){
 		fl_color(255, 0, 0);
 		for( int j=0; j<ppm->crcnt; j++ ){
+			if( disp_PRI && j>0 ){
+				break;
+			}
 			crease *c = &(ppm->crs[j]);
 			for( int i=c->Xsidx; i<c->Xeidx+1; i++ ){
 				tmpx0 = c->Xx2d[i];
@@ -272,6 +294,9 @@ void GraphWindowCP::draw()
 
 		fl_color(0, 255, 0);
 		for( int j=0; j<ppm->crcnt; j++ ){
+			if( disp_PRI && j>0 ){
+				break;
+			}
 			crease *c = &(ppm->crs[j]);
 			for( int i=c->Xsidx; i<c->Xeidx+1; i++ ){
 				tmpx0 = c->Xx2d[i];
@@ -286,17 +311,40 @@ void GraphWindowCP::draw()
 		} // j
 	}
 
+	if( disp_CP && !disp_PRI ){
+		// control points of crease curve
+		for( int j=1; j<ppm->crcnt; j++ ){
+			crease *c = &(ppm->crs[j]);
+			for( int i=0; i<CCNT; i++ ){
+				fl_color(127, 127, 127);
+				fl_line_style( FL_SOLID, 3 );
+				fl_circle( (int)(mt[0]*c->CPx[i]+mt[1]*c->CPy[i]+mt[2]),
+					(int)(mt[3]*c->CPx[i]+mt[4]*c->CPy[i]+mt[5]), 4 );
+			}
+			fl_line_style( FL_SOLID, 1 );
+			fl_color(127, 127, 127);
+			for( int i=0; i<CCNT-1; i++ ){
+				fl_line((int)(mt[0]*c->CPx[i]+mt[1]*c->CPy[i]+mt[2]),
+					(int)(mt[3]*c->CPx[i]+mt[4]*c->CPy[i]+mt[5]),
+					(int)(mt[0]*c->CPx[i+1]+mt[1]*c->CPy[i+1]+mt[2]),
+					(int)(mt[3]*c->CPx[i+1]+mt[4]*c->CPy[i+1]+mt[5]) );
+			}
+		}
+	}
+
 	// control points
 	if( disp_CP && ppos>-1 && pprm>-1 ){
 		int Pcnt = ppm->crs[0].Pcnt;
 		int Xcnt = ppm->crs[0].Xcnt;
 		double *cpx = ppm->crs[0].Xx2d;
 		double *cpy = ppm->crs[0].Xy2d;
-		switch(pprm){	// P_CV2D, P_CV3D, P_TRSN, P_FLDA, P_RULL, P_RULR
+		switch(pprm){
 			case P_CV2D:	fl_color(255, 0, 255);	break;
 			case P_CV3D:	fl_color(0, 255, 0);	break;
 			case P_TRSN:	fl_color(0, 0, 255);	break;
 			case P_FLDA:	fl_color(255, 0, 0);	break;
+			case P_TRSN1:	fl_color(0, 0, 255);	break;
+			case P_FLDA1:	fl_color(255, 0, 0);	break;
 		}
 		int ii = (int) ( (double)ppos/(double)(Pcnt-1) * (double)(Xcnt-1) ) ;
 		fl_line_style( FL_SOLID, 5 );
@@ -319,7 +367,8 @@ void GraphWindowCP::draw()
 
 		fl_color(127, 127, 127);
 		fl_line_style( FL_SOLID, 3 );
-		for( int jj=0; jj<CCNT; jj++ ){
+		//for( int jj=0; jj<CCNT; jj++ ){
+		for( int jj=0; jj<Pcnt; jj++ ){
 			if( jj==ppos ){
 				continue;
 			}
@@ -398,12 +447,9 @@ int GraphWindowCP::handle(int event)
 		if( Fl::event_button() == FL_RIGHT_MOUSE || Fl::event_button() == FL_LEFT_MOUSE ){
 			push_x = Fl::event_x();
 			push_y = Fl::event_y();
-
 			if( Fl::event_button() == FL_LEFT_MOUSE ){
 				int thres=8;
-				if( this->flg_addcurve ){
-					flg_psize = 5;	ccnt=0;
-				} else if( abs( (ox+psx*wscl) - push_x ) < thres ){
+				if( abs( (ox+psx*wscl) - push_x ) < thres ){
 					flg_psize = 1;
 				} else if( abs( (ox+pex*wscl) - push_x ) < thres ){
 					flg_psize = 2;
@@ -427,7 +473,6 @@ int GraphWindowCP::handle(int event)
 			redraw();
 		}
 		if( Fl::event_button() == FL_LEFT_MOUSE ){
-			double dx,dy;
 			switch( flg_psize ){
 	case 1:
 		ofs_psx = Fl::event_x() - push_x;
@@ -440,16 +485,6 @@ int GraphWindowCP::handle(int event)
 		break;
 	case 4:
 		ofs_pey = Fl::event_y() - push_y;
-		break;
-	case 5:
-		if( ccnt < MAXDCX-1 ){
-			cx[ccnt] = Fl::event_x();
-			cy[ccnt] = Fl::event_y();
-			if( ccnt==0 || !(cx[ccnt]==cx[ccnt-1] && cy[ccnt]==cy[ccnt-1]) ){
-				//printf( "FL_DRAG: cx[%d]=%d, cy[%d]=%d\n", ccnt, cx[ccnt], ccnt, cy[ccnt] );
-				ccnt++;
-			}
-		}
 		break;
 	default:
 		ofs_a = (Fl::event_y() - push_y) * M_PI/this->h();
@@ -478,7 +513,7 @@ int GraphWindowCP::handle(int event)
 			}
 			if( ppm ){
 				ppm->set_postproc_type( PPTYPE_RTCURVE );
-				ppm->crs[0].calcXA_CP( ppm->flg_interpolate, ppm->flg_rectifyT, ppm->flg_rectifyA, ppm->flg_rectifyR );
+				ppm->crs[0].calcXA_CP( ppm->flg_interpolate, &ppm->rp );
 				ppm->postproc();
 				ppm->set_postproc_type( PPTYPE_UNDEF );
 			}
@@ -489,7 +524,6 @@ int GraphWindowCP::handle(int event)
 			((ControlPanel*)cwin)->gwin_gr->redraw();
 		}
 		if( Fl::event_button() == FL_LEFT_MOUSE ){
-			double dx,dy;
 			switch( flg_psize ){
 	case 1:
 		ofs_psx = Fl::event_x() - push_x;
@@ -539,17 +573,6 @@ int GraphWindowCP::handle(int event)
 		//printf( "FL_RELEASE: pey: %d\n", ofs_pey );
 		ofs_pey = 0;
 		break;
-	case 5:
-		if( ccnt < MAXDCX-1 ){
-			cx[ccnt] = Fl::event_x();
-			cy[ccnt] = Fl::event_y();
-			if( ccnt==0 || !(cx[ccnt]==cx[ccnt-1] && cy[ccnt]==cy[ccnt-1]) ){
-				//printf( "FL_RELEASE: cx[%d]=%d, cy[%d]=%d\n", ccnt, cx[ccnt], ccnt, cy[ccnt] );
-				ccnt++;
-			}
-			fixCurve();
-		}
-		break;
 	default:
 		ofs_a = (Fl::event_y() - push_y) * M_PI/this->h();
 		if( m2 ){
@@ -578,7 +601,7 @@ int GraphWindowCP::handle(int event)
 		}
 		if( ppm ){
 			ppm->set_postproc_type( PPTYPE_RTCURVE );
-			ppm->crs[0].calcXA_CP( ppm->flg_interpolate, ppm->flg_rectifyT, ppm->flg_rectifyA, ppm->flg_rectifyR );
+			ppm->crs[0].calcXA_CP( ppm->flg_interpolate, &ppm->rp );
 			ppm->postproc();
 			ppm->set_postproc_type( PPTYPE_UNDEF );
 		}

@@ -4,23 +4,22 @@
 #include <math.h>
 #include <string.h>
 #include "crease.h"
-#include "Spline.h"
 
 // a) 3D‹Èü‚ÆÜ‚èŠp“x‚©‚çAÜ‚èü‚ð‹‚ß‚é
-int crease::calcXA_CP( int flg_interpolate, int flg_rectifyT, int flg_rectifyA, int flg_rectifyR )
+int crease::calcXA_CP( int flg_interpolate, rectify_params *rp )
 {
 	if( flg_interpolate ){
-		initX();	Xcnt = XCNT;
+		initX();	Xcnt = XcntOrg;
 		interpolate_spline( Px, Pcnt, kv, Xcnt );
 		interpolate_spline( Py, Pcnt, tr, Xcnt );
 		interpolate_spline( Pa, Pcnt, alpha, Xcnt );
 	}
-	flg_src_s1e1 = 1;			// 0:k2d, 1:kv*cos(alpha)
-	calcXTNB( flg_rectifyT, m3 );	// kv,tr -> (rectifyTau) -> X -> calcTNB();
-	calcAK_K2D( flg_rectifyA );	// alpha, kv -> (rectifyAlpha) -> sina, cosa, tana, da, k2d
+	if( rp->flg_rectifyT ){ rectifyTauBezier2( &rp->rectT ); }
+	calcXTNB( m3 );				// kv,tr -> X -> calcTNB();
+	if( rp->flg_rectifyA ){ rectifyAlphaBezier( &rp->rectA ); }
+	calcAK_K2D( );				// alpha, kv -> sina, cosa, tana, da, k2d
 	calcXTN2d( m2 );			// k2d -> X2d -> calcTN2d();
-	flg_src_s1e1 = 0;
-	calcRuling( flg_rectifyR );
+	calcRuling( rp->flg_rectifyR, rp->rectifyR_kvthres );
 
 	//setP_k(-1);
 	//setP_t(-1);
@@ -31,20 +30,21 @@ int crease::calcXA_CP( int flg_interpolate, int flg_rectifyT, int flg_rectifyA, 
 }
 
 // b) Ü‚èü‚ÆÜ‚èŠp“x‚©‚çA3D‹Èü‚ð‹‚ß‚é
-int crease::calcCPA_X( int flg_interpolate, int flg_rectifyT, int flg_rectifyA, int flg_rectifyR )
+int crease::calcCPA_X( int flg_interpolate, rectify_params *rp )
 {
 	if( flg_interpolate ){
-		initX();	Xcnt = XCNT;
+		initX();	Xcnt = XcntOrg;
 		interpolate_spline( Px2d, Pcnt, k2d, Xcnt );
 		interpolate_spline( Pa, Pcnt, alpha, Xcnt );
 		interpolate_spline( Py, Pcnt, tr, Xcnt );
 	}
-	flg_src_s1e1 = 0;			// 0:k2d, 1:kv*cos(alpha)
 	calcXTN2d( m2 );			// k2d -> X2d -> calcTN2d();
-	calcAK2D_K( flg_rectifyA );	// alpha, k2d -> (rectifyAlpha) -> kv
-	calcXTNB( flg_rectifyT, m3 );	// kv,tr -> (rectifyTau) -> X -> calcTNB();
+	if( rp->flg_rectifyA ){ rectifyAlphaBezier( &rp->rectA ); }
+	calcAK2D_K();				// alpha, k2d -> kv
+	if( rp->flg_rectifyT ){ rectifyTauBezier2( &rp->rectT ); }
+	calcXTNB( m3 );				// kv,tr -> X -> calcTNB();
 	calcDA();
-	calcRuling( flg_rectifyR );
+	calcRuling( rp->flg_rectifyR, rp->rectifyR_kvthres );
 
 	setP_k(-1);
 	//setP_t(-1);
@@ -56,19 +56,19 @@ int crease::calcCPA_X( int flg_interpolate, int flg_rectifyT, int flg_rectifyA, 
 
 
 // c) Ü‚èü‚Æ3D‹Èü‚©‚çAÜ‚èŠp“x‚ð‹‚ß‚é
-int crease::calcCPX_A( int flg_interpolate, int flg_rectifyT, int flg_rectifyA, int flg_rectifyR )
+int crease::calcCPX_A( int flg_interpolate, rectify_params *rp )
 {
 	if( flg_interpolate ){
-		initX();	Xcnt = XCNT;
+		initX();	Xcnt = XcntOrg;
 		interpolate_spline( Px, Pcnt, kv, Xcnt );
 		interpolate_spline( Py, Pcnt, tr, Xcnt );
 		interpolate_spline( Px2d, Pcnt, k2d, Xcnt );
 	}
-	flg_src_s1e1 = 0;			// 0:k2d, 1:kv*cos(alpha)
-	calcXTNB( flg_rectifyT, m3 );	// kv,tr -> (rectifyTau) -> X -> calcTNB();
+	if( rp->flg_rectifyT ){ rectifyTauBezier2( &rp->rectT ); }
+	calcXTNB( m3 );				// kv,tr -> X -> calcTNB();
 	calcXTN2d( m2 );			// k2d -> X2d -> calcTN2d();
-	calcAlpha( flg_rectifyA );	// kv,k2d -> (rectifyAlpha) -> alpha, sina, cosa, tana, da
-	calcRuling( flg_rectifyR );
+	calcAlpha( rp->flg_rectifyA, &rp->rectA );	// kv,k2d -> (rectifyAlpha) -> alpha, sina, cosa, tana, da
+	calcRuling( rp->flg_rectifyR, rp->rectifyR_kvthres );
 
 	//setP_k(-1);
 	//setP_t(-1);
@@ -77,4 +77,3 @@ int crease::calcCPX_A( int flg_interpolate, int flg_rectifyT, int flg_rectifyA, 
 
 	return 0;
 }
-

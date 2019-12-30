@@ -11,7 +11,7 @@
 
 int papermodel::addPly( double x0_cp, double y0_cp, double x1_cp, double y1_cp, double x2_cp, double y2_cp,
 					   double x0_3d, double y0_3d, double z0_3d, double x1_3d, double y1_3d, double z1_3d,
-					   double x2_3d, double y2_3d, double z2_3d )
+					   double x2_3d, double y2_3d, double z2_3d, int cridx )
 {
 	int ret=0;
 	double x2[4], y2[4], z2[4];
@@ -37,6 +37,7 @@ int papermodel::addPly( double x0_cp, double y0_cp, double x1_cp, double y1_cp, 
 	plmat[plcnt*16+ 4]=mat[1]; plmat[plcnt*16+ 5]=mat[5]; plmat[plcnt*16+ 6]=mat[ 9]; plmat[plcnt*16+ 7]=mat[13];
 	plmat[plcnt*16+ 8]=mat[2]; plmat[plcnt*16+ 9]=mat[6]; plmat[plcnt*16+10]=mat[10]; plmat[plcnt*16+11]=mat[14];
 	plmat[plcnt*16+12]=mat[3]; plmat[plcnt*16+13]=mat[7]; plmat[plcnt*16+14]=mat[11]; plmat[plcnt*16+15]=mat[15];
+	pl_cridx[plcnt] = cridx;
 	plcnt++;
 
 	return ret;
@@ -45,7 +46,8 @@ int papermodel::addPly( double x0_cp, double y0_cp, double x1_cp, double y1_cp, 
 int papermodel::addPly( double x0_cp, double y0_cp, double x1_cp, double y1_cp,
 					   double x2_cp, double y2_cp, double x3_cp, double y3_cp,
 					   double x0_3d, double y0_3d, double z0_3d, double x1_3d, double y1_3d, double z1_3d,
-					   double x2_3d, double y2_3d, double z2_3d, double x3_3d, double y3_3d, double z3_3d )
+					   double x2_3d, double y2_3d, double z2_3d, double x3_3d, double y3_3d, double z3_3d,
+					   int cridx )
 {
 	int ret=0;
 	double x2[4], y2[4], z2[4];
@@ -58,7 +60,7 @@ int papermodel::addPly( double x0_cp, double y0_cp, double x1_cp, double y1_cp,
 
 	if( x3_3d==0.0 && y3_3d==0.0 && z3_3d==0.0 ){ // 3点をもとに4角形を作る
 
-		ret = addPly( x0_cp, y0_cp, x1_cp, y1_cp, x2_cp, y2_cp, x0_3d, y0_3d, z0_3d, x1_3d, y1_3d, z1_3d, x2_3d, y2_3d, z2_3d );
+		ret = addPly( x0_cp, y0_cp, x1_cp, y1_cp, x2_cp, y2_cp, x0_3d, y0_3d, z0_3d, x1_3d, y1_3d, z1_3d, x2_3d, y2_3d, z2_3d, cridx );
 
 		int pi = plcnt-1;
 		plvcnt[pi] = 4;
@@ -84,13 +86,14 @@ int papermodel::addPly( double x0_cp, double y0_cp, double x1_cp, double y1_cp,
 		plmat[plcnt*16+ 4]=mat[1]; plmat[plcnt*16+ 5]=mat[5]; plmat[plcnt*16+ 6]=mat[ 9]; plmat[plcnt*16+ 7]=mat[13];
 		plmat[plcnt*16+ 8]=mat[2]; plmat[plcnt*16+ 9]=mat[6]; plmat[plcnt*16+10]=mat[10]; plmat[plcnt*16+11]=mat[14];
 		plmat[plcnt*16+12]=mat[3]; plmat[plcnt*16+13]=mat[7]; plmat[plcnt*16+14]=mat[11]; plmat[plcnt*16+15]=mat[15];
+		pl_cridx[plcnt] = cridx;
 		plcnt++;
 	}
 
 	return ret;
 }
 
-int papermodel::addPlymat( double x0_cp, double y0_cp, double x1_cp, double y1_cp, double x2_cp, double y2_cp, double *mat )
+int papermodel::addPlymat( double x0_cp, double y0_cp, double x1_cp, double y1_cp, double x2_cp, double y2_cp, double *mat, int cridx )
 {
 	int ret=0;
 
@@ -115,7 +118,7 @@ int papermodel::addPlymat( double x0_cp, double y0_cp, double x1_cp, double y1_c
 	plx[plcnt*4+2] = m[0]*x2_cp + m[4]*y2_cp + m[ 8]*0.2 + m[12];	
 	ply[plcnt*4+2] = m[1]*x2_cp + m[5]*y2_cp + m[ 9]*0.2 + m[13];	
 	plz[plcnt*4+2] = m[2]*x2_cp + m[6]*y2_cp + m[10]*0.2 + m[14];
-
+	pl_cridx[plcnt] = cridx;
 	plcnt++;
 	return ret;
 }
@@ -164,153 +167,202 @@ int papermodel::addEdge( double x0, double y0, double z0, double x1, double y1, 
 	return ret;
 }
 
+
+crease_end_type cetype0( crease_end_type a )
+{
+	if( a==CETYPE_EGTOP0 || a==CETYPE_EGTOP1 ) return CETYPE_EGTOP0;
+	if( a==CETYPE_EGRIGHT0 || a==CETYPE_EGRIGHT1 ) return CETYPE_EGRIGHT0;
+	if( a==CETYPE_EGBOTTOM0 || a==CETYPE_EGBOTTOM1 ) return CETYPE_EGBOTTOM0;
+	if( a==CETYPE_EGLEFT0 || a==CETYPE_EGLEFT1 ) return CETYPE_EGLEFT0;
+	return a;
+}
+
+bool isSame( crease_end_type a, crease_end_type b )
+{
+	if((a==CETYPE_EGTOP0 || a==CETYPE_EGTOP1) && (b==CETYPE_EGTOP0 || b==CETYPE_EGTOP1))	return true;
+	if((a==CETYPE_EGRIGHT0 || a==CETYPE_EGRIGHT1) && (b==CETYPE_EGRIGHT0 || b==CETYPE_EGRIGHT1))	return true;
+	if((a==CETYPE_EGBOTTOM0 || a==CETYPE_EGBOTTOM1) && (b==CETYPE_EGBOTTOM0 || b==CETYPE_EGBOTTOM1))	return true;
+	if((a==CETYPE_EGLEFT0 || a==CETYPE_EGLEFT1) && (b==CETYPE_EGLEFT0 || b==CETYPE_EGLEFT1))	return true;
+	if( a==CETYPE_TRIM && b==CETYPE_TRIM )	return true;
+	return false;
+}
+
+bool isSame( crease_end_type a, ruling_end_type b )
+{
+	if((a==CETYPE_EGTOP0 || a==CETYPE_EGTOP1) && b==RETYPE_EGTOP)	return true;
+	if((a==CETYPE_EGRIGHT0 || a==CETYPE_EGRIGHT1) && b==RETYPE_EGRIGHT)	return true;
+	if((a==CETYPE_EGBOTTOM0 || a==CETYPE_EGBOTTOM1) && b==RETYPE_EGBOTTOM)	return true;
+	if((a==CETYPE_EGLEFT0 || a==CETYPE_EGLEFT1) && b==RETYPE_EGLEFT)	return true;
+	if( a==CETYPE_TRIM && b==RETYPE_TRIM )	return true;
+	return false;
+}
+
+bool isCW( crease_end_type a, crease_end_type b )
+{
+	if((a==CETYPE_EGLEFT0 || a==CETYPE_EGLEFT1) && (b==CETYPE_EGTOP0 || b==CETYPE_EGTOP1))	return true;
+	if((a==CETYPE_EGTOP0 || a==CETYPE_EGTOP1) && (b==CETYPE_EGRIGHT0 || b==CETYPE_EGRIGHT1))	return true;
+	if((a==CETYPE_EGRIGHT0 || a==CETYPE_EGRIGHT1) && (b==CETYPE_EGBOTTOM0 || b==CETYPE_EGBOTTOM1))	return true;
+	if((a==CETYPE_EGBOTTOM0 || a==CETYPE_EGBOTTOM1) && (b==CETYPE_EGLEFT0 || b==CETYPE_EGLEFT1))	return true;
+	return false;
+}
+
+bool isCW( crease_end_type a, ruling_end_type b )
+{
+	if((a==CETYPE_EGTOP0 || a==CETYPE_EGTOP1) && b==RETYPE_EGRIGHT )	return true;
+	if((a==CETYPE_EGRIGHT0 || a==CETYPE_EGRIGHT1) && b==RETYPE_EGBOTTOM )	return true;
+	if((a==CETYPE_EGBOTTOM0 || a==CETYPE_EGBOTTOM1) && b==RETYPE_EGLEFT )	return true;
+	if((a==CETYPE_EGLEFT0 || a==CETYPE_EGLEFT1) && b==RETYPE_EGTOP )	return true;
+	return false;
+}
+
+bool isCW( ruling_end_type a, ruling_end_type b )
+{
+	if( a == RETYPE_EGLEFT && b == RETYPE_EGTOP )	return true;
+	if( a == RETYPE_EGTOP && b == RETYPE_EGRIGHT )	return true;
+	if( a == RETYPE_EGRIGHT && b == RETYPE_EGBOTTOM )	return true;
+	if( a == RETYPE_EGBOTTOM && b == RETYPE_EGLEFT)	return true;
+	return false;
+}
+
+bool isCCW( crease_end_type a, crease_end_type b )
+{
+	if((a==CETYPE_EGTOP0 || a==CETYPE_EGTOP1) && (b==CETYPE_EGLEFT0 || b==CETYPE_EGLEFT1))	return true;
+	if((a==CETYPE_EGRIGHT0 || a==CETYPE_EGRIGHT1) && (b==CETYPE_EGTOP0 || b==CETYPE_EGTOP1))	return true;
+	if((a==CETYPE_EGBOTTOM0 || a==CETYPE_EGBOTTOM1) && (b==CETYPE_EGRIGHT0 || b==CETYPE_EGRIGHT1))	return true;
+	if((a==CETYPE_EGLEFT0 || a==CETYPE_EGLEFT1) && (b==CETYPE_EGBOTTOM0 || b==CETYPE_EGBOTTOM1))	return true;
+	return false;
+}
+
+bool isCCW( crease_end_type a, ruling_end_type b )
+{
+	if( (a==CETYPE_EGTOP0 || a==CETYPE_EGTOP1) && b==RETYPE_EGLEFT )	return true;
+	if( (a==CETYPE_EGRIGHT0 || a==CETYPE_EGRIGHT1) && b==RETYPE_EGTOP )	return true;
+	if( (a==CETYPE_EGBOTTOM0 || a==CETYPE_EGBOTTOM1) && b==RETYPE_EGRIGHT )	return true;
+	if( (a==CETYPE_EGLEFT0 || a==CETYPE_EGLEFT1) && b==RETYPE_EGBOTTOM )	return true;
+	return false;
+}
+
+bool isCCW( ruling_end_type a, ruling_end_type b )
+{
+	if( a == RETYPE_EGTOP && b == RETYPE_EGLEFT )	return true;
+	if( a == RETYPE_EGRIGHT && b == RETYPE_EGTOP )	return true;
+	if( a == RETYPE_EGBOTTOM && b == RETYPE_EGRIGHT )	return true;
+	if( a == RETYPE_EGLEFT && b == RETYPE_EGBOTTOM )	return true;
+	return false;
+}
+
 int papermodel::calcRulingPly()
 {
 	int i, li, ret=0;
 	plcnt = plecnt = 0;
 
-	crease *c = &(crs[0]);
-	for( i=c->Xsidx+1, li=c->Xsidx; i<=c->Xeidx; i++ ){
-		if( c->rllen[i]==0.0 ){
-			continue;
-		}
-		addPly( c->Xx2d[ i], c->Xy2d[ i], c->Xx2d[li], c->Xy2d[li],
-			c->Xx2d[li] + c->rlx_cp[li]*c->rllen[li], c->Xy2d[li] + c->rly_cp[li]*c->rllen[li],
-			c->Xx2d[ i] + c->rlx_cp[ i]*c->rllen[ i], c->Xy2d[ i] + c->rly_cp[ i]*c->rllen[ i],
-			c->Xx[ i], c->Xy[ i], c->Xz[ i], c->Xx[li],  c->Xy[li], c->Xz[li],
-			c->Xx[li] + c->rlx[li]*c->rllen[li], c->Xy[li] + c->rly[li]*c->rllen[li], c->Xz[li] + c->rlz[li]*c->rllen[li],
-			c->Xx[ i] + c->rlx[ i]*c->rllen[ i], c->Xy[ i] + c->rly[ i]*c->rllen[ i], c->Xz[ i] + c->rlz[ i]*c->rllen[ i] );
+	for( int k=0; k<crcnt; k++ ){
+		crease *c = &(crs[k]);
+		if( c->rl == 0 || c->rl == -1 ){	// rl = -1:left, 1:right
+			for( i=c->Xsidx+1, li=c->Xsidx; i<=c->Xeidx; i++ ){
+				if( c->rllen[i]==0.0 ){
+					continue;
+				}
+				addPly( c->Xx2d[ i], c->Xy2d[ i], c->Xx2d[li], c->Xy2d[li],
+					c->Xx2d[li] + c->rlx_cp[li]*c->rllen[li], c->Xy2d[li] + c->rly_cp[li]*c->rllen[li],
+					c->Xx2d[ i] + c->rlx_cp[ i]*c->rllen[ i], c->Xy2d[ i] + c->rly_cp[ i]*c->rllen[ i],
+					c->Xx[ i], c->Xy[ i], c->Xz[ i], c->Xx[li],  c->Xy[li], c->Xz[li],
+					c->Xx[li] + c->rlx[li]*c->rllen[li], c->Xy[li] + c->rly[li]*c->rllen[li], c->Xz[li] + c->rlz[li]*c->rllen[li],
+					c->Xx[ i] + c->rlx[ i]*c->rllen[ i], c->Xy[ i] + c->rly[ i]*c->rllen[ i], c->Xz[ i] + c->rlz[ i]*c->rllen[ i],
+					k );
 #if 1 // add corner triangle
-		int pi = plcnt-1;
-		if( /*c->rlflg[li] == RETYPE_EGLEFT && c->rlflg[i] == RETYPE_EGTOP ||*/
-			c->rlflg[li] == RETYPE_EGTOP && c->rlflg[i] == RETYPE_EGLEFT ){
-				addPlymat(
-					c->Xx2d[ i] + c->rlx_cp[ i]*c->rllen[ i], c->Xy2d[ i] + c->rly_cp[ i]*c->rllen[ i],
-					c->Xx2d[li] + c->rlx_cp[li]*c->rllen[li], c->Xy2d[li] + c->rly_cp[li]*c->rllen[li],
-					psx,psy,&(plmat[pi*16]) );
-		} else if( /*c->rlflg[li] == RETYPE_EGTOP && c->rlflg[i] == RETYPE_EGRIGHT ||*/
-			c->rlflg[li] == RETYPE_EGRIGHT && c->rlflg[i] == RETYPE_EGTOP ){
-				addPlymat(
-					c->Xx2d[ i] + c->rlx_cp[ i]*c->rllen[ i], c->Xy2d[ i] + c->rly_cp[ i]*c->rllen[ i],
-					c->Xx2d[li] + c->rlx_cp[li]*c->rllen[li], c->Xy2d[li] + c->rly_cp[li]*c->rllen[li],
-					pex,psy,&(plmat[pi*16]) );
-		} else if( /*c->rlflg[li] == RETYPE_EGRIGHT && c->rlflg[i] == RETYPE_EGBOTTOM ||*/
-			c->rlflg[li] == RETYPE_EGBOTTOM && c->rlflg[i] == RETYPE_EGRIGHT ){
-				addPlymat(
-					c->Xx2d[ i] + c->rlx_cp[ i]*c->rllen[ i], c->Xy2d[ i] + c->rly_cp[ i]*c->rllen[ i],
-					c->Xx2d[li] + c->rlx_cp[li]*c->rllen[li], c->Xy2d[li] + c->rly_cp[li]*c->rllen[li],
-					pex,pey,&(plmat[pi*16]) );
-		} else if( /*c->rlflg[li] == RETYPE_EGBOTTOM && c->rlflg[i] == RETYPE_EGLEFT ||*/
-			c->rlflg[li] == RETYPE_EGLEFT && c->rlflg[i] == RETYPE_EGBOTTOM ){
-				addPlymat(
-					c->Xx2d[ i] + c->rlx_cp[ i]*c->rllen[ i], c->Xy2d[ i] + c->rly_cp[ i]*c->rllen[ i],
-					c->Xx2d[li] + c->rlx_cp[li]*c->rllen[li], c->Xy2d[li] + c->rly_cp[li]*c->rllen[li],
-					psx,pey,&(plmat[pi*16]) );
-		}
+				int pi = plcnt-1;
+				if ( isCCW( c->rlflg[li], c->rlflg[i] ) ){
+					int cnx, cny;
+					switch( c->rlflg[i] ){
+						case RETYPE_EGLEFT:	cnx=psx; cny=psy;	break;
+						case RETYPE_EGTOP:	cnx=pex; cny=psy;	break;
+						case RETYPE_EGRIGHT:	cnx=pex; cny=pey;	break;
+						case RETYPE_EGBOTTOM:	cnx=psx; cny=pey;	break;
+					}
+					addPlymat(
+						c->Xx2d[ i] + c->rlx_cp[ i]*c->rllen[ i], c->Xy2d[ i] + c->rly_cp[ i]*c->rllen[ i],
+						c->Xx2d[li] + c->rlx_cp[li]*c->rllen[li], c->Xy2d[li] + c->rly_cp[li]*c->rllen[li],
+						cnx, cny, &(plmat[pi*16]), k );
+				} else if( c->rlflg[li] == RETYPE_CURVE && c->rlflg[i] != RETYPE_CURVE ){
+					crease *c1 = lcrs[1]; // temporal
+					addPlymat(
+						c->Xx2d[ i] + c->rlx_cp[ i]*c->rllen[ i], c->Xy2d[ i] + c->rly_cp[ i]*c->rllen[ i],
+						c->Xx2d[li] + c->rlx_cp[li]*c->rllen[li], c->Xy2d[li] + c->rly_cp[li]*c->rllen[li],
+						c1->Xxe2d, c1->Xye2d, &(plmat[pi*16]), k );
+				}
 #endif
-#if 0
-		if( c->rlflg[li] == RETYPE_EGLEFT && c->rlflg[i] == RETYPE_EGLEFT )
-		{
-			addEdge1( c->Xx[ i] + c->rlx[ i]*c->rllen[ i],
-				c->Xy[ i] + c->rly[ i]*c->rllen[ i],
-				c->Xz[ i] + c->rlz[ i]*c->rllen[ i],
-				c->Xx[li] + c->rlx[li]*c->rllen[li],
-				c->Xy[li] + c->rly[li]*c->rllen[li],
-				c->Xz[li] + c->rlz[li]*c->rllen[li] );
-
-		} else
-#endif
-			if( !(c->rlflg[li] == RETYPE_UNDEF || c->rlflg[li] == RETYPE_CURVE)
-				&& !(c->rlflg[i] == RETYPE_UNDEF || c->rlflg[i] == RETYPE_CURVE) )
-			{
-				addEdge( c->Xx[ i] + c->rlx[ i]*c->rllen[ i],
-					c->Xy[ i] + c->rly[ i]*c->rllen[ i],
-					c->Xz[ i] + c->rlz[ i]*c->rllen[ i],
-					c->Xx[li] + c->rlx[li]*c->rllen[li],
-					c->Xy[li] + c->rly[li]*c->rllen[li],
-					c->Xz[li] + c->rlz[li]*c->rllen[li] );
+				if( !(c->rlflg[li] == RETYPE_UNDEF || c->rlflg[li] == RETYPE_CURVE)
+					&& !(c->rlflg[i] == RETYPE_UNDEF || c->rlflg[i] == RETYPE_CURVE) )
+				{
+					addEdge( c->Xx[ i] + c->rlx[ i]*c->rllen[ i],
+						c->Xy[ i] + c->rly[ i]*c->rllen[ i],
+						c->Xz[ i] + c->rlz[ i]*c->rllen[ i],
+						c->Xx[li] + c->rlx[li]*c->rllen[li],
+						c->Xy[li] + c->rly[li]*c->rllen[li],
+						c->Xz[li] + c->rlz[li]*c->rllen[li] );
+				}
+				li=i;
 			}
-			li=i;
-	}
-
-	for( i=c->Xsidx+1, li=c->Xsidx; i<=c->Xeidx; i++ ){
-		if( c->rrlen[i]==0.0 ){
-			continue;
 		}
-		addPly( c->Xx2d[li], c->Xy2d[li], c->Xx2d[ i], c->Xy2d[ i],
-			c->Xx2d[ i] + c->rrx_cp[ i]*c->rrlen[ i], c->Xy2d[ i] + c->rry_cp[ i]*c->rrlen[ i],
-			c->Xx2d[li] + c->rrx_cp[li]*c->rrlen[li], c->Xy2d[li] + c->rry_cp[li]*c->rrlen[li],
-			c->Xx[li], c->Xy[li], c->Xz[li], c->Xx[ i],  c->Xy[ i], c->Xz[ i],
-			c->Xx[ i] + c->rrx[ i]*c->rrlen[ i], c->Xy[ i] + c->rry[ i]*c->rrlen[ i], c->Xz[ i] + c->rrz[ i]*c->rrlen[ i],
-			c->Xx[li] + c->rrx[li]*c->rrlen[li], c->Xy[li] + c->rry[li]*c->rrlen[li], c->Xz[li] + c->rrz[li]*c->rrlen[li] );
+		if( c->rl == 0 || c->rl == 1 ){	// rl = -1:left, 1:right
+			for( i=c->Xsidx+1, li=c->Xsidx; i<=c->Xeidx; i++ ){
+				if( c->rrlen[i]==0.0 ){
+					continue;
+				}
+				addPly( c->Xx2d[li], c->Xy2d[li], c->Xx2d[ i], c->Xy2d[ i],
+					c->Xx2d[ i] + c->rrx_cp[ i]*c->rrlen[ i], c->Xy2d[ i] + c->rry_cp[ i]*c->rrlen[ i],
+					c->Xx2d[li] + c->rrx_cp[li]*c->rrlen[li], c->Xy2d[li] + c->rry_cp[li]*c->rrlen[li],
+					c->Xx[li], c->Xy[li], c->Xz[li], c->Xx[ i],  c->Xy[ i], c->Xz[ i],
+					c->Xx[ i] + c->rrx[ i]*c->rrlen[ i], c->Xy[ i] + c->rry[ i]*c->rrlen[ i], c->Xz[ i] + c->rrz[ i]*c->rrlen[ i],
+					c->Xx[li] + c->rrx[li]*c->rrlen[li], c->Xy[li] + c->rry[li]*c->rrlen[li], c->Xz[li] + c->rrz[li]*c->rrlen[li],
+					k );
 #if 1 // add corner triangle
-		int pi = plcnt-1;
-		if( c->rrflg[li] == RETYPE_EGLEFT && c->rrflg[i] == RETYPE_EGTOP
-			/*|| c->rrflg[li] == RETYPE_EGTOP && c->rrflg[i] == RETYPE_EGLEFT*/ ){
-				addPlymat(
-					c->Xx2d[li] + c->rrx_cp[li]*c->rrlen[li], c->Xy2d[li] + c->rry_cp[li]*c->rrlen[li],
-					c->Xx2d[ i] + c->rrx_cp[ i]*c->rrlen[ i], c->Xy2d[ i] + c->rry_cp[ i]*c->rrlen[ i],
-					psx,psy,&(plmat[pi*16]) );
-
-		} else if( c->rrflg[li] == RETYPE_EGTOP && c->rrflg[i] == RETYPE_EGRIGHT
-			/*|| c->rrflg[li] == RETYPE_EGRIGHT && c->rrflg[i] == RETYPE_EGTOP*/ ){
-				addPlymat(
-					c->Xx2d[li] + c->rrx_cp[li]*c->rrlen[li], c->Xy2d[li] + c->rry_cp[li]*c->rrlen[li],
-					c->Xx2d[ i] + c->rrx_cp[ i]*c->rrlen[ i], c->Xy2d[ i] + c->rry_cp[ i]*c->rrlen[ i],
-					pex,psy,&(plmat[pi*16]) );
-
-		} else if( c->rrflg[li] == RETYPE_EGRIGHT && c->rrflg[i] == RETYPE_EGBOTTOM
-			/*|| c->rrflg[li] == RETYPE_EGBOTTOM && c->rrflg[i] == RETYPE_EGRIGHT*/ ){
-				addPlymat(
-					c->Xx2d[li] + c->rrx_cp[li]*c->rrlen[li], c->Xy2d[li] + c->rry_cp[li]*c->rrlen[li],
-					c->Xx2d[ i] + c->rrx_cp[ i]*c->rrlen[ i], c->Xy2d[ i] + c->rry_cp[ i]*c->rrlen[ i],
-					pex,pey,&(plmat[pi*16]) );
-
-		} else if( c->rrflg[li] == RETYPE_EGBOTTOM && c->rrflg[i] == RETYPE_EGLEFT
-			/*|| c->rrflg[li] == RETYPE_EGLEFT && c->rrflg[i] == RETYPE_EGBOTTOM*/ ){
-				addPlymat(
-					c->Xx2d[li] + c->rrx_cp[li]*c->rrlen[li], c->Xy2d[li] + c->rry_cp[li]*c->rrlen[li],
-					c->Xx2d[ i] + c->rrx_cp[ i]*c->rrlen[ i], c->Xy2d[ i] + c->rry_cp[ i]*c->rrlen[ i],
-					psx,pey,&(plmat[pi*16]) );
-		}
+				int pi = plcnt-1;
+				if ( isCW( c->rlflg[li], c->rlflg[i] ) ){
+					int cnx, cny;
+					switch( c->rlflg[i] ){
+						case RETYPE_EGTOP:	cnx=psx; cny=psy;	break;
+						case RETYPE_EGRIGHT:	cnx=pex; cny=psy;	break;
+						case RETYPE_EGBOTTOM:	cnx=pex; cny=pey;	break;
+						case RETYPE_EGLEFT:	cnx=psx; cny=pey;	break;
+					}
+					addPlymat(
+						c->Xx2d[li] + c->rrx_cp[li]*c->rrlen[li], c->Xy2d[li] + c->rry_cp[li]*c->rrlen[li],
+						c->Xx2d[ i] + c->rrx_cp[ i]*c->rrlen[ i], c->Xy2d[ i] + c->rry_cp[ i]*c->rrlen[ i],
+						cnx, cny, &(plmat[pi*16]), k );
+				} else if( c->rrflg[li] == RETYPE_CURVE && c->rrflg[i] != RETYPE_CURVE ){
+					crease *c1 = rcrs[1]; // temporal
+					addPlymat(
+						c->Xx2d[ i] + c->rrx_cp[ i]*c->rrlen[ i], c->Xy2d[ i] + c->rry_cp[ i]*c->rrlen[ i],
+						c->Xx2d[li] + c->rrx_cp[li]*c->rrlen[li], c->Xy2d[li] + c->rry_cp[li]*c->rrlen[li],
+						c1->Xxe2d, c1->Xye2d, &(plmat[pi*16]), k );
+				}
 #endif
-#if 0
-		if( c->rlflg[li] == RETYPE_EGLEFT && c->rlflg[i] == RETYPE_EGLEFT )
-		{
-			addEdge1( c->Xx[li] + c->rrx[li]*c->rrlen[li],
-				c->Xy[li] + c->rry[li]*c->rrlen[li],
-				c->Xz[li] + c->rrz[li]*c->rrlen[li],
-				c->Xx[ i] + c->rrx[ i]*c->rrlen[ i],
-				c->Xy[ i] + c->rry[ i]*c->rrlen[ i],
-				c->Xz[ i] + c->rrz[ i]*c->rrlen[ i] );
-
-		} else
-#endif
-			if( !(c->rrflg[li] == RETYPE_UNDEF || c->rrflg[li] == RETYPE_CURVE)
-				&& !(c->rrflg[i] == RETYPE_UNDEF || c->rrflg[i] == RETYPE_CURVE) )
-			{
-				addEdge( c->Xx[li] + c->rrx[li]*c->rrlen[li],
-					c->Xy[li] + c->rry[li]*c->rrlen[li],
-					c->Xz[li] + c->rrz[li]*c->rrlen[li],
-					c->Xx[ i] + c->rrx[ i]*c->rrlen[ i],
-					c->Xy[ i] + c->rry[ i]*c->rrlen[ i],
-					c->Xz[ i] + c->rrz[ i]*c->rrlen[ i] );
+				if( !(c->rrflg[li] == RETYPE_UNDEF || c->rrflg[li] == RETYPE_CURVE)
+					&& !(c->rrflg[i] == RETYPE_UNDEF || c->rrflg[i] == RETYPE_CURVE) )
+				{
+					addEdge( c->Xx[li] + c->rrx[li]*c->rrlen[li],
+						c->Xy[li] + c->rry[li]*c->rrlen[li],
+						c->Xz[li] + c->rrz[li]*c->rrlen[li],
+						c->Xx[ i] + c->rrx[ i]*c->rrlen[ i],
+						c->Xy[ i] + c->rry[ i]*c->rrlen[ i],
+						c->Xz[ i] + c->rrz[ i]*c->rrlen[ i] );
+				}
+				li=i;
 			}
-			li=i;
+		}
 	}
 
 #if 1	// 端点（折り線始点・左側）
-	crease *c0 = &(crs[0]);
+	for( int k=0; k<lcrcnt; k++ ){
+		crease *c0 = lcrs[k];
+		crease *c1 = NULL;
+		if( k<lcrcnt-1 ){ c1 = lcrs[k+1]; }
 
-	if( (c0->Xstype==CETYPE_EGTOP0 || c0->Xstype==CETYPE_EGTOP1) && c0->rlflg[c0->Xsidx]==RETYPE_EGTOP
-		|| (c0->Xstype==CETYPE_EGRIGHT0 || c0->Xstype==CETYPE_EGRIGHT1) && c0->rlflg[c0->Xsidx]==RETYPE_EGRIGHT
-		|| (c0->Xstype==CETYPE_EGBOTTOM0 || c0->Xstype==CETYPE_EGBOTTOM1) && c0->rlflg[c0->Xsidx]==RETYPE_EGBOTTOM
-		|| (c0->Xstype==CETYPE_EGLEFT0 || c0->Xstype==CETYPE_EGLEFT1) && c0->rlflg[c0->Xsidx]==RETYPE_EGLEFT
-		|| c0->rlflg[c0->Xsidx]==RETYPE_TRIM )
-	{
-		// 折り線端点とruling端点が同じ辺／曲線 -> 三角形を貼る
-		//if( c0->Xxs!=0.0 || c0->Xys!=0.0 || c0->Xzs!=0.0 )
+		if( isSame( c0->Xstype, c0->rlflg[c0->Xsidx] ) )
 		{
+			// 折り線端点とruling端点が同じ辺／曲線 -> 三角形を貼る
 			addPly( c0->Xx2d[c0->Xsidx], c0->Xy2d[c0->Xsidx],
 				c0->Xxs2d, c0->Xys2d,
 				c0->Xx2d[c0->Xsidx] + c0->rlx_cp[c0->Xsidx]*c0->rllen[c0->Xsidx],
@@ -319,121 +371,75 @@ int papermodel::calcRulingPly()
 				c0->Xxs, c0->Xys, c0->Xzs,
 				c0->Xx[c0->Xsidx] + c0->rlx[c0->Xsidx]*c0->rllen[c0->Xsidx],
 				c0->Xy[c0->Xsidx] + c0->rly[c0->Xsidx]*c0->rllen[c0->Xsidx],
-				c0->Xz[c0->Xsidx] + c0->rlz[c0->Xsidx]*c0->rllen[c0->Xsidx] );
+				c0->Xz[c0->Xsidx] + c0->rlz[c0->Xsidx]*c0->rllen[c0->Xsidx], k  );
 			addEdge( c0->Xx[c0->Xsidx] + c0->rlx[c0->Xsidx]*c0->rllen[c0->Xsidx],
 				c0->Xy[c0->Xsidx] + c0->rly[c0->Xsidx]*c0->rllen[c0->Xsidx],
 				c0->Xz[c0->Xsidx] + c0->rlz[c0->Xsidx]*c0->rllen[c0->Xsidx],
 				c0->Xxs, c0->Xys, c0->Xzs );
 		}
-	}
-	else if( (c0->Xstype==CETYPE_EGTOP0 || c0->Xstype==CETYPE_EGTOP1) && c0->rlflg[c0->Xsidx]==RETYPE_EGLEFT )
-	{
-		// 三角形で変換求めて四角形
-		//if( c0->Xxs!=0.0 || c0->Xys!=0.0 || c0->Xzs!=0.0 )
+		else if( isCCW(c0->Xstype, c0->rlflg[c0->Xsidx]) )
 		{
+			// 三角形で変換求めて四角形
+			int cnx, cny;
+			switch( c0->rlflg[c0->Xsidx] ){
+				case RETYPE_EGLEFT:	cnx=psx; cny=psy;	break;
+				case RETYPE_EGTOP:	cnx=pex; cny=psy;	break;
+				case RETYPE_EGRIGHT:	cnx=pex; cny=pey;	break;
+				case RETYPE_EGBOTTOM:	cnx=psx; cny=pey;	break;
+			}
 			addPly(
 				c0->Xx2d[c0->Xsidx] + c0->rlx_cp[c0->Xsidx]*c0->rllen[c0->Xsidx],
 				c0->Xy2d[c0->Xsidx] + c0->rly_cp[c0->Xsidx]*c0->rllen[c0->Xsidx],
 				c0->Xx2d[c0->Xsidx], c0->Xy2d[c0->Xsidx],
 				c0->Xxs2d, c0->Xys2d,
-				psx, psy, // top-left
+				cnx, cny,
 				c0->Xx[c0->Xsidx] + c0->rlx[c0->Xsidx]*c0->rllen[c0->Xsidx],
 				c0->Xy[c0->Xsidx] + c0->rly[c0->Xsidx]*c0->rllen[c0->Xsidx],
 				c0->Xz[c0->Xsidx] + c0->rlz[c0->Xsidx]*c0->rllen[c0->Xsidx],
 				c0->Xx[c0->Xsidx], c0->Xy[c0->Xsidx], c0->Xz[c0->Xsidx],
 				c0->Xxs, c0->Xys, c0->Xzs,
-				0,0,0); // undefined
+				0,0,0, k ); // undefined
 			addEdge( c0->Xx[c0->Xsidx] + c0->rlx[c0->Xsidx]*c0->rllen[c0->Xsidx],
 				c0->Xy[c0->Xsidx] + c0->rly[c0->Xsidx]*c0->rllen[c0->Xsidx],
 				c0->Xz[c0->Xsidx] + c0->rlz[c0->Xsidx]*c0->rllen[c0->Xsidx],
 				plx[(plcnt-1)*4+3], ply[(plcnt-1)*4+3], plz[(plcnt-1)*4+3],
 				c0->Xxs, c0->Xys, c0->Xzs );
 		}
-	}
-	else if( (c0->Xstype==CETYPE_EGRIGHT0 || c0->Xstype==CETYPE_EGRIGHT1) && c0->rlflg[c0->Xsidx]==RETYPE_EGTOP )
-	{
-		// 三角形で変換求めて四角形
-		//if( c0->Xxs!=0.0 || c0->Xys!=0.0 || c0->Xzs!=0.0 )
+		else if( c0->rlflg[c0->Xsidx]==RETYPE_CURVE && c1 )
 		{
 			addPly(
-				c0->Xx2d[c0->Xsidx] + c0->rlx_cp[c0->Xsidx]*c0->rllen[c0->Xsidx],
-				c0->Xy2d[c0->Xsidx] + c0->rly_cp[c0->Xsidx]*c0->rllen[c0->Xsidx],
+				c1->Xx2d[c1->Xsidx], c1->Xy2d[c1->Xsidx],
 				c0->Xx2d[c0->Xsidx], c0->Xy2d[c0->Xsidx],
 				c0->Xxs2d, c0->Xys2d,
-				pex, psy, // top-right
-				c0->Xx[c0->Xsidx] + c0->rlx[c0->Xsidx]*c0->rllen[c0->Xsidx],
-				c0->Xy[c0->Xsidx] + c0->rly[c0->Xsidx]*c0->rllen[c0->Xsidx],
-				c0->Xz[c0->Xsidx] + c0->rlz[c0->Xsidx]*c0->rllen[c0->Xsidx],
+				c1->Xxs2d, c1->Xys2d,
+				c1->Xx[c1->Xsidx], c1->Xy[c1->Xsidx], c1->Xz[c0->Xsidx],
 				c0->Xx[c0->Xsidx], c0->Xy[c0->Xsidx], c0->Xz[c0->Xsidx],
 				c0->Xxs, c0->Xys, c0->Xzs,
-				0,0,0); // undefined
-			addEdge( c0->Xx[c0->Xsidx] + c0->rlx[c0->Xsidx]*c0->rllen[c0->Xsidx],
-				c0->Xy[c0->Xsidx] + c0->rly[c0->Xsidx]*c0->rllen[c0->Xsidx],
-				c0->Xz[c0->Xsidx] + c0->rlz[c0->Xsidx]*c0->rllen[c0->Xsidx],
-				plx[(plcnt-1)*4+3], ply[(plcnt-1)*4+3], plz[(plcnt-1)*4+3],
-				c0->Xxs, c0->Xys, c0->Xzs );
-		}
-	}
-	else if( (c0->Xstype==CETYPE_EGBOTTOM0 || c0->Xstype==CETYPE_EGBOTTOM1) && c0->rlflg[c0->Xsidx]==RETYPE_EGRIGHT )
-	{
-		// 三角形で変換求めて四角形
-		//if( c0->Xxs!=0.0 || c0->Xys!=0.0 || c0->Xzs!=0.0 )
-		{
-			addPly(
-				c0->Xx2d[c0->Xsidx] + c0->rlx_cp[c0->Xsidx]*c0->rllen[c0->Xsidx],
-				c0->Xy2d[c0->Xsidx] + c0->rly_cp[c0->Xsidx]*c0->rllen[c0->Xsidx],					
-				c0->Xx2d[c0->Xsidx], c0->Xy2d[c0->Xsidx],
-				c0->Xxs2d, c0->Xys2d,
-				pex, pey, // bottom-right
-				c0->Xx[c0->Xsidx] + c0->rlx[c0->Xsidx]*c0->rllen[c0->Xsidx],
-				c0->Xy[c0->Xsidx] + c0->rly[c0->Xsidx]*c0->rllen[c0->Xsidx],
-				c0->Xz[c0->Xsidx] + c0->rlz[c0->Xsidx]*c0->rllen[c0->Xsidx],
-				c0->Xx[c0->Xsidx], c0->Xy[c0->Xsidx], c0->Xz[c0->Xsidx],
-				c0->Xxs, c0->Xys, c0->Xzs,
-				0,0,0); // undefined
-			addEdge( c0->Xx[c0->Xsidx] + c0->rlx[c0->Xsidx]*c0->rllen[c0->Xsidx],
-				c0->Xy[c0->Xsidx] + c0->rly[c0->Xsidx]*c0->rllen[c0->Xsidx],
-				c0->Xz[c0->Xsidx] + c0->rlz[c0->Xsidx]*c0->rllen[c0->Xsidx],
-				plx[(plcnt-1)*4+3], ply[(plcnt-1)*4+3], plz[(plcnt-1)*4+3],
-				c0->Xxs, c0->Xys, c0->Xzs );
-		}
-	}
-	else if( (c0->Xstype==CETYPE_EGLEFT0 || c0->Xstype==CETYPE_EGLEFT1) && c0->rlflg[c0->Xsidx]==RETYPE_EGBOTTOM )
-	{
-		// 三角形で変換求めて四角形
-		//if( c0->Xxs!=0.0 || c0->Xys!=0.0 || c0->Xzs!=0.0 )
-		{
-			addPly(
-				c0->Xx2d[c0->Xsidx] + c0->rlx_cp[c0->Xsidx]*c0->rllen[c0->Xsidx],
-				c0->Xy2d[c0->Xsidx] + c0->rly_cp[c0->Xsidx]*c0->rllen[c0->Xsidx],
-				c0->Xx2d[c0->Xsidx], c0->Xy2d[c0->Xsidx],
-				c0->Xxs2d, c0->Xys2d,
-				psx, pey, // bottom-left
-				c0->Xx[c0->Xsidx] + c0->rlx[c0->Xsidx]*c0->rllen[c0->Xsidx],
-				c0->Xy[c0->Xsidx] + c0->rly[c0->Xsidx]*c0->rllen[c0->Xsidx],
-				c0->Xz[c0->Xsidx] + c0->rlz[c0->Xsidx]*c0->rllen[c0->Xsidx],
-				c0->Xx[c0->Xsidx], c0->Xy[c0->Xsidx], c0->Xz[c0->Xsidx],
-				c0->Xxs, c0->Xys, c0->Xzs,
-				0,0,0); // undefined
-			addEdge( c0->Xx[c0->Xsidx] + c0->rlx[c0->Xsidx]*c0->rllen[c0->Xsidx],
-				c0->Xy[c0->Xsidx] + c0->rly[c0->Xsidx]*c0->rllen[c0->Xsidx],
-				c0->Xz[c0->Xsidx] + c0->rlz[c0->Xsidx]*c0->rllen[c0->Xsidx],
-				plx[(plcnt-1)*4+3], ply[(plcnt-1)*4+3], plz[(plcnt-1)*4+3],
-				c0->Xxs, c0->Xys, c0->Xzs );
+				c1->Xxs, c1->Xys, c1->Xzs, k  );
+			addEdge( plx[(plcnt-1)*4+3], ply[(plcnt-1)*4+3], plz[(plcnt-1)*4+3], c0->Xxs, c0->Xys, c0->Xzs );
+			if( isCCW( c0->Xstype, c1->Xstype ) ){
+				int pi = plcnt-1, cnx, cny;
+				switch( cetype0(c0->Xstype) ){
+					case CETYPE_EGTOP0:	cnx=psx; cny=psy;	break;
+					case CETYPE_EGRIGHT0:	cnx=pex; cny=psy;	break;
+					case CETYPE_EGBOTTOM0:	cnx=pex; cny=pey;	break;
+					case CETYPE_EGLEFT0:	cnx=psx; cny=pey;	break;
+				}
+				addPlymat( c0->Xxs2d, c0->Xys2d, c1->Xxs2d, c1->Xys2d, cnx, cny, &(plmat[pi*16]), k );
+			}
 		}
 	}
 #endif	// 端点（折り線始点・左側）
 
 #if 1	// 端点（折り線始点・右側）
-	if( (c0->Xstype==CETYPE_EGTOP0 || c0->Xstype==CETYPE_EGTOP1) && c0->rrflg[c0->Xsidx]==RETYPE_EGTOP
-		|| (c0->Xstype==CETYPE_EGRIGHT0 || c0->Xstype==CETYPE_EGRIGHT1) && c0->rrflg[c0->Xsidx]==RETYPE_EGRIGHT
-		|| (c0->Xstype==CETYPE_EGBOTTOM0 || c0->Xstype==CETYPE_EGBOTTOM1) && c0->rrflg[c0->Xsidx]==RETYPE_EGBOTTOM
-		|| (c0->Xstype==CETYPE_EGLEFT0 || c0->Xstype==CETYPE_EGLEFT1) && c0->rrflg[c0->Xsidx]==RETYPE_EGLEFT
-		|| c0->rrflg[c0->Xsidx]==RETYPE_TRIM )
-	{
-		// 折り線端点とruling端点が同じ辺／曲線 -> 三角形を貼る
-		//if( c0->Xxs!=0.0 || c0->Xys!=0.0 || c0->Xzs!=0.0 )
+	for( int k=0; k<rcrcnt; k++ ){
+		crease *c0 = rcrs[k];
+		crease *c1 = NULL;
+		if( k<rcrcnt-1 ){ c1 = rcrs[k+1]; }
+
+		if( isSame(c0->Xstype, c0->rrflg[c0->Xsidx]) )
 		{
+			// 折り線端点とruling端点が同じ辺／曲線 -> 三角形を貼る
 			addPly( c0->Xxs2d, c0->Xys2d,
 				c0->Xx2d[c0->Xsidx], c0->Xy2d[c0->Xsidx],
 				c0->Xx2d[c0->Xsidx] + c0->rrx_cp[c0->Xsidx]*c0->rrlen[c0->Xsidx],
@@ -442,118 +448,74 @@ int papermodel::calcRulingPly()
 				c0->Xx[c0->Xsidx], c0->Xy[c0->Xsidx], c0->Xz[c0->Xsidx],
 				c0->Xx[c0->Xsidx] + c0->rrx[c0->Xsidx]*c0->rrlen[c0->Xsidx],
 				c0->Xy[c0->Xsidx] + c0->rry[c0->Xsidx]*c0->rrlen[c0->Xsidx],
-				c0->Xz[c0->Xsidx] + c0->rrz[c0->Xsidx]*c0->rrlen[c0->Xsidx] );
+				c0->Xz[c0->Xsidx] + c0->rrz[c0->Xsidx]*c0->rrlen[c0->Xsidx], k  );
 			addEdge( c0->Xxs, c0->Xys, c0->Xzs,
 				c0->Xx[c0->Xsidx] + c0->rrx[c0->Xsidx]*c0->rrlen[c0->Xsidx],
 				c0->Xy[c0->Xsidx] + c0->rry[c0->Xsidx]*c0->rrlen[c0->Xsidx],
 				c0->Xz[c0->Xsidx] + c0->rrz[c0->Xsidx]*c0->rrlen[c0->Xsidx]	);
 		}
-	}
-	else if((c0->Xstype==CETYPE_EGTOP0 || c0->Xstype==CETYPE_EGTOP1) && c0->rrflg[c0->Xsidx]==RETYPE_EGRIGHT )
-	{
-		// 三角形で変換求めて四角形	
-		//if( c0->Xxs!=0.0 || c0->Xys!=0.0 || c0->Xzs!=0.0 )
+		else if( isCW(c0->Xstype,  c0->rrflg[c0->Xsidx]) )
 		{
+			// 三角形で変換求めて四角形
+			int cnx, cny;
+			switch( c0->rrflg[c0->Xsidx] ){
+				case RETYPE_EGLEFT:	cnx=psx; cny=pey;	break;
+				case RETYPE_EGTOP:	cnx=psx; cny=psy;	break;
+				case RETYPE_EGRIGHT:	cnx=pex; cny=psy;	break;
+				case RETYPE_EGBOTTOM:	cnx=pex; cny=pey;	break;
+			}
 			addPly(	c0->Xxs2d, c0->Xys2d,
 				c0->Xx2d[c0->Xsidx], c0->Xy2d[c0->Xsidx],
 				c0->Xx2d[c0->Xsidx] + c0->rrx_cp[c0->Xsidx]*c0->rrlen[c0->Xsidx],
 				c0->Xy2d[c0->Xsidx] + c0->rry_cp[c0->Xsidx]*c0->rrlen[c0->Xsidx],
-				pex, psy, // top-right
+				cnx, cny,
 				c0->Xxs, c0->Xys, c0->Xzs,
 				c0->Xx[c0->Xsidx], c0->Xy[c0->Xsidx], c0->Xz[c0->Xsidx],
 				c0->Xx[c0->Xsidx] + c0->rrx[c0->Xsidx]*c0->rrlen[c0->Xsidx],
 				c0->Xy[c0->Xsidx] + c0->rry[c0->Xsidx]*c0->rrlen[c0->Xsidx],
 				c0->Xz[c0->Xsidx] + c0->rrz[c0->Xsidx]*c0->rrlen[c0->Xsidx],
-				0.0, 0.0, 0.0 ); // undefined
+				0.0, 0.0, 0.0, k  ); // undefined
 			addEdge( c0->Xxs, c0->Xys, c0->Xzs,
 				plx[(plcnt-1)*4+3], ply[(plcnt-1)*4+3], plz[(plcnt-1)*4+3],
 				c0->Xx[c0->Xsidx] + c0->rrx[c0->Xsidx]*c0->rrlen[c0->Xsidx],
 				c0->Xy[c0->Xsidx] + c0->rry[c0->Xsidx]*c0->rrlen[c0->Xsidx],
 				c0->Xz[c0->Xsidx] + c0->rrz[c0->Xsidx]*c0->rrlen[c0->Xsidx] );
 		}
-	}
-	else if((c0->Xstype==CETYPE_EGRIGHT0 || c0->Xstype==CETYPE_EGRIGHT1) && c0->rrflg[c0->Xsidx]==RETYPE_EGBOTTOM )
-	{
-		// 三角形で変換求めて四角形	
-		//if( c0->Xxs!=0.0 || c0->Xys!=0.0 || c0->Xzs!=0.0 )
+		else if( c0->rrflg[c0->Xsidx]==RETYPE_CURVE && c1 )
 		{
-			addPly(	c0->Xxs2d, c0->Xys2d,
+			addPly(
+				c1->Xx2d[c1->Xsidx], c1->Xy2d[c1->Xsidx],
 				c0->Xx2d[c0->Xsidx], c0->Xy2d[c0->Xsidx],
-				c0->Xx2d[c0->Xsidx] + c0->rrx_cp[c0->Xsidx]*c0->rrlen[c0->Xsidx],
-				c0->Xy2d[c0->Xsidx] + c0->rry_cp[c0->Xsidx]*c0->rrlen[c0->Xsidx],
-				pex, pey, // bottom-right
-				c0->Xxs, c0->Xys, c0->Xzs,
+				c0->Xxs2d, c0->Xys2d,
+				c1->Xxs2d, c1->Xys2d,
+				c1->Xx[c1->Xsidx], c1->Xy[c1->Xsidx], c1->Xz[c0->Xsidx],
 				c0->Xx[c0->Xsidx], c0->Xy[c0->Xsidx], c0->Xz[c0->Xsidx],
-				c0->Xx[c0->Xsidx] + c0->rrx[c0->Xsidx]*c0->rrlen[c0->Xsidx],
-				c0->Xy[c0->Xsidx] + c0->rry[c0->Xsidx]*c0->rrlen[c0->Xsidx],
-				c0->Xz[c0->Xsidx] + c0->rrz[c0->Xsidx]*c0->rrlen[c0->Xsidx],
-				0.0, 0.0, 0.0 ); // undefined
-			addEdge( c0->Xxs, c0->Xys, c0->Xzs,
-				plx[(plcnt-1)*4+3], ply[(plcnt-1)*4+3], plz[(plcnt-1)*4+3],
-				c0->Xx[c0->Xsidx] + c0->rrx[c0->Xsidx]*c0->rrlen[c0->Xsidx],
-				c0->Xy[c0->Xsidx] + c0->rry[c0->Xsidx]*c0->rrlen[c0->Xsidx],
-				c0->Xz[c0->Xsidx] + c0->rrz[c0->Xsidx]*c0->rrlen[c0->Xsidx] );
-		}
-	}
-	else if((c0->Xstype==CETYPE_EGBOTTOM0 || c0->Xstype==CETYPE_EGBOTTOM1) && c0->rrflg[c0->Xsidx]==RETYPE_EGLEFT )
-	{
-		// 三角形で変換求めて四角形	
-		//if( c0->Xxs!=0.0 || c0->Xys!=0.0 || c0->Xzs!=0.0 )
-		{
-			addPly(	c0->Xxs2d, c0->Xys2d,
-				c0->Xx2d[c0->Xsidx], c0->Xy2d[c0->Xsidx],
-				c0->Xx2d[c0->Xsidx] + c0->rrx_cp[c0->Xsidx]*c0->rrlen[c0->Xsidx],
-				c0->Xy2d[c0->Xsidx] + c0->rry_cp[c0->Xsidx]*c0->rrlen[c0->Xsidx],
-				psx, pey, // bottom-left
 				c0->Xxs, c0->Xys, c0->Xzs,
-				c0->Xx[c0->Xsidx], c0->Xy[c0->Xsidx], c0->Xz[c0->Xsidx],
-				c0->Xx[c0->Xsidx] + c0->rrx[c0->Xsidx]*c0->rrlen[c0->Xsidx],
-				c0->Xy[c0->Xsidx] + c0->rry[c0->Xsidx]*c0->rrlen[c0->Xsidx],
-				c0->Xz[c0->Xsidx] + c0->rrz[c0->Xsidx]*c0->rrlen[c0->Xsidx],
-				0.0, 0.0, 0.0 ); // undefined
-			addEdge( c0->Xxs, c0->Xys, c0->Xzs,
-				plx[(plcnt-1)*4+3], ply[(plcnt-1)*4+3], plz[(plcnt-1)*4+3],
-				c0->Xx[c0->Xsidx] + c0->rrx[c0->Xsidx]*c0->rrlen[c0->Xsidx],
-				c0->Xy[c0->Xsidx] + c0->rry[c0->Xsidx]*c0->rrlen[c0->Xsidx],
-				c0->Xz[c0->Xsidx] + c0->rrz[c0->Xsidx]*c0->rrlen[c0->Xsidx] );
-		}
-	}
-	else if((c0->Xstype==CETYPE_EGLEFT0 || c0->Xstype==CETYPE_EGLEFT1) && c0->rrflg[c0->Xsidx]==RETYPE_EGTOP )
-	{
-		// 三角形で変換求めて四角形	
-		//if( c0->Xxs!=0.0 || c0->Xys!=0.0 || c0->Xzs!=0.0 )
-		{
-			addPly(	c0->Xxs2d, c0->Xys2d,
-				c0->Xx2d[c0->Xsidx], c0->Xy2d[c0->Xsidx],
-				c0->Xx2d[c0->Xsidx] + c0->rrx_cp[c0->Xsidx]*c0->rrlen[c0->Xsidx],
-				c0->Xy2d[c0->Xsidx] + c0->rry_cp[c0->Xsidx]*c0->rrlen[c0->Xsidx],
-				psx, psy, // top-left
-				c0->Xxs, c0->Xys, c0->Xzs,
-				c0->Xx[c0->Xsidx], c0->Xy[c0->Xsidx], c0->Xz[c0->Xsidx],
-				c0->Xx[c0->Xsidx] + c0->rrx[c0->Xsidx]*c0->rrlen[c0->Xsidx],
-				c0->Xy[c0->Xsidx] + c0->rry[c0->Xsidx]*c0->rrlen[c0->Xsidx],
-				c0->Xz[c0->Xsidx] + c0->rrz[c0->Xsidx]*c0->rrlen[c0->Xsidx],
-				0.0, 0.0, 0.0 ); // undefined
-			addEdge( c0->Xxs, c0->Xys, c0->Xzs,
-				plx[(plcnt-1)*4+3], ply[(plcnt-1)*4+3], plz[(plcnt-1)*4+3],
-				c0->Xx[c0->Xsidx] + c0->rrx[c0->Xsidx]*c0->rrlen[c0->Xsidx],
-				c0->Xy[c0->Xsidx] + c0->rry[c0->Xsidx]*c0->rrlen[c0->Xsidx],
-				c0->Xz[c0->Xsidx] + c0->rrz[c0->Xsidx]*c0->rrlen[c0->Xsidx] );
+				c1->Xxs, c1->Xys, c1->Xzs, k );
+			addEdge( c0->Xxs, c0->Xys, c0->Xzs, plx[(plcnt-1)*4+3], ply[(plcnt-1)*4+3], plz[(plcnt-1)*4+3] );
+			if( isCW( c0->Xstype, c1->Xstype ) ){
+				int pi = plcnt-1, cnx, cny;
+				switch( cetype0(c0->Xstype) ){
+					case CETYPE_EGTOP0:	cnx=pex; cny=psy;	break;
+					case CETYPE_EGRIGHT0:	cnx=pex; cny=pey;	break;
+					case CETYPE_EGBOTTOM0:	cnx=psx; cny=pey;	break;
+					case CETYPE_EGLEFT0:	cnx=psx; cny=psy;	break;
+				}
+				addPlymat( c0->Xxs2d, c0->Xys2d, cnx, cny, c1->Xxs2d, c1->Xys2d, &(plmat[pi*16]), k );
+			}
 		}
 	}
 #endif	// 端点（折り線始点・右側）
 
 #if 1	// 端点（折り線終点・左側）
+	for( int k=0; k<lcrcnt; k++ ){
+		crease *c0 = lcrs[k];
+		crease *c1 = NULL;
+		if( k<lcrcnt-1 ){ c1 = lcrs[k+1]; }
 
-	if( (c0->Xetype==CETYPE_EGTOP0 || c0->Xetype==CETYPE_EGTOP1) && c0->rlflg[c0->Xeidx]==RETYPE_EGTOP
-		|| (c0->Xetype==CETYPE_EGRIGHT0 || c0->Xetype==CETYPE_EGRIGHT1) && c0->rlflg[c0->Xeidx]==RETYPE_EGRIGHT
-		|| (c0->Xetype==CETYPE_EGBOTTOM0 || c0->Xetype==CETYPE_EGBOTTOM1) && c0->rlflg[c0->Xeidx]==RETYPE_EGBOTTOM
-		|| (c0->Xetype==CETYPE_EGLEFT0 || c0->Xetype==CETYPE_EGLEFT1) && c0->rlflg[c0->Xeidx]==RETYPE_EGLEFT
-		|| c0->rlflg[c0->Xeidx]==RETYPE_TRIM )
-	{
-		// 折り線端点とruling端点が同じ辺／曲線 -> 三角形を貼る
-		//if( c0->Xxe!=0.0 || c0->Xye!=0.0 || c0->Xze!=0.0 )
+		if( isSame(c0->Xetype, c0->rlflg[c0->Xeidx]) )
 		{
+			// 折り線端点とruling端点が同じ辺／曲線 -> 三角形を貼る
 			addPly( c0->Xxe2d, c0->Xye2d,
 				c0->Xx2d[c0->Xeidx], c0->Xy2d[c0->Xeidx],
 				c0->Xx2d[c0->Xeidx] + c0->rlx_cp[c0->Xeidx]*c0->rllen[c0->Xeidx],
@@ -562,118 +524,74 @@ int papermodel::calcRulingPly()
 				c0->Xx[c0->Xeidx], c0->Xy[c0->Xeidx], c0->Xz[c0->Xeidx],
 				c0->Xx[c0->Xeidx] + c0->rlx[c0->Xeidx]*c0->rllen[c0->Xeidx],
 				c0->Xy[c0->Xeidx] + c0->rly[c0->Xeidx]*c0->rllen[c0->Xeidx],
-				c0->Xz[c0->Xeidx] + c0->rlz[c0->Xeidx]*c0->rllen[c0->Xeidx] );
+				c0->Xz[c0->Xeidx] + c0->rlz[c0->Xeidx]*c0->rllen[c0->Xeidx], k  );
 			addEdge( c0->Xxe, c0->Xye, c0->Xze,
 				c0->Xx[c0->Xeidx] + c0->rlx[c0->Xeidx]*c0->rllen[c0->Xeidx],
 				c0->Xy[c0->Xeidx] + c0->rly[c0->Xeidx]*c0->rllen[c0->Xeidx],
 				c0->Xz[c0->Xeidx] + c0->rlz[c0->Xeidx]*c0->rllen[c0->Xeidx] );
 		}
-	}
-	else if((c0->Xetype==CETYPE_EGTOP0 || c0->Xetype==CETYPE_EGTOP1) && c0->rlflg[c0->Xeidx]==RETYPE_EGRIGHT )
-	{
-		// 三角形で変換求めて四角形	
-		//if( c0->Xxe!=0.0 || c0->Xye!=0.0 || c0->Xze!=0.0 )
+		else if( isCW(c0->Xetype, c0->rlflg[c0->Xeidx]) )
 		{
+			// 三角形で変換求めて四角形
+			int cnx, cny;
+			switch( c0->rlflg[c0->Xeidx] ){
+				case RETYPE_EGLEFT:	cnx=psx; cny=pey;	break;
+				case RETYPE_EGTOP:	cnx=psx; cny=psy;	break;
+				case RETYPE_EGRIGHT:	cnx=pex; cny=psy;	break;
+				case RETYPE_EGBOTTOM:	cnx=pex; cny=pey;	break;
+			}
 			addPly( c0->Xxe2d, c0->Xye2d,
 				c0->Xx2d[c0->Xeidx], c0->Xy2d[c0->Xeidx],
 				c0->Xx2d[c0->Xeidx] + c0->rlx_cp[c0->Xeidx]*c0->rllen[c0->Xeidx],
 				c0->Xy2d[c0->Xeidx] + c0->rly_cp[c0->Xeidx]*c0->rllen[c0->Xeidx],
-				pex, psy, // top-right
+				cnx, cny,
 				c0->Xxe, c0->Xye, c0->Xze,
 				c0->Xx[c0->Xeidx], c0->Xy[c0->Xeidx], c0->Xz[c0->Xeidx],
 				c0->Xx[c0->Xeidx] + c0->rlx[c0->Xeidx]*c0->rllen[c0->Xeidx],
 				c0->Xy[c0->Xeidx] + c0->rly[c0->Xeidx]*c0->rllen[c0->Xeidx],
 				c0->Xz[c0->Xeidx] + c0->rlz[c0->Xeidx]*c0->rllen[c0->Xeidx],
-				0.0, 0.0, 0.0 ); // undefined
+				0.0, 0.0, 0.0, k  ); // undefined
 			addEdge( c0->Xxe, c0->Xye, c0->Xze,
 				plx[(plcnt-1)*4+3], ply[(plcnt-1)*4+3], plz[(plcnt-1)*4+3],
 				c0->Xx[c0->Xeidx] + c0->rlx[c0->Xeidx]*c0->rllen[c0->Xeidx],
 				c0->Xy[c0->Xeidx] + c0->rly[c0->Xeidx]*c0->rllen[c0->Xeidx],
 				c0->Xz[c0->Xeidx] + c0->rlz[c0->Xeidx]*c0->rllen[c0->Xeidx] );
 		}
-	}
-	else if((c0->Xetype==CETYPE_EGRIGHT0 || c0->Xetype==CETYPE_EGRIGHT1) && c0->rlflg[c0->Xeidx]==RETYPE_EGBOTTOM )
-	{
-		// 三角形で変換求めて四角形	
-		//if( c0->Xxe!=0.0 || c0->Xye!=0.0 || c0->Xze!=0.0 )
+		else if( c0->rlflg[c0->Xeidx]==RETYPE_CURVE && c1 )
 		{
-			addPly( c0->Xxe2d, c0->Xye2d,
+			addPly(
+				c0->Xxe2d, c0->Xye2d,
 				c0->Xx2d[c0->Xeidx], c0->Xy2d[c0->Xeidx],
-				c0->Xx2d[c0->Xeidx] + c0->rlx_cp[c0->Xeidx]*c0->rllen[c0->Xeidx],
-				c0->Xy2d[c0->Xeidx] + c0->rly_cp[c0->Xeidx]*c0->rllen[c0->Xeidx],
-				pex, pey, // bottom-right
+				c1->Xx2d[c1->Xeidx], c1->Xy2d[c1->Xeidx],
+				c1->Xxe2d, c1->Xye2d,
 				c0->Xxe, c0->Xye, c0->Xze,
 				c0->Xx[c0->Xeidx], c0->Xy[c0->Xeidx], c0->Xz[c0->Xeidx],
-				c0->Xx[c0->Xeidx] + c0->rlx[c0->Xeidx]*c0->rllen[c0->Xeidx],
-				c0->Xy[c0->Xeidx] + c0->rly[c0->Xeidx]*c0->rllen[c0->Xeidx],
-				c0->Xz[c0->Xeidx] + c0->rlz[c0->Xeidx]*c0->rllen[c0->Xeidx],
-				0.0, 0.0, 0.0 ); // undefined
-			addEdge( c0->Xxe, c0->Xye, c0->Xze,
-				plx[(plcnt-1)*4+3], ply[(plcnt-1)*4+3], plz[(plcnt-1)*4+3],
-				c0->Xx[c0->Xeidx] + c0->rlx[c0->Xeidx]*c0->rllen[c0->Xeidx],
-				c0->Xy[c0->Xeidx] + c0->rly[c0->Xeidx]*c0->rllen[c0->Xeidx],
-				c0->Xz[c0->Xeidx] + c0->rlz[c0->Xeidx]*c0->rllen[c0->Xeidx] );
-		}
-	}
-	else if((c0->Xetype==CETYPE_EGBOTTOM0 || c0->Xetype==CETYPE_EGBOTTOM1) && c0->rlflg[c0->Xeidx]==RETYPE_EGLEFT )
-	{
-		// 三角形で変換求めて四角形	
-		//if( c0->Xxe!=0.0 || c0->Xye!=0.0 || c0->Xze!=0.0 )
-		{
-			addPly( c0->Xxe2d, c0->Xye2d,
-				c0->Xx2d[c0->Xeidx], c0->Xy2d[c0->Xeidx],
-				c0->Xx2d[c0->Xeidx] + c0->rlx_cp[c0->Xeidx]*c0->rllen[c0->Xeidx],
-				c0->Xy2d[c0->Xeidx] + c0->rly_cp[c0->Xeidx]*c0->rllen[c0->Xeidx],
-				psx, pey, // bottom-left
-				c0->Xxe, c0->Xye, c0->Xze,
-				c0->Xx[c0->Xeidx], c0->Xy[c0->Xeidx], c0->Xz[c0->Xeidx],
-				c0->Xx[c0->Xeidx] + c0->rlx[c0->Xeidx]*c0->rllen[c0->Xeidx],
-				c0->Xy[c0->Xeidx] + c0->rly[c0->Xeidx]*c0->rllen[c0->Xeidx],
-				c0->Xz[c0->Xeidx] + c0->rlz[c0->Xeidx]*c0->rllen[c0->Xeidx],
-				0.0, 0.0, 0.0 ); // undefined
-			addEdge( c0->Xxe, c0->Xye, c0->Xze,
-				plx[(plcnt-1)*4+3], ply[(plcnt-1)*4+3], plz[(plcnt-1)*4+3],
-				c0->Xx[c0->Xeidx] + c0->rlx[c0->Xeidx]*c0->rllen[c0->Xeidx],
-				c0->Xy[c0->Xeidx] + c0->rly[c0->Xeidx]*c0->rllen[c0->Xeidx],
-				c0->Xz[c0->Xeidx] + c0->rlz[c0->Xeidx]*c0->rllen[c0->Xeidx] );
-		}
-	}
-	else if((c0->Xetype==CETYPE_EGLEFT0 || c0->Xetype==CETYPE_EGLEFT1) && c0->rlflg[c0->Xeidx]==RETYPE_EGTOP )
-	{
-		// 三角形で変換求めて四角形	
-		//if( c0->Xxe!=0.0 || c0->Xye!=0.0 || c0->Xze!=0.0 )
-		{
-			addPly( c0->Xxe2d, c0->Xye2d,
-				c0->Xx2d[c0->Xeidx], c0->Xy2d[c0->Xeidx],
-				c0->Xx2d[c0->Xeidx] + c0->rlx_cp[c0->Xeidx]*c0->rllen[c0->Xeidx],
-				c0->Xy2d[c0->Xeidx] + c0->rly_cp[c0->Xeidx]*c0->rllen[c0->Xeidx],
-				psx, psy, // top-left
-				c0->Xxe, c0->Xye, c0->Xze,
-				c0->Xx[c0->Xeidx], c0->Xy[c0->Xeidx], c0->Xz[c0->Xeidx],
-				c0->Xx[c0->Xeidx] + c0->rlx[c0->Xeidx]*c0->rllen[c0->Xeidx],
-				c0->Xy[c0->Xeidx] + c0->rly[c0->Xeidx]*c0->rllen[c0->Xeidx],
-				c0->Xz[c0->Xeidx] + c0->rlz[c0->Xeidx]*c0->rllen[c0->Xeidx],
-				0.0, 0.0, 0.0 ); // undefined
-			addEdge( c0->Xxe, c0->Xye, c0->Xze,
-				plx[(plcnt-1)*4+3], ply[(plcnt-1)*4+3], plz[(plcnt-1)*4+3],
-				c0->Xx[c0->Xeidx] + c0->rlx[c0->Xeidx]*c0->rllen[c0->Xeidx],
-				c0->Xy[c0->Xeidx] + c0->rly[c0->Xeidx]*c0->rllen[c0->Xeidx],
-				c0->Xz[c0->Xeidx] + c0->rlz[c0->Xeidx]*c0->rllen[c0->Xeidx] );
+				c1->Xx[c1->Xeidx], c1->Xy[c1->Xeidx], c1->Xz[c0->Xeidx],
+				c1->Xxe, c1->Xye, c1->Xze, k  );
+			addEdge( c0->Xxe, c0->Xye, c0->Xze, plx[(plcnt-1)*4+3], ply[(plcnt-1)*4+3], plz[(plcnt-1)*4+3] );
+			if( isCW( c0->Xetype, c1->Xetype ) ){
+				int pi = plcnt-1, cnx, cny;
+				switch( cetype0(c0->Xetype) ){
+					case CETYPE_EGTOP0:	cnx=pex; cny=psy;	break;
+					case CETYPE_EGRIGHT0:	cnx=pex; cny=pey;	break;
+					case CETYPE_EGBOTTOM0:	cnx=psx; cny=pey;	break;
+					case CETYPE_EGLEFT0:	cnx=psx; cny=psy;	break;
+				}
+				addPlymat( c0->Xxe2d, c0->Xye2d, cnx, cny, c1->Xxe2d, c1->Xye2d, &(plmat[pi*16]), k );
+			}
 		}
 	}
 #endif	// 端点（折り線終点・左側）
 
 #if 1	// 端点（折り線終点・右側）
-	if( (c0->Xetype==CETYPE_EGTOP0 || c0->Xetype==CETYPE_EGTOP1) && c0->rrflg[c0->Xeidx]==RETYPE_EGTOP
-		|| (c0->Xetype==CETYPE_EGRIGHT0 || c0->Xetype==CETYPE_EGRIGHT1) && c0->rrflg[c0->Xeidx]==RETYPE_EGRIGHT
-		|| (c0->Xetype==CETYPE_EGBOTTOM0 || c0->Xetype==CETYPE_EGBOTTOM1) && c0->rrflg[c0->Xeidx]==RETYPE_EGBOTTOM
-		|| (c0->Xetype==CETYPE_EGLEFT0 || c0->Xetype==CETYPE_EGLEFT1) && c0->rrflg[c0->Xeidx]==RETYPE_EGLEFT
-		|| c0->rrflg[c0->Xeidx]==RETYPE_TRIM )
-	{
-		// 折り線端点とruling端点が同じ辺／曲線 -> 三角形を貼る
-		//if( c0->Xxe!=0.0 || c0->Xye!=0.0 || c0->Xze!=0.0 )
-		{
+	for( int k=0; k<rcrcnt; k++ ){
+		crease *c0 = rcrs[k];
+		crease *c1 = NULL;
+		if( k<rcrcnt-1 ){ c1 = rcrs[k+1]; }
 
+		if( isSame(c0->Xetype, c0->rrflg[c0->Xeidx]) )
+		{
+			// 折り線端点とruling端点が同じ辺／曲線 -> 三角形を貼る
 			addPly( c0->Xx2d[c0->Xeidx], c0->Xy2d[c0->Xeidx],
 				c0->Xxe2d, c0->Xye2d,
 				c0->Xx2d[c0->Xeidx] + c0->rrx_cp[c0->Xeidx]*c0->rrlen[c0->Xeidx],
@@ -682,107 +600,62 @@ int papermodel::calcRulingPly()
 				c0->Xxe, c0->Xye, c0->Xze,
 				c0->Xx[c0->Xeidx] + c0->rrx[c0->Xeidx]*c0->rrlen[c0->Xeidx],
 				c0->Xy[c0->Xeidx] + c0->rry[c0->Xeidx]*c0->rrlen[c0->Xeidx],
-				c0->Xz[c0->Xeidx] + c0->rrz[c0->Xeidx]*c0->rrlen[c0->Xeidx] );
+				c0->Xz[c0->Xeidx] + c0->rrz[c0->Xeidx]*c0->rrlen[c0->Xeidx], k  );
 			addEdge( c0->Xx[c0->Xeidx] + c0->rrx[c0->Xeidx]*c0->rrlen[c0->Xeidx],
 				c0->Xy[c0->Xeidx] + c0->rry[c0->Xeidx]*c0->rrlen[c0->Xeidx],
 				c0->Xz[c0->Xeidx] + c0->rrz[c0->Xeidx]*c0->rrlen[c0->Xeidx],
 				c0->Xxe, c0->Xye, c0->Xze );
 		}
-	}
-	else if((c0->Xetype==CETYPE_EGTOP0 || c0->Xetype==CETYPE_EGTOP1) && c0->rrflg[c0->Xeidx]==RETYPE_EGLEFT )
-	{
-		// 三角形で変換求めて四角形	
-		//if( c0->Xxe!=0.0 || c0->Xye!=0.0 || c0->Xze!=0.0 )
+		else if( isCCW(c0->Xetype, c0->rrflg[c0->Xeidx]) )
 		{
+			// 三角形で変換求めて四角形
+			int cnx, cny;
+			switch( c0->rrflg[c0->Xeidx] ){
+				case RETYPE_EGLEFT:	cnx=psx; cny=psy;	break;
+				case RETYPE_EGTOP:	cnx=pex; cny=psy;	break;
+				case RETYPE_EGRIGHT:	cnx=pex; cny=pey;	break;
+				case RETYPE_EGBOTTOM:	cnx=psx; cny=pey;	break;
+			}
 			addPly(
 				c0->Xx2d[c0->Xeidx] + c0->rrx_cp[c0->Xeidx]*c0->rrlen[c0->Xeidx],
 				c0->Xy2d[c0->Xeidx] + c0->rry_cp[c0->Xeidx]*c0->rrlen[c0->Xeidx],				
 				c0->Xx2d[c0->Xeidx], c0->Xy2d[c0->Xeidx],
 				c0->Xxe2d, c0->Xye2d,
-				psx, psy, // top-left
+				cnx, cny,
 				c0->Xx[c0->Xeidx] + c0->rrx[c0->Xeidx]*c0->rrlen[c0->Xeidx],
 				c0->Xy[c0->Xeidx] + c0->rry[c0->Xeidx]*c0->rrlen[c0->Xeidx],
 				c0->Xz[c0->Xeidx] + c0->rrz[c0->Xeidx]*c0->rrlen[c0->Xeidx],
 				c0->Xx[c0->Xeidx], c0->Xy[c0->Xeidx], c0->Xz[c0->Xeidx],
 				c0->Xxe, c0->Xye, c0->Xze,
-				0.0, 0.0, 0.0 ); // undefined
+				0.0, 0.0, 0.0, k  ); // undefined
 			addEdge( c0->Xx[c0->Xeidx] + c0->rrx[c0->Xeidx]*c0->rrlen[c0->Xeidx],
 				c0->Xy[c0->Xeidx] + c0->rry[c0->Xeidx]*c0->rrlen[c0->Xeidx],
 				c0->Xz[c0->Xeidx] + c0->rrz[c0->Xeidx]*c0->rrlen[c0->Xeidx],
 				plx[(plcnt-1)*4+3], ply[(plcnt-1)*4+3], plz[(plcnt-1)*4+3],
 				c0->Xxe, c0->Xye, c0->Xze );
 		}
-	}
-	else if((c0->Xetype==CETYPE_EGRIGHT0 || c0->Xetype==CETYPE_EGRIGHT1) && c0->rrflg[c0->Xeidx]==RETYPE_EGTOP )
-	{
-		// 三角形で変換求めて四角形	
-		//if( c0->Xxe!=0.0 || c0->Xye!=0.0 || c0->Xze!=0.0 )
+		else if( c0->rrflg[c0->Xeidx]==RETYPE_CURVE && c1 )
 		{
 			addPly(
-				c0->Xx2d[c0->Xeidx] + c0->rrx_cp[c0->Xeidx]*c0->rrlen[c0->Xeidx],
-				c0->Xy2d[c0->Xeidx] + c0->rry_cp[c0->Xeidx]*c0->rrlen[c0->Xeidx],
+				c1->Xx2d[c1->Xeidx], c1->Xy2d[c1->Xeidx],				
 				c0->Xx2d[c0->Xeidx], c0->Xy2d[c0->Xeidx],
 				c0->Xxe2d, c0->Xye2d,
-				pex, psy, // top-right
-				c0->Xx[c0->Xeidx] + c0->rrx[c0->Xeidx]*c0->rrlen[c0->Xeidx],
-				c0->Xy[c0->Xeidx] + c0->rry[c0->Xeidx]*c0->rrlen[c0->Xeidx],
-				c0->Xz[c0->Xeidx] + c0->rrz[c0->Xeidx]*c0->rrlen[c0->Xeidx],
+				c1->Xxe2d, c1->Xye2d,
+				c1->Xx[c1->Xeidx], c1->Xy[c1->Xeidx], c1->Xz[c0->Xeidx],
 				c0->Xx[c0->Xeidx], c0->Xy[c0->Xeidx], c0->Xz[c0->Xeidx],
 				c0->Xxe, c0->Xye, c0->Xze,
-				0.0, 0.0, 0.0 ); // undefined
-			addEdge( c0->Xx[c0->Xeidx] + c0->rrx[c0->Xeidx]*c0->rrlen[c0->Xeidx],
-				c0->Xy[c0->Xeidx] + c0->rry[c0->Xeidx]*c0->rrlen[c0->Xeidx],
-				c0->Xz[c0->Xeidx] + c0->rrz[c0->Xeidx]*c0->rrlen[c0->Xeidx],
-				plx[(plcnt-1)*4+3], ply[(plcnt-1)*4+3], plz[(plcnt-1)*4+3],
-				c0->Xxe, c0->Xye, c0->Xze );
-		}
-	}
-	else if((c0->Xetype==CETYPE_EGBOTTOM0 || c0->Xetype==CETYPE_EGBOTTOM1) && c0->rrflg[c0->Xeidx]==RETYPE_EGRIGHT )
-	{
-		// 三角形で変換求めて四角形	
-		//if( c0->Xxe!=0.0 || c0->Xye!=0.0 || c0->Xze!=0.0 )
-		{
-			addPly(
-				c0->Xx2d[c0->Xeidx] + c0->rrx_cp[c0->Xeidx]*c0->rrlen[c0->Xeidx],
-				c0->Xy2d[c0->Xeidx] + c0->rry_cp[c0->Xeidx]*c0->rrlen[c0->Xeidx],
-				c0->Xx2d[c0->Xeidx], c0->Xy2d[c0->Xeidx],
-				c0->Xxe2d, c0->Xye2d,
-				pex, pey, // bottom-right
-				c0->Xx[c0->Xeidx] + c0->rrx[c0->Xeidx]*c0->rrlen[c0->Xeidx],
-				c0->Xy[c0->Xeidx] + c0->rry[c0->Xeidx]*c0->rrlen[c0->Xeidx],
-				c0->Xz[c0->Xeidx] + c0->rrz[c0->Xeidx]*c0->rrlen[c0->Xeidx],
-				c0->Xx[c0->Xeidx], c0->Xy[c0->Xeidx], c0->Xz[c0->Xeidx],
-				c0->Xxe, c0->Xye, c0->Xze,
-				0.0, 0.0, 0.0 ); // undefined
-			addEdge( c0->Xx[c0->Xeidx] + c0->rrx[c0->Xeidx]*c0->rrlen[c0->Xeidx],
-				c0->Xy[c0->Xeidx] + c0->rry[c0->Xeidx]*c0->rrlen[c0->Xeidx],
-				c0->Xz[c0->Xeidx] + c0->rrz[c0->Xeidx]*c0->rrlen[c0->Xeidx],
-				plx[(plcnt-1)*4+3], ply[(plcnt-1)*4+3], plz[(plcnt-1)*4+3],
-				c0->Xxe, c0->Xye, c0->Xze );
-		}
-	}
-	else if((c0->Xetype==CETYPE_EGLEFT0 || c0->Xetype==CETYPE_EGLEFT1) && c0->rrflg[c0->Xeidx]==RETYPE_EGBOTTOM )
-	{
-		// 三角形で変換求めて四角形	
-		//if( c0->Xxe!=0.0 || c0->Xye!=0.0 || c0->Xze!=0.0 )
-		{
-			addPly(
-				c0->Xx2d[c0->Xeidx] + c0->rrx_cp[c0->Xeidx]*c0->rrlen[c0->Xeidx],
-				c0->Xy2d[c0->Xeidx] + c0->rry_cp[c0->Xeidx]*c0->rrlen[c0->Xeidx],
-				c0->Xx2d[c0->Xeidx], c0->Xy2d[c0->Xeidx],
-				c0->Xxe2d, c0->Xye2d,
-				psx, pey, // bottom-left
-				c0->Xx[c0->Xeidx] + c0->rrx[c0->Xeidx]*c0->rrlen[c0->Xeidx],
-				c0->Xy[c0->Xeidx] + c0->rry[c0->Xeidx]*c0->rrlen[c0->Xeidx],
-				c0->Xz[c0->Xeidx] + c0->rrz[c0->Xeidx]*c0->rrlen[c0->Xeidx],
-				c0->Xx[c0->Xeidx], c0->Xy[c0->Xeidx], c0->Xz[c0->Xeidx],
-				c0->Xxe, c0->Xye, c0->Xze,
-				0.0, 0.0, 0.0 ); // undefined
-			addEdge( c0->Xx[c0->Xeidx] + c0->rrx[c0->Xeidx]*c0->rrlen[c0->Xeidx],
-				c0->Xy[c0->Xeidx] + c0->rry[c0->Xeidx]*c0->rrlen[c0->Xeidx],
-				c0->Xz[c0->Xeidx] + c0->rrz[c0->Xeidx]*c0->rrlen[c0->Xeidx],
-				plx[(plcnt-1)*4+3], ply[(plcnt-1)*4+3], plz[(plcnt-1)*4+3],
-				c0->Xxe, c0->Xye, c0->Xze );
+				c1->Xxe, c1->Xye, c1->Xze, k  );
+			addEdge( plx[(plcnt-1)*4+3], ply[(plcnt-1)*4+3], plz[(plcnt-1)*4+3], c0->Xxe, c0->Xye, c0->Xze );
+			if( isCCW( c0->Xetype, c1->Xetype ) ){
+				int pi = plcnt-1, cnx, cny;
+				switch( cetype0(c0->Xetype) ){
+					case CETYPE_EGTOP0:	cnx=psx; cny=psy;	break;
+					case CETYPE_EGRIGHT0:	cnx=pex; cny=psy;	break;
+					case CETYPE_EGBOTTOM0:	cnx=pex; cny=pey;	break;
+					case CETYPE_EGLEFT0:	cnx=psx; cny=pey;	break;
+				}
+				addPlymat( c0->Xxe2d, c0->Xye2d, c1->Xxe2d, c1->Xye2d, cnx, cny, &(plmat[pi*16]), k );
+			}
 		}
 	}
 #endif	// 端点（折り線終点・右側）

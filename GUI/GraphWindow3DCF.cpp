@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 //#include <GL/glu.h>
 //#include <GL/glut.h>
@@ -14,9 +16,9 @@
 #include "../CurvedFoldModel/util.h"
 
 /* OpenCV */
-# include <cxcore.h>
-# include <cv.h>
-# include <highgui.h>
+#include <cxcore.h>
+#include <cv.h>
+#include <highgui.h>
 //using namespace std;
 //using namespace cv;
 
@@ -65,19 +67,44 @@ void GraphWindow3DCF::initTexture()
 			texture[j][i][2] = ((cv::Vec3b &)tex.at<uchar>(j,i))[2];
 		}
 	}
-#else
-	IplImage *tex = cvLoadImage( TEXFNAME, CV_LOAD_IMAGE_COLOR );
+#elif 0
+	IplImage *tex = cvLoadImage( "texture/curve1_cc2.png", CV_LOAD_IMAGE_COLOR );
 	if( tex ){
 		for(int j=0 ; j<TEXHEIGHT; j++){
 			for(int i=0 ; i<TEXWIDTH; i++){
 				texture[j][i][2] = (GLubyte)(tex->imageData[i*tex->nChannels +j*tex->widthStep]);
 				texture[j][i][1] = (GLubyte)(tex->imageData[i*tex->nChannels +j*tex->widthStep +1]);
 				texture[j][i][0] = (GLubyte)(tex->imageData[i*tex->nChannels +j*tex->widthStep +2]);
-				texture[j][i][3] = (GLubyte)255;
+				int thres = 20;
+				if( abs(texture[j][i][0]-texture[j][i][1]) < thres
+					&& abs(texture[j][i][1]-texture[j][i][2]) < thres
+					&& abs(texture[j][i][2]-texture[j][i][0]) < thres )
+				{
+					texture[j][i][3] = (GLubyte)63;
+				} else {
+					texture[j][i][3] = (GLubyte)255;
+				}
 			}
 		}
 	}
 	cvReleaseImage(&tex);
+#else
+	for(int j=0 ; j<TEXHEIGHT; j++){
+		for(int i=0 ; i<TEXWIDTH; i++){
+			if( (j/16)%2 == (i/16)%2 ){
+			//if( (j/(TEXHEIGHT/2))%2 == (i/(TEXWIDTH/2))%2 ){
+				texture[j][i][0] = (GLubyte)214;
+				texture[j][i][1] = (GLubyte)214;
+				texture[j][i][2] = (GLubyte)214;
+				texture[j][i][3] = (GLubyte)255;
+			} else {
+				texture[j][i][0] = (GLubyte)239;
+				texture[j][i][1] = (GLubyte)239;
+				texture[j][i][2] = (GLubyte)239;
+				texture[j][i][3] = (GLubyte)255;
+			}
+		}
+	}
 #endif
 
 	/* テクスチャ画像はバイト単位に詰め込まれている */
@@ -88,10 +115,10 @@ void GraphWindow3DCF::initTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
 	/* テクスチャの繰り返し方法の指定 */
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	/* テクスチャ環境 */
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -112,15 +139,23 @@ void GraphWindow3DCF::init()
 	GraphWindow3D::init();
 
 	disp_axis = 0;
+	disp_axis2 = 0;
 	disp_X = 1;
 	disp_TNB = 0;
 	disp_R = 1;
 	disp_maxrlen = 0;
 	disp_PLY = 0;
 	disp_PTN = 1;
-	disp_CP = 0;	ppos = 0;	pprm = 0;
+	disp_CP = 1;	ppos = 0;	pprm = 0;
+	disp_ONE = 0;
+	disp_PRI = 1;
+	disp_stitch = 0;
+	disp_LIN_SMOOTH = 1;
 
 	flg_addcurve = 0;
+
+	divtype = 1;
+	divnum = 6;
 
 	ppm = NULL;
 
@@ -134,6 +169,29 @@ void GraphWindow3DCF::init()
 	vx = vy = vz = NULL;
 
 	resetRotation(-1);
+}
+
+void GraphWindow3DCF::resetObjTrans()
+{
+	prevtrans2[0] = prevtrans2[1] = prevtrans2[2] = 0; prevtrans2[3] = 1;
+	currtrans2[0] = currtrans2[1] = currtrans2[2] = 0; currtrans2[3] = 1;
+	disptrans2[0] = disptrans2[1] = disptrans2[2] = 0; disptrans2[3] = 1;
+	mObject[12] = disptrans2[0];
+	mObject[13] = disptrans2[1];
+	mObject[14] = disptrans2[2];
+	//redraw();
+}
+
+void GraphWindow3DCF::resetObjRot()
+{
+	quat2.trackball(prevquat2, 0.0, 0.0, 0.0, 0.0);
+	quat2.trackball(currquat2, 0.0, 0.0, 0.0, 0.0);
+	quat2.trackball(dispquat2, 0.0, 0.0, 0.0, 0.0); 
+	quat2.build_rotmatrix(mObject, dispquat2);
+	mObject[12] = disptrans2[0];
+	mObject[13] = disptrans2[1];
+	mObject[14] = disptrans2[2];
+	//redraw();
 }
 
 extern double norm( double *x, double *y, double *z );
@@ -152,29 +210,95 @@ void GraphWindow3DCF::draw3DCurveFold()
 
 	glPushMatrix();
 
-	// 原点を見るように, カメラ位置を(0,0,n_plane*2)に
-	// ＝これから描画するオブジェクトを(0.,0.,-n_plane*2)平行移動
-	//	glTranslated(0.,0.,-n_plane*2);
-	glTranslated(0.,0.,-n_plane-3000);
+	// 原点を見るように, カメラ位置を移動
+	glTranslated(0.,0.,-n_plane-1000);
 
 	// 視点設定
 	SetRTS();
 
 	if(disp_axis)
-		drawAxis();
+		drawAxis(); 
 
-	glPushMatrix();
-	SetRTS2();
+	for( int dc=0; dc<divnum; dc++ ){
+		glPushMatrix();
+		glRotated( (double)dc * (360.0/(double)divnum), 0.0, 0.0, 1.0 );
+#if 1
+		if( disp_stitch && dc==0 ){
+			for( int i=0; i<ppm->stpcnt; i++ ){
+				glColor3f( 0.32, 0.12, 0.46 ); // Dark Violet: 522076
+				glPushMatrix();
+				glTranslatef( ppm->stx0[0][i], ppm->sty0[0][i], ppm->stz0[0][i] );
+				glutWireCube( 1.0 );
+				glPopMatrix();
+				glColor3f( 0.9, 0.0, 0.4 ); // Raspberry: E30B5D
+				glPushMatrix();
+				glTranslatef( ppm->stx1[0][i], ppm->sty1[0][i], ppm->stz1[0][i] );
+				glutWireCube( 1.0 );
+				glPopMatrix();
+				glColor3f( 1.0, 1.0, 0.0 ); // YELLOW
+				glPushMatrix();
+				glTranslatef( ppm->stxm[0][i], ppm->stym[0][i], ppm->stzm[0][i] );
+				glutSolidSphere( 1.0, 8, 8 );
+				glPopMatrix();
+				glColor3f( 0.0, 0.0, 0.0 ); // BLACK
+				glBegin(GL_LINE_STRIP);
+				glVertex3f( ppm->stx0[0][i], ppm->sty0[0][i], ppm->stz0[0][i] );
+				glVertex3f( ppm->stxm[0][i], ppm->stym[0][i], ppm->stzm[0][i] );
+				glVertex3f( ppm->stx1[0][i], ppm->sty1[0][i], ppm->stz1[0][i] );
+				glEnd();
+			}
+			for( int i=0; i<ppm->stpcnt; i++ ){
+				glColor3f( 0.9, 0.0, 0.4 ); // Raspberry: E30B5D
+				glPushMatrix();
+				glTranslatef( ppm->stx0[1][i], ppm->sty0[1][i], ppm->stz0[1][i] );
+				glutWireCube( 1.0 );
+				glPopMatrix();
+				glColor3f( 0.32, 0.12, 0.46 ); // Dark Violet: 522076
+				glPushMatrix();
+				glTranslatef( ppm->stx1[1][i], ppm->sty1[1][i], ppm->stz1[1][i] );
+				glutWireCube( 1.0 );
+				glPopMatrix();
+				glColor3f( 1.0, 1.0, 0.0 ); // YELLOW
+				glPushMatrix();
+				glTranslatef( ppm->stxm[1][i], ppm->stym[1][i], ppm->stzm[1][i] );
+				glutSolidSphere( 1.0, 8, 8 );
+				glPopMatrix();
+				glColor3f( 0.0, 0.0, 0.0 ); // BLACK
+				glBegin(GL_LINE_STRIP);
+				glVertex3f( ppm->stx0[1][i], ppm->sty0[1][i], ppm->stz0[1][i] );
+				glVertex3f( ppm->stxm[1][i], ppm->stym[1][i], ppm->stzm[1][i] );
+				glVertex3f( ppm->stx1[1][i], ppm->sty1[1][i], ppm->stz1[1][i] );
+				glEnd();
+			}
+		}
+#endif
+		glPushMatrix();
+		SetRTS2();
+		
+		if( dc==0 && disp_axis2 )
+		{
+			glPushMatrix();
+			crease *c = &(ppm->crs[0]);
+			glMultMatrixd( c->m3 );
+			glScaled( 0.2, 0.2, 0.2 );
+			drawAxis();
+			glPopMatrix();
+		}
+/*-----------------------------------------------------------------*/
+
+		if( !disp_ONE || disp_ONE && dc==0 ){
 
 	//
 	// control points
 	//
 	if( disp_CP && ppos>-1 && pprm>-1 ){
-		switch(pprm){	// P_CV2D, P_CV3D, P_TRSN, P_FLDA, P_RULL, P_RULR
+		switch(pprm){	// P_CV2D, P_CV3D, P_TRSN, P_FLDA
 			case P_CV2D:	glColor3f( 1.0, 0.0, 1.0 );	break;
 			case P_CV3D:	glColor3f( 0.0, 1.0, 0.0 );	break;
 			case P_TRSN:	glColor3f( 0.0, 0.0, 1.0 );	break;
 			case P_FLDA:	glColor3f( 1.0, 0.0, 0.0 );	break;
+			case P_TRSN1:	glColor3f( 0.0, 0.0, 1.0 );	break;
+			case P_FLDA1:	glColor3f( 1.0, 0.0, 0.0 );	break;
 		}
 		crease *c = &(ppm->crs[0]);
 		int ii = (int) ( (double)ppos/(double)(Pcnt-1) * (double)(Xcnt-1) ) ;
@@ -188,7 +312,7 @@ void GraphWindow3DCF::draw3DCurveFold()
 		if( ppos==Pcnt-1 ){ next=Pcnt-1; } else { next=ppos+1; }
 		int i0 = (int) ( (double)prev/(double)(Pcnt-1) * (double)(Xcnt-1) ) ;
 		int i1 = (int) ( (double)next/(double)(Pcnt-1) * (double)(Xcnt-1) ) ;
-		glLineWidth(4.0);
+		glLineWidth(3.0);
 		glBegin(GL_LINE_STRIP);
 		for( i=i0; i<i1; i++ ){
 			glVertex3f(c->Xx[i], c->Xy[i], c->Xz[i]);
@@ -209,12 +333,36 @@ void GraphWindow3DCF::draw3DCurveFold()
 	}
 
 	//
+	// sample points for stitch
+	//
+	if( disp_stitch ){
+		glColor3f( 0.32, 0.12, 0.46 ); // Dark Violet: 522076
+		for( int i=0; i<ppm->stpcnt; i++ ){
+			glPushMatrix();
+			glTranslatef( ppm->stx[0][i], ppm->sty[0][i], ppm->stz[0][i] );
+			glutSolidSphere( 1.0, 8, 8 );
+			glPopMatrix();
+		}
+		glColor3f( 0.9, 0.0, 0.4 ); // Raspberry: E30B5D
+		for( int i=0; i<ppm->stpcnt; i++ ){
+			glPushMatrix();
+			glTranslatef( ppm->stx[1][i], ppm->sty[1][i], ppm->stz[1][i] );
+			glutSolidSphere( 1.0, 8, 8 );
+			glPopMatrix();
+		}
+	}
+
+	//
 	// curve
 	//
 	if( disp_X && ppm ){
 		glLineWidth(2.0);
 		glColor3f( 0.2, 0.2, 0.2 );
+		//glColor3f( 0.9, 0.7, 0.0 );
 		for( j=0; j<ppm->crcnt; j++ ){
+			//if( disp_PRI && j>0 ){
+			//	break;
+			//}
 			crease *c = &(ppm->crs[j]);
 			glBegin(GL_LINE_STRIP);
 			if( c->Xxs!=0.0 || c->Xys!=0.0 || c->Xzs!=0.0 ){
@@ -238,6 +386,9 @@ void GraphWindow3DCF::draw3DCurveFold()
 		glBegin(GL_LINES);
 		double len=5.0;
 		for( j=0; j<ppm->crcnt; j++ ){
+			if( disp_PRI && j>0 ){
+				break;
+			}
 			crease *c = &(ppm->crs[j]);
 			for( i=c->Xsidx; i<c->Xeidx+1; i++ ){
 				glColor3f( 1.0, 0.0, 0.0 );
@@ -260,40 +411,65 @@ void GraphWindow3DCF::draw3DCurveFold()
 	if( disp_R && ppm ){
 		glLineWidth(2.0);
 		glBegin(GL_LINES);
-		for( j=0; j<ppm->crcnt; j++ ){
-			crease *c = &(ppm->crs[j]);
-			if( c->rl<=0 ){
+		for( j=0; j<ppm->lcrcnt; j++ ){
+			if( disp_PRI && j>0 ){
+				break;
+			}
+			crease *c = ppm->lcrs[j];
+			if( j%2==0 ){
 				//glColor3f( 0.6, 0.4, 0.9 ); // Lavender: B57EDC
 				glColor3f( 0.32, 0.12, 0.46 ); // Dark Violet: 522076
-				//glColor3f( 1.0, 1.0, 0.0 );
-				for( i=c->Xsidx; i<c->Xeidx+1; i++ ){
-					glVertex3f(c->Xx[i], c->Xy[i], c->Xz[i]);
-					glVertex3f(c->Xx[i] + c->rlx[i]*c->rllen[i],
-						c->Xy[i] + c->rly[i]*c->rllen[i],
-						c->Xz[i] + c->rlz[i]*c->rllen[i] );
-				}
-			}
-			if(c->rl>=0) {
+			} else {
 				glColor3f( 0.9, 0.0, 0.4 ); // Raspberry: E30B5D
-				//glColor3f( 1.0, 1.0, 0.0 );
-				for( i=c->Xsidx; i<c->Xeidx+1; i++ ){
-					glVertex3f(c->Xx[i], c->Xy[i], c->Xz[i]);
-					glVertex3f(c->Xx[i] + c->rrx[i]*c->rrlen[i],
-						c->Xy[i] + c->rry[i]*c->rrlen[i],
-						c->Xz[i] + c->rrz[i]*c->rrlen[i] );
-				}
 			}
+			//glColor3f( 1.0, 1.0, 0.0 );
+			for( i=c->Xsidx; i<c->Xeidx+1; i++ ){
+#ifdef EVERYOTHER
+				if( i%2==0 ) continue;
+#endif
+				glVertex3f(c->Xx[i], c->Xy[i], c->Xz[i]);
+				glVertex3f(c->Xx[i] + c->rlx[i]*c->rllen[i],
+					c->Xy[i] + c->rly[i]*c->rllen[i],
+					c->Xz[i] + c->rlz[i]*c->rllen[i] );
+			}
+		}
+		for( j=0; j<ppm->rcrcnt; j++ ){
+			if( disp_PRI && j>0 ){
+				break;
+			}
+			crease *c = ppm->rcrs[j];
+			if( j%2==0 ){
+				glColor3f( 0.9, 0.0, 0.4 ); // Raspberry: E30B5D
+			} else {
+				//glColor3f( 0.6, 0.4, 0.9 ); // Lavender: B57EDC
+				glColor3f( 0.32, 0.12, 0.46 ); // Dark Violet: 522076
+			}
+			//glColor3f( 1.0, 1.0, 0.0 );
+			for( i=c->Xsidx; i<c->Xeidx+1; i++ ){
+#ifdef EVERYOTHER
+				if( i%2==0 ) continue;
+#endif
+				glVertex3f(c->Xx[i], c->Xy[i], c->Xz[i]);
+				glVertex3f(c->Xx[i] + c->rrx[i]*c->rrlen[i],
+					c->Xy[i] + c->rry[i]*c->rrlen[i],
+					c->Xz[i] + c->rrz[i]*c->rrlen[i] );			}
 		}
 		glEnd();
 	}
 
+		} // if( !disp_ONE || disp_ONE && dc==0 )
+
 	//
 	// Polygons
 	//
-	if( disp_PLY && ppm ){
+	//if( disp_PLY && ppm ){
+	if( disp_PLY && ppm || disp_ONE && dc!=0 ){
 		glLineWidth(1.0);
 		glColor3f( 0.0, 0.0, 0.0 );
 		for( i=0; i<ppm->plcnt; i++ ){
+			if( disp_PRI && ppm->pl_cridx[i]>0 ){
+				continue;
+			}
 			glBegin(GL_LINE_STRIP);
 			for( j=0; j<ppm->plvcnt[i]; j++ ){
 				glVertex3f(ppm->plx[i*4+j], ppm->ply[i*4+j], ppm->plz[i*4+j] );
@@ -303,45 +479,55 @@ void GraphWindow3DCF::draw3DCurveFold()
 		}
 	}
 
-	if( disp_PTN && ppm ){
-		static const GLfloat color[] = { 1.0, 1.0, 1.0, 1.0 };  /* 材質 (色) */
-		static const GLfloat lightcol[] = { 1.0, 1.0, 1.0, 1.0 }; /* 直接光強度 */
-		static const GLfloat lightamb[] = { 0.5, 0.5, 0.5, 1.0 }; /* 環境光強度 */
+	if( !disp_ONE || disp_ONE && dc==0 ){
 
-		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, color);
-		glEnable(GL_ALPHA_TEST);
-		glEnable(GL_LIGHTING);
+	if( disp_PTN && ppm )
+	{
+		double dangle = (double)dc*2.0*M_PI/(double)divnum -15.0/180.0*M_PI;
+		double cosd = cos(-dangle);
+		double sind = sin(-dangle);
+
+		//glEnable(GL_ALPHA_TEST);
 		glEnable(GL_NORMALIZE);
+		glEnable(GL_LIGHTING);
 		glEnable(GL_LIGHT0);
-		/* 光源の位置を設定 */
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, lightcol);
-		glLightfv(GL_LIGHT0, GL_SPECULAR, lightcol);
-		glLightfv(GL_LIGHT0, GL_AMBIENT, lightamb);
-
-		/* テクスチャマッピング開始 */
-		glEnable(GL_TEXTURE_2D);
+		glEnable(GL_TEXTURE_2D);	/* テクスチャマッピング開始 */
+		if( disp_POLY_OFFSET ){
+			glEnable(GL_POLYGON_OFFSET_FILL);
+		}
+		glPolygonOffset(1.0, 1.0);
 
 		glCallList(obj1List);
 
 #if 1	// CP上のポリゴンを座標変換して表示
 		glColor3f( 1.0, 0.0, 1.0 );
 		for( i=0; i<ppm->plcnt; i++ ){
+			if( disp_PRI && ppm->pl_cridx[i]>0 ){
+				continue;
+			}
 			glPushMatrix();
 			glMultMatrixd( &(ppm->plmat[i*16]) );
 			glBegin(GL_POLYGON);
-			glNormal3f( ppm->plmat[i*16+8], ppm->plmat[i*16+9], ppm->plmat[i*16+10] );
+			glNormal3f( 0.0, 0.0, 1.0 );
 			for( j=0; j<ppm->plvcnt[i]; j++ ){
-				glTexCoord2d( (ppm->plx_cp[i*4+j]-ppm->psx)/(double)PPWIDTH, (ppm->ply_cp[i*4+j]-ppm->psy)/(double)PPHEIGHT );
+				//glTexCoord2d( (ppm->plx_cp[i*4+j]-ppm->psx)/(double)PPWIDTH, (ppm->ply_cp[i*4+j]-ppm->psy)/(double)PPHEIGHT );
+				double x0 = ppm->plx_cp[i*4+j]-ppm->psx;
+				double y0 = ppm->ply_cp[i*4+j]-ppm->psy;
+				double tx = cosd*x0+sind*y0;
+				double ty = -sind*x0+cosd*y0;
+				glTexCoord2d( tx/(double)PPWIDTH, ty/(double)PPHEIGHT );
+				//glTexCoord2d( tx*8.0/(double)PPWIDTH, ty*8.0/(double)PPHEIGHT );
 				glVertex3f(ppm->plx_cp[i*4+j], ppm->ply_cp[i*4+j], 0.0 );
 			}
-			glTexCoord2d( (ppm->plx_cp[i*4]-ppm->psx)/(double)PPWIDTH, (ppm->ply_cp[i*4]-ppm->psy)/(double)PPHEIGHT );
-			glVertex3f(ppm->plx_cp[i*4], ppm->ply_cp[i*4], 0.0 );
 			glEnd();
 			glPopMatrix();
 		}
 #else	// 3Dポリゴンを表示
 		glColor3f( 1.0, 0.0, 1.0 );
 		for( i=0; i<ppm->plcnt; i++ ){
+			if( disp_PRI && ppm->pl_cridx[i]>0 ){
+				continue;
+			}
 			glBegin(GL_POLYGON);
 			for( j=0; j<ppm->plvcnt[i]; j++ ){
 				glTexCoord2d( (ppm->plx_cp[i*4+j]-ppm->psx)/(double)PPWIDTH, (ppm->ply_cp[i*4+j]-ppm->psy)/(double)PPHEIGHT );
@@ -352,12 +538,20 @@ void GraphWindow3DCF::draw3DCurveFold()
 			glEnd();
 		}
 #endif
+		//glDisable(GL_ALPHA_TEST);
 		glDisable(GL_TEXTURE_2D);
 		glDisable(GL_NORMALIZE);
 		glDisable(GL_LIGHTING);
 		glDisable(GL_LIGHT0);
+		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
-	glPopMatrix();
+
+		} // if( !disp_ONE || disp_ONE && dc==0 )
+/*-----------------------------------------------------------------*/
+
+		glPopMatrix();
+		glPopMatrix();
+	} // dc
 
 	// pointcloud
 	glPointSize(1.0);
@@ -373,7 +567,8 @@ void GraphWindow3DCF::draw3DCurveFold()
 
 void GraphWindow3DCF::SetRTS2()
 {
-	glTranslatef(disptrans2[0], disptrans2[1], disptrans2[2]);
+	//glTranslatef(disptrans2[0], disptrans2[1], disptrans2[2]);
+
 	//float mCameraInv[16];
 	//memcpy( mCameraInv, mCamera, sizeof(float)*16 );
 	//inv_m44( mCameraInv );
@@ -388,7 +583,6 @@ void GraphWindow3DCF::draw()
 	{
 		initTexture();
 		SetLightMat();	// 光源環境設定
-		glEnable(GL_ALPHA_TEST);
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -399,9 +593,6 @@ void GraphWindow3DCF::draw()
 			glOrtho(-this->w()/2, this->w()/2, -this->h()/2, this->h()/2, n_plane, f_plane);
 
 		glClearColor (1.f, 1.f, 1.f, 1.f);
-
-		static const GLfloat lightpos[] = { 1.0, 0.0, -1.0, 0.0 }; /* 位置　　　 */
-		glLightfv(GL_LIGHT0, GL_POSITION, lightpos);
 	}
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_TEXTURE);
@@ -410,7 +601,20 @@ void GraphWindow3DCF::draw()
 	glLoadIdentity();
 	glViewport (0, 0, this->w(), this->h()); // 書かなくてもOK
 
+	if( disp_LIN_SMOOTH ){
+		glDepthFunc(GL_LEQUAL);
+		glEnable(GL_LINE_SMOOTH);
+		//glEnable(GL_POLYGON_SMOOTH);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		//glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
+		glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+	}
+
 	draw3DCurveFold();
+
+	glDisable(GL_LINE_SMOOTH);
+	glDisable(GL_BLEND);
 
 	glFlush();
 	//	glutPostRedisplay();
@@ -432,12 +636,12 @@ int GraphWindow3DCF::handle(int event)
 		printf("FL_KEYDOWN\n");
 #endif
 		key = Fl::event_key();
-		if(key == 'R'){ // reset rotation
+		if(key=='r' || key=='R' ){ // reset rotation
 			quat2.trackball(prevquat2, 0.0, 0.0, 0.0, 0.0);
 			quat2.trackball(currquat2, 0.0, 0.0, 0.0, 0.0);
 			quat2.trackball(dispquat2, 0.0, 0.0, 0.0, 0.0); 
 			quat2.build_rotmatrix(mObject, dispquat2);
-		} else if(key == 'T'){ // reset translation
+		} else if( key=='t' || key=='T' ){ // reset translation
 			prevtrans2[0] = prevtrans2[1] = prevtrans2[2] = 0; prevtrans2[3] = 1;
 			currtrans2[0] = currtrans2[1] = currtrans2[2] = 0; currtrans2[3] = 1;
 			disptrans2[0] = disptrans2[1] = disptrans2[2] = 0; disptrans2[3] = 1;
@@ -492,7 +696,12 @@ int GraphWindow3DCF::handle(int event)
 				quat2.add_quat(camq, tmpq1, tmpq0);
 				quat2.add_quat(objq, tmpq0, curq);
 				quat2.add_quat(prevquat2, curq, dispquat2);
+
 				quat2.build_rotmatrix(mObject, dispquat2);
+				mObject[12] = disptrans2[0];
+				mObject[13] = disptrans2[1];
+				mObject[14] = disptrans2[2];
+
 			} else if(sts_ctrl2){ // translation
 				// マウス移動量 -> カメラ座標での物体移動量
 				currtrans2[0] = Fl::event_x() - push_x2;
@@ -511,6 +720,9 @@ int GraphWindow3DCF::handle(int event)
 				disptrans2[0] = prevtrans2[0] + currtrans2[0];
 				disptrans2[1] = prevtrans2[1] + currtrans2[1];
 				disptrans2[2] = prevtrans2[2] + currtrans2[2];
+				mObject[12] = disptrans2[0];
+				mObject[13] = disptrans2[1];
+				mObject[14] = disptrans2[2];
 			}
 			redraw();
 		}
@@ -555,4 +767,31 @@ int GraphWindow3DCF::handle(int event)
 	}
 
 	return GraphWindow3D::handle(event);
+}
+
+void GraphWindow3DCF::exportImage(char *filename)
+{
+	int imgw, imgh, imgstep;
+	unsigned char *img=NULL;
+
+	draw(); // redraw immediately
+
+	imgw = this->w();	// may need to be 4*X
+	imgh = this->h();
+	img = new unsigned char[imgw*imgh*3];
+	imgstep = imgw*3;
+
+	glReadPixels(0,0, imgw, imgh, GL_RGB, GL_UNSIGNED_BYTE, img);
+
+	IplImage *image = cvCreateImage( cvSize(imgw, imgh), IPL_DEPTH_8U, 3);
+	IplImage *image2 = cvCreateImage( cvSize(imgw, imgh), IPL_DEPTH_8U, 3);
+	for( int i=0; i<imgh; i++ ){
+		memcpy( &(image->imageData[i*imgstep]), &(img[(imgh-1-i)*imgstep]), sizeof(unsigned char)*imgstep );
+	}
+	cvCvtColor( image, image2, CV_BGR2RGB );
+	cvSaveImage( filename, image2 );
+	cvReleaseImage( &image );
+	cvReleaseImage( &image2 );
+
+	delete[] img; img = NULL;
 }

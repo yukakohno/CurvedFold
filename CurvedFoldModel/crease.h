@@ -3,16 +3,17 @@
 
 #include <stdio.h>
 
+#define MAX_FRAME 41
 #define MAX_CPCNT 10	// MAX # of control points on the crese
 #define MAX_SPCNT 100	// MAX # of sample points on the crese
 
-#define XCNT 40		// default # of sample points on the crese
-#define XSPC 5.0	// default space between the sample points
-#define CEMGN 3		// default end margin of the crease curve
+#define XCNT_DEF 40		// default # of sample points on the crese
+#define XSPC_DEF 5.0	// default space between the sample points
+#define CEMGN 3			// default end margin of the crease curve
 
 #define CCNT 6 // # of control points of B spline
 
-#define MIN_CURV 0.005
+#define FM_MODE 2	// 1: Control Point, 2: Sample Point
 
 typedef enum _crease_end_type {
 		CETYPE_UNDEF, CETYPE_TRIM,
@@ -24,25 +25,45 @@ typedef enum _ruling_end_type {
 	RETYPE_UNDEF, RETYPE_CURVE, RETYPE_TRIM, RETYPE_EGTOP, RETYPE_EGRIGHT, RETYPE_EGBOTTOM, RETYPE_EGLEFT
 } ruling_end_type;
 
-// defined in curvedraw.h
-//typedef enum _curve_type {
-//	CTYPE_UNDEF, CTYPE_TRIM, CTYPE_FOLD, CTYPE_FOLD_LEFT, CTYPE_FOLD_RIGHT
-//} curve_type;
-//typedef enum _cvertex_type {
-//	CVTYPE_UNDEF, CVTYPE_RUL_LEFT, CVTYPE_RUL_RIGHT, CVTYPE_FCURVE_START, CVTYPE_FCURVE_END, CVTYPE_PAPER_EDGE
-//} cvertex_type;
+#define MIN_CURV 0.005
+#define RECT_ASIZE 10
+
+typedef struct{
+	int flg_src_s1e1;	// 0:k2d, 1:kv*cos(alpha)
+	double kvthres;		// 曲率0とみなす閾値
+	int s1mgn;			// 曲率0区間を広げる幅 >=0
+	int s2mgn;			// 補間区間  -1: 極値まで, 0: 補間なし, >0: 補間幅
+	int method;			// 補間方法  1: linear, 2:Bezier
+	int src;			// 0: すべて算出  1: s1e1は既存, 2: s2e2は既存
+	int s1[RECT_ASIZE], e1[RECT_ASIZE], s2[RECT_ASIZE], e2[RECT_ASIZE], scnt;
+	double svlen0[RECT_ASIZE], svlen1[RECT_ASIZE];	// (s1-s2)*0.5
+	double evlen0[RECT_ASIZE], evlen1[RECT_ASIZE];	// (e2-e1)*0.5
+} rectify_param;
+
+typedef struct{
+	bool flg_rectifyT;
+	rectify_param rectT;
+	bool flg_rectifyA;
+	rectify_param rectA;
+	bool flg_rectifyR;
+	double rectifyR_kvthres;
+} rectify_params;
 
 class crease
 {
 public:
 	int rl;				// -1:left, 1:right
 	int flg_org;		// generated from 0:org* 1:CP*
-	int flg_src_s1e1;	// 0: k2d, 1: kv*cos(alpha)
+	//int flg_src_s1e1;	// 0: k2d, 1: kv*cos(alpha)
+	int flg_xspc_def;	// 1: XSPC_DEF, 0: else
 
 	// original curve shape (reference to curvedraw or curveintersect)
 	int org_idx;
 	int org_cnt;
 	double *org_x, *org_y;
+
+	// control points of B-spline curve
+	double CPx[CCNT], CPy[CCNT];
 
 	// control points on the crease
 	int Pcnt;
@@ -50,11 +71,22 @@ public:
 	double Px[MAX_CPCNT], Py[MAX_CPCNT], Pz[MAX_CPCNT]; // Px <- kv, Py <- tr
 	double Pa[MAX_CPCNT];	// alpha
 
+	// foldmotion
+	double Px2d_org[MAX_CPCNT], Px_org[MAX_CPCNT], Py_org[MAX_CPCNT], Pa_org[MAX_CPCNT], m3_org[16];
+	int FM_fidx_org, FM_fidx_min, FM_fidx_max;
+	int flg_FM_Pt[MAX_FRAME], flg_FM_Pa[MAX_FRAME], flg_FM_m3[MAX_FRAME];
+	double FM_Pt[MAX_FRAME][MAX_CPCNT];	// tr
+	double FM_Pa[MAX_FRAME][MAX_CPCNT];	// alpha
+	double FM_tr[MAX_FRAME][MAX_SPCNT];	// tr
+	double FM_alpha[MAX_FRAME][MAX_SPCNT];	// alpha
+	double FM_m3[MAX_FRAME][16];
+
 	// position & rotation (3D, CP)
 	double m3[16], m2[9];
 
 	// crease curve
-	int Xcnt;
+	int Xcnt, XcntOrg;
+	double XspcOrg;
 
 	// crease pattern
 	double Xx2d[MAX_SPCNT], Xy2d[MAX_SPCNT];
@@ -108,17 +140,28 @@ public:
 	int dumpm2m3( char *fname );
 	int dumpAll( char *fname );
 
+	int loadMotion( char *fname );	// return -1: error, 0: flg_usecp=0, 1: flg_usecp=1
+	int dumpMotion( char *fname, int flg_usecp );
+	int loadMotionFrame( int frm, char *fname );	// return -1: error, 0: flg_usecp=0, 1: flg_usecp=1
+	int dumpMotionFrame( int frm, char *fname, int flg_usecp );
+
 	int check180( char *fname );	// 頂点周りの角度
 	int check180( FILE *fp );
 	int checkquadplane( char *fname );	// quad の平面度
 	int checkquadplane( FILE *fp );
 	int checkCP3D( char *fname );
 
+	// ------------------------- evaluate -------------------------------------------
+
+	int check180( double *errdata, int row, int col );
+	int checkquadplane( double *errdata, int row, int col );
+	int checkRulingCross( double *errdata, int row, int col );
+
 	// ------------------------- proseq -------------------------------------------
 
-	int calcXA_CP( int flg_interpolate, int flg_rectifyT, int flg_rectifyA, int flg_rectifyR );	// a) 3D曲線と折り角度から、折り線を求める
-	int calcCPA_X( int flg_interpolate, int flg_rectifyT, int flg_rectifyA, int flg_rectifyR );	// b) 折り線と折り角度から、3D曲線を求める
-	int calcCPX_A( int flg_interpolate, int flg_rectifyT, int flg_rectifyA, int flg_rectifyR );	// c) 折り線と3D曲線から、折り角度を求める
+	int calcXA_CP( int flg_interpolate, rectify_params *rp );
+	int calcCPA_X( int flg_interpolate, rectify_params *rp );
+	int calcCPX_A( int flg_interpolate, rectify_params *rp );
 
 	// ------------------------- interpolate -------------------------------------------
 
@@ -141,36 +184,35 @@ public:
 		double *Tx2d0, double *Ty2d0, double *d2d0,
 		double *Nx2d0, double *Ny2d0, double *k2d0 );
 	int calcXTN2d( double m2[9] ); // k2d -> X2d -> calcTN2d();
-	// ★calcXTN2d()を繰り返すと誤差が累積しX2dが変化。
 
-	int calcTNB( int flg_rectifyT ); // X -> T,N,B,kv,tr
-	int calcTNB( int flg_rectifyT, int Xsidx0, int Xeidx0 );
+	int calcTNB(); // X -> T,N,B,kv,tr
+	int calcTNB( int Xsidx0, int Xeidx0 );
 	static int calcTNB( int Xcnt, double *Xx, double *Xy, double *Xz,
 		double *Tx, double *Ty, double *Tz,	double *dx,
 		double *Nx, double *Ny, double *Nz, double *kv,
-		double *Bx, double *By, double *Bz, double *tr, int flg_rectifyT );
-	int calcXTNB( int flg_rectifyT, double m3[16] ); // kv,tr -> (rectifyTau) -> X -> calcTNB();
-	// ★calcXTNB()を繰り返すとtrの値が変化していく -> ruling方向に影響
+		double *Bx, double *By, double *Bz, double *tr );
+	int calcXTNB( double m3[16] ); // kv,tr -> (rectifyTau) -> X -> calcTNB();
 
-	int calcTau( int flg_rectifyT ); // tr算出
+	int calcTau(); // tr算出
 	static int calcTau( int Xcnt, double *Xx, double *Xy, double *Xz,
 		double *Tx, double *Ty, double *Tz, double *dx,
 		double *Nx, double *Ny, double *Nz, double *kv,
-		double *Bx, double *By, double *Bz, double *tr, int flg_rectifyT );
+		double *Bx, double *By, double *Bz, double *tr );
 
 	// ------------------------- alpha -------------------------------------------
 
 	int setA(double a); // alpha = a を設定
-	int calcAlpha( int flg_rectifyA ); // kv, k2d -> alpha, sina, cosa, tana, da
+	int calcAlpha( int flg_rectifyA, rectify_param *rp ); // kv, k2d -> alpha, sina, cosa, tana, da
 	static int calcAlpha( int Xcnt, double *Xx, double *Xy, double *Xz, double *kv, double *k2d,
-		double *cosa, double *sina, double *tana, double *alpha, double *da, int flg_rectifyA );
-	int calcAK_K2D( int flg_rectifyA ); // alpha, kv -> (rectifyAlpha) -> k2d, sina, cosa, tana, da
-	int calcAK2D_K( int flg_rectifyA ); // alpha, k2d -> (rectifyAlpha) -> kv
+		double *cosa, double *sina, double *tana, double *alpha, double *da,
+		int flg_rectifyA, rectify_param *rp );
+	int calcAK_K2D(); // alpha, kv -> k2d, sina, cosa, tana, da
+	int calcAK2D_K(); // alpha, k2d -> kv
 	int calcDA(); // alpha, X -> da
 
 	// ------------------------- beta -------------------------------------------
 
-	int calcRuling( int flg_rectifyR ); // ruling算出
+	int calcRuling( int flg_rectifyR, double rectifyR_kvthres ); // ruling算出
 	static int calcRuling( int cxcnt,
 		double *Tx, double *Ty, double *Tz, double *Tx2d, double *Ty2d, 
 		double *Nx, double *Ny, double *Nz,  double *Bx, double *By, double *Bz,					   
@@ -179,7 +221,7 @@ public:
 		double *cosbl, double *cosbr, double *cotbl, double *cotbr, double *sina, double *cosa, 
 		double *rlx, double *rly, double *rlz, double *rlx_cp, double *rly_cp, double *rllen,
 		double *rrx, double *rry, double *rrz, double *rrx_cp, double *rry_cp, double *rrlen, int rl );
-	int calcRuling2D( int flg_rectifyR );
+	int calcRuling2D( int flg_rectifyR, double rectifyR_kvthres );
 	static int calcRuling2D( int cxcnt, double *da, double *sina, double *kv, double *tr,
 		double *betal, double *betar, double *sinbl, double *sinbr,
 		double *cosbl, double *cosbr, double *cotbl, double *cotbr, int rl );
@@ -189,8 +231,6 @@ public:
 		double *sina, double *cosa, double *sinbl, double *sinbr, double *cosbl, double *cosbr,
 		double *rlx, double *rly, double *rlz, double *rrx, double *rry, double *rrz,
 		double *rlx_cp, double *rly_cp, double *rrx_cp, double *rry_cp, int rl );
-
-	int calcRuling2DH( int flg_rectifyR ); // ruling horizontal
 
 	// ------------------------- length -------------------------------------------
 
@@ -207,25 +247,50 @@ public:
 	static int calcRLenC_( double *cvx, double *cvy, double *rx, double *ry, int cvcnt,
 					double *cvx1, double *cvy1, int cvcnt1, double *rlen, ruling_end_type *rflg );
 
-	int calcRLenHoseiR(); // 曲率小さい部分は長さ0に
-	static int calcRLenHoseiR( int Xcnt, double *k2d, double *rlen, ruling_end_type *rflg ); // 曲率小さい部分は長さ0に
+	int calcRLenHoseiR( double rectifyR_kvthres ); // 曲率小さい部分は長さ0に
+	static int calcRLenHoseiR( int Xcnt, double *k2d, double rectifyR_kvthres, double *rlen, ruling_end_type *rflg ); // 曲率小さい部分は長さ0に
 
 	int setEnds( int psx, int psy, int pex, int pey, int dccnt, void *dcurve );
 	void initEnds();
 
 	// ------------------------- rectify -------------------------------------------
 
-	int gets1e1( int *_s1, int *_e1, int semax, int mgn, int flg_src_s1e1  );
+	static void setDefault( rectify_param *rp );
+
+	int gets1e1( int flg_src_s1e1, double thres, int mgn, int *_s1, int *_e1, int semax );
 	static int gets1e1( int Xcnt, int Xs, int Xe, double *val, double thres, int mgn,
 		int *_s1, int *_e1, int semax );
-	int rectifyTau();
+	static int gets2e2( int Xcnt, int *s1, int *e1, int scnt, double *alpha, int *s2, int *e2 );
+
+	int rectifyTau( double rectifyT_kvthres, int rectifyT_mgn );
+	int rectifyTau2( int src_s1e1, double rectifyT_kvthres, int rectifyT_mgn ); // 積分値が同じになるように
 	static int rectifyTau( int Xcnt, int *s1, int *e1, int scnt, double *tr, double *kv );
-	int rectifyAlpha();
-	int rectifyTauBezier();
-	int rectifyTauBezier2();
-	int rectifyAlphaBezier( int src_s1e1 ); // 0:k2d, 1:kv*cos(alpha)
-	static int rectifyAlphaBezier( int Xcnt, int *s1, int *e1, int scnt, double *alpha );
-	int rectifyTau2(); // 積分値が同じになるように
+	int rectifyTauBezier( rectify_param *rp );
+	int rectifyTauBezier2( rectify_param *rp );
+
+	int rectifyAlpha( rectify_param *rp );
+	int rectifyAlphaBezier( rectify_param *rp );
+	static int rectifyAlphaBezier( int Xcnt, double *alpha0, rectify_param *rp );
+
+	// ------------------------- RL -------------------------------------------
+	int setL2R( crease *c ); // copy c->rl* to this->rr*, set Xsidx Xeidx
+	int setR2L( crease *c ); // copy c->rr* to this->rl*, set Xsidx Xeidx
+	int calcLeft();
+	int calcRight();
+	int calcLeftK();	// 
+	int calcRightK();	// 
+
+	// ------------------------- foldmotion -------------------------------------------
+
+	void initFM();
+	int updateFM( int flg_interpolateCP );
+
+	// ------------------------- stitch -------------------------------------------
+
+	int getSamplePoints2D( double space, double *x, double *y ); // 不使用、使う場合は要更新
+	int getSamplePoints3D( double space, double *x, double *y, double *z, double *len_sp );
+	int getVertexPoints3D( double space, double *x, double *y, double *z, double *len_sp );
+
 };
 
 #endif

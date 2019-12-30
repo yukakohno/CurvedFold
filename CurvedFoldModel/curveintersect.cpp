@@ -24,7 +24,7 @@ void curveintersect::init()
 	memset( cvlen, 0, sizeof(double)*MAXFCX );
 }
 
-int curveintersect::create_drawcurve( curvedraw *dc, crease *c, int psx, int psy, int pex, int pey )
+int curveintersect::create_drawcurve( curvedraw *_dc, crease *c, int psx, int psy, int pex, int pey )
 {
 	int ret=0;
 
@@ -34,8 +34,10 @@ int curveintersect::create_drawcurve( curvedraw *dc, crease *c, int psx, int psy
 	int Xidx[MAXFCX], Cidx[MAXFCX], ISodr[MAXFCX];
 	double Xlen[MAXFCX];
 
-	ret = curvedraw::IS_drawcurve( dc, c, psx, psy, pex, pey, ISx, ISy, MAXFCX, IScnt, Xtype, Xidx, Xlen, Cidx );
-	ret = curvedraw::IS_check_cw( dc, c, psx, psy, pex, pey, ISx, ISy, MAXFCX, IScnt, Xtype, Xidx, Xlen, Cidx );
+	this->dc = _dc;
+
+	ret = curvedraw::IS_drawcurve( _dc, c, psx, psy, pex, pey, ISx, ISy, MAXFCX, IScnt, Xtype, Xidx, Xlen, Cidx );
+	ret = curvedraw::IS_check_cw( _dc, c, psx, psy, pex, pey, ISx, ISy, MAXFCX, IScnt, Xtype, Xidx, Xlen, Cidx );
 
 	cvcnt = IScnt;
 	if( ret>0 ){ // clockwise

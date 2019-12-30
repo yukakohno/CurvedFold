@@ -34,8 +34,7 @@ public:
 	int disp_PLY;
 	int disp_PTN;
 	int disp_CP, ppos, pprm;
-
-	int flg_addcurve; // 0:-, 1:trim, 2:fold
+	int disp_PRI;
 
 	void *cwin;
 	papermodel *ppm;
@@ -46,16 +45,10 @@ public:
 	double ofs_a, ofs_sina, ofs_cosa;
 	int flg_psize, ofs_psx, ofs_psy, ofs_pex, ofs_pey;
 
-	int cridx, cpidx;
-	double org_cpx, org_cpy;
-
 	int ccnt;
 	int cx[MAXDCX], cy[MAXDCX];
 
 	double mt[9];
-
-	void fixCurve();
-	void fixCurve0();
 };
 
 #endif // GRAPHWINDOWCP

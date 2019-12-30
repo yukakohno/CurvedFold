@@ -23,6 +23,7 @@ public:
 	GraphWindowParam(int X, int Y, int W, int H);
 
 	papermodel *ppm;
+	int cidx;
 };
 
 #endif

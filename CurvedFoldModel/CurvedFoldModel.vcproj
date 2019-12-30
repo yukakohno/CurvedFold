@@ -156,7 +156,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\crease_evaluate.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\crease_fileio.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\crease_foldmotion.cpp"
 				>
 			</File>
 			<File
@@ -176,6 +184,22 @@
 				>
 			</File>
 			<File
+				RelativePath=".\crease_rectifyA.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\crease_rectifyT.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\crease_RL.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\crease_stitch.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\crease_TNB.cpp"
 				>
 			</File>
@@ -192,6 +216,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\papermodel_curve.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\papermodel_evaluate.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\papermodel_fileio.cpp"
 				>
 			</File>
@@ -203,6 +235,18 @@
 				RelativePath=".\papermodel_procseq.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\papermodel_rulLength.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\papermodel_spherepart.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\papermodel_stitch.cpp"
+				>
+			</File>
 			<Filter
 				Name="tools"
 				>
@@ -212,6 +256,10 @@
 				</File>
 				<File
 					RelativePath=".\Bspline.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Curvature.cpp"
 					>
 				</File>
 				<File
@@ -258,6 +306,10 @@
 				</File>
 				<File
 					RelativePath=".\Bspline.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Curvature.h"
 					>
 				</File>
 				<File

@@ -593,6 +593,93 @@ void quat_mat(double *quat, double *mat, int matsize)
 	}
 }
 
+// quat[4] -> axis[3], ang
+//	URL: http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToAngle/index.htm
+//	angle = 2 * acos(qw)
+//	x = qx / sqrt(1-qw*qw)
+//	y = qy / sqrt(1-qw*qw)
+//	z = qz / sqrt(1-qw*qw)
+// quat[4] -> axis[3], ang
+void q_norm(float *q)
+{
+	float mag = sqrt(q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3]);
+	for( int i=0; i<4; i++ ){ q[i] /= mag; }
+}
+
+void quat_axis_ang(float *quat, float *axis, float *ang)
+{
+	float q[4], t_2, sint;
+
+	memcpy(q, quat, sizeof(float)*4);
+	q_norm(q);
+
+	t_2 = acos(q[3]);	// q[3] = cos(theta/2)
+	sint = sqrt(1-q[3]*q[3]);
+
+	if(axis){
+		if(sint != 0){
+			axis[0] = q[0]/sint;
+			axis[1] = q[1]/sint;
+			axis[2] = q[2]/sint;
+		} else{
+			axis[0] = axis[1] = axis[2] = 0;
+		}
+	}
+	if(ang){
+		*ang = (float)(t_2 * 2.0);
+	}
+}
+
+void q_norm(double *q)
+{
+	double mag = sqrt(q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3]);
+	for( int i=0; i<4; i++ ){ q[i] /= mag; }
+}
+
+void quat_axis_ang(double *quat, double *axis, double *ang)
+{
+	double q[4], t_2, sint;
+
+	memcpy(q, quat, sizeof(double)*4);
+	q_norm(q);
+
+	t_2 = acos(q[3]);	// q[0] = cos(theta/2)
+	sint = sqrt(1-q[3]*q[3]);
+
+	if(axis){
+		if(sint != 0){
+			axis[0] = q[0]/sint;
+			axis[1] = q[1]/sint;
+			axis[2] = q[2]/sint;
+		} else{
+			axis[0] = axis[1] = axis[2] = 0;
+		}
+	}
+	if(ang){
+		*ang = t_2 * 2.0;
+	}
+}
+
+void axis_ang_quat(float *axis, float ang, float *quat)
+{
+	float sina2 = (float)sin((double)ang/2.0);
+	float cosa2 = (float)cos((double)ang/2.0);
+	quat[0] = axis[0] * sina2;
+	quat[1] = axis[1] * sina2;
+	quat[2] = axis[2] * sina2;
+	quat[3] = cosa2;
+}
+
+void axis_ang_quat(double *axis, double ang, double *quat)
+{
+	double sina2 = sin(ang/2.0);
+	double cosa2 = cos(ang/2.0);
+	quat[0] = axis[0] * sina2;
+	quat[1] = axis[1] * sina2;
+	quat[2] = axis[2] * sina2;
+	quat[3] = cosa2;
+}
+
 double normalize_v2( double *x, double *y )
 {
 	double len = sqrt( (*x)*(*x) + (*y)*(*y) );
@@ -707,6 +794,108 @@ int getMat(int vcnt,
 	mult_m44_n44(mat, rm, 1);	// dst=1 : n44[16] = n44[16] * m44[16] 
 	mult_m44_n44(mat, tm0, 1);
 	if(_mat) memcpy(_mat,mat,sizeof(double)*16);
+end:
+	return ret;
+}
+
+int getMatRot(int vcnt,
+		   double *vx0, double *vy0, double *vz0,
+		   double *vx1, double *vy1, double *vz1,
+		   double *_mat)
+{
+	int i, cnt, ret=0;
+	double /*mat[16],*/ rm[16],/* tm0[16], tm1[16],*/ eps = 0.0000001;
+	double rm00, rm01, rm02, rm10, rm11, rm12, rm20, rm21, rm22;
+	//double tv00, tv01, tv02, tv10, tv11, tv12;
+	double w, sw, cw, p, sp, cp, k, ck, sk, Fx, Fy, Fz;
+	double dfdp00, dfdp01, dfdp02, dfdp10, dfdp11, dfdp12, dfdp20, dfdp21, dfdp22;
+	double m[9], b0,b1,b2, dw,dp,dk;
+
+	if(vcnt<3){
+		ret = -1;
+		goto end;
+	}
+
+#if 0	// translation
+	tv00 = tv01 = tv02 = tv10 = tv11 = tv12 = 0;
+	for( i=0; i<vcnt; i++ ){
+		tv00+=vx0[i];	tv01+=vy0[i];	tv02+=vz0[i];
+		tv10+=vx1[i];	tv11+=vy1[i];	tv12+=vz1[i];
+	}
+	tv00/=vcnt;	tv01/=vcnt;	tv02/=vcnt;
+	tv10/=vcnt;	tv11/=vcnt;	tv12/=vcnt;
+	for( i=0; i<vcnt; i++ ){
+		vx0[i]-=tv00;	vy0[i]-=tv01;	vz0[i]-=tv02;
+		vx1[i]-=tv10;	vy1[i]-=tv11;	vz1[i]-=tv12;
+	}
+#endif
+	// initial value for rotation matrix
+	w=0;	cw=cos(w);	sw=sin(w);
+	p=0;	cp=cos(p);	sp=sin(p);
+	k=0;	ck=cos(k);	sk=sin(k);
+	cnt = 0;
+	dw = dp = dk = DBL_MAX;
+	while( (fabs(dw)>eps || fabs(dp)>eps || fabs(dk)>eps) && cnt<100 ){
+		memset( m, 0, sizeof(double)*9 );
+		b0 = b1 = b2 = 0;
+		for( i=0; i<vcnt; i++){
+			rm00 = cp*ck;			rm01 = -cp*sk;			rm02 = sp;
+			rm10 = cw*sk+sw*sp*ck;	rm11 = cw*ck-sw*sp*sk;	rm12 = -sw*cp;
+			rm20 = sw*sk-cw*sp*ck;	rm21 = sw*ck+cw*sp*sk;	rm22 = cw*cp;
+
+			Fx = rm00*vx0[i] + rm01*vy0[i] + rm02*vz0[i] - vx1[i];
+			Fy = rm10*vx0[i] + rm11*vy0[i] + rm12*vz0[i] - vy1[i];
+			Fz = rm20*vx0[i] + rm21*vy0[i] + rm22*vz0[i] - vz1[i];
+
+			dfdp00 = 0;
+			dfdp01 = (-sp*ck)			*vx0[i] + (sp*sk)			*vy0[i]	+ (cp)		*vz0[i];
+			dfdp02 = (-cp*sk)			*vx0[i]	+ (-cp*ck)			*vy0[i];
+			dfdp10 = (-sw*sk+cw*sp*ck)	*vx0[i]	+ (-sw*ck-cw*sp*sk)	*vy0[i]	+ (-cw*cp)	*vz0[i];
+			dfdp11 = (sw*cp*ck)			*vx0[i]	+ (-sw*cp*sk)		*vy0[i]	+ (sw*sp)	*vz0[i];
+			dfdp12 = (cw*ck-sw*sp*sk)	*vx0[i]	+ (-cw*sk-sw*sp*ck)	*vy0[i];
+			dfdp20 = (cw*sk+sw*sp*ck)	*vx0[i]	+ (cw*ck-sw*sp*sk)	*vy0[i]	+ (-sw*cp)	*vz0[i];
+			dfdp21 = (-cw*cp*ck)		*vx0[i]	+ (cw*cp*sk)		*vy0[i]	+ (-cw*sp)	*vz0[i];
+			dfdp22 = (sw*ck+cw*sp*sk)	*vx0[i]	+ (-sw*sk+cw*sp*ck)	*vy0[i];
+
+			m[0] += dfdp00 * dfdp00 + dfdp10 * dfdp10 + dfdp20 * dfdp20;
+			m[1] += dfdp00 * dfdp01 + dfdp10 * dfdp11 + dfdp20 * dfdp21;
+			m[2] += dfdp00 * dfdp02 + dfdp10 * dfdp12 + dfdp20 * dfdp22;
+			m[3] += dfdp01 * dfdp00 + dfdp11 * dfdp10 + dfdp21 * dfdp20;
+			m[4] += dfdp01 * dfdp01 + dfdp11 * dfdp11 + dfdp21 * dfdp21;
+			m[5] += dfdp01 * dfdp02 + dfdp11 * dfdp12 + dfdp21 * dfdp22;
+			m[6] += dfdp02 * dfdp00 + dfdp12 * dfdp10 + dfdp22 * dfdp20;
+			m[7] += dfdp02 * dfdp01 + dfdp12 * dfdp11 + dfdp22 * dfdp21;
+			m[8] += dfdp02 * dfdp02 + dfdp12 * dfdp12 + dfdp22 * dfdp22;
+			b0 += dfdp00 * Fx + dfdp10 * Fy + dfdp20 * Fz;
+			b1 += dfdp01 * Fx + dfdp11 * Fy + dfdp21 * Fz;
+			b2 += dfdp02 * Fx + dfdp12 * Fy + dfdp22 * Fz;
+		}
+		inv_m33(m);
+		dw = m[0]*b0 + m[1]*b1 + m[2]*b2;
+		dp = m[3]*b0 + m[4]*b1 + m[5]*b2;
+		dk = m[6]*b0 + m[7]*b1 + m[8]*b2;
+		w=w-dw;	sw=sin(w);	cw=cos(w);
+		p=p-dp;	sp=sin(p);	cp=cos(p);
+		k=k-dk;	sk=sin(k);	ck=cos(k);
+
+		cnt++;
+	}
+	rm00 = cp*ck;			rm01 = -cp*sk;			rm02 = sp;
+	rm10 = cw*sk+sw*sp*ck;	rm11 = cw*ck-sw*sp*sk;	rm12 = -sw*cp;
+	rm20 = sw*sk-cw*sp*ck;	rm21 = sw*ck+cw*sp*sk;	rm22 = cw*cp;
+
+	//unit_m44(tm0);	tm0[3] = -tv00;	tm0[7] =-tv01;	tm0[11] = -tv02;
+	//unit_m44(tm1);	tm1[3] = tv10;	tm1[7] = tv11;	tm1[11] = tv12;
+	rm[0] = rm00;	rm[1] = rm01;	rm[2] = rm02;	rm[3] = 0;
+	rm[4] = rm10;	rm[5] = rm11;	rm[6] = rm12;	rm[7] = 0;
+	rm[8] = rm20;	rm[9] = rm21;	rm[10] = rm22;	rm[11] = 0;
+	rm[12] = 0;		rm[13] = 0;		rm[14] = 0;		rm[15] = 1;
+
+	//memcpy(mat,tm1,sizeof(double)*16);
+	//mult_m44_n44(mat, rm, 1);	// dst=1 : n44[16] = n44[16] * m44[16] 
+	//mult_m44_n44(mat, tm0, 1);
+	//if(_mat) memcpy(_mat,mat,sizeof(double)*16);
+	if(_mat) memcpy(_mat,rm,sizeof(double)*16);
 end:
 	return ret;
 }

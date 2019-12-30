@@ -180,23 +180,15 @@ int crease::check180( FILE *fp )
 		ret = -1; goto end;
 	}
 	fprintf( fp, "i, ip0r, ip1r, ip0l, ip1l, a0r, a1r, a0l, a1l, atotal-2pi\n");
+
+	double errdata[ MAX_SPCNT*9 ];	memset( errdata, 0, sizeof(double)*MAX_SPCNT*9 );
+	ret = check180( errdata, Xeidx+1, 9 );
 	for( int i=Xsidx; i<=Xeidx; i++ ){
-		if( rllen[i]==0 || rrlen[i]==0.0 ){
-			fprintf( fp, "%d,0,0,0,0,0,0,0,0,0\n", i);
-			continue;
-		}
-		double ip0r, ip1r, ip0l, ip1l, a0r, a1r, a0l, a1l;
-		ip0r = -Tx[i-1]*rrx[i] -Ty[i-1]*rry[i] -Tz[i-1]*rrz[i];
-		ip1r =  Tx[i]  *rrx[i] +Ty[i]  *rry[i] +Tz[i]  *rrz[i];
-		ip0l = -Tx[i-1]*rlx[i] -Ty[i-1]*rly[i] -Tz[i-1]*rlz[i];
-		ip1l =  Tx[i]  *rlx[i] +Ty[i]  *rly[i] +Tz[i]  *rlz[i];
-		a0r = acos( ip0r );
-		a1r = acos( ip1r );
-		a0l = acos( ip0l );
-		a1l = acos( ip1l );
+		double *ed = &(errdata[i*9]);
 		fprintf( fp, "%d,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
-			i, ip0r, ip1r, ip0l, ip1l, a0r, a1r, a0l, a1l, a0r+a1r+a0l+a1l-2*M_PI);
+			i, ed[0], ed[1], ed[2], ed[3], ed[4], ed[5], ed[6], ed[7], ed[8]);
 	}
+
 end:
 	return ret;
 }
@@ -226,39 +218,16 @@ int crease::checkquadplane( FILE *fp )
 		ret = -1; goto end;
 	}
 	fprintf( fp, "i, dx0,dy0,dz0, opxL,opyL,opzL, dxL,dyL,dzL, ipL, opxR,opyR,opzR, dxR,dyR,dzR, ipR\n" );
+
+	double errdata[ MAX_SPCNT*17 ];	memset( errdata, 0, sizeof(double)*MAX_SPCNT*17 );
+	ret = checkquadplane( errdata, Xeidx+1, 17 );
 	for( int i=Xsidx; i<Xeidx; i++ ){
-		double dx0,dy0,dz0, dx1,dy1,dz1, dxL,dyL,dzL, opxL,opyL,opzL, ipL, dxR,dyR,dzR, opxR,opyR,opzR, ipR;
-		dx0 = dx1 = Xx[i+1] - Xx[i];
-		dy0 = dy1 = Xy[i+1] - Xy[i];
-		dz0 = dz1 = Xz[i+1] - Xz[i];
-		normalize_v3( &dx0, &dy0, &dz0 );
-		if( rllen[i]==0.0 || rllen[i+1]==0.0 ){
-			opxL = opyL = opzL = dxL = dyL = dzL = ipL = 0.0;
-		} else {
-			opxL = rly[i]*dz0 - rlz[i]*dy0;
-			opyL = rlz[i]*dx0 - rlx[i]*dz0;
-			opzL = rlx[i]*dy0 - rly[i]*dx0;
-			normalize_v3( &opxL, &opyL, &opzL ); // 面の法線方向
-			dxL = rlx[i+1]*rllen[i+1] + dx1; // X[i]を原点としたあと1点の座標
-			dyL = rly[i+1]*rllen[i+1] + dy1;
-			dzL = rlz[i+1]*rllen[i+1] + dz1;
-			ipL = opxL*dxL + opyL*dyL + opzL*dzL;
-		}
-		if( rrlen[i]==0.0 || rrlen[i+1]==0.0 ){
-			opxR = opyR = opzR = dxR = dyR = dzR = ipR = 0.0;
-		} else {
-			opxR = rry[i]*dz0 - rrz[i]*dy0;
-			opyR = rrz[i]*dx0 - rrx[i]*dz0;
-			opzR = rrx[i]*dy0 - rry[i]*dx0;
-			normalize_v3( &opxR, &opyR, &opzR ); // 面の法線方向
-			dxR = rrx[i+1]*rrlen[i+1] + dx1;
-			dyR = rry[i+1]*rrlen[i+1] + dy1;
-			dzR = rrz[i+1]*rrlen[i+1] + dz1;
-			ipR = opxR*dxR + opyR*dyR + opzR*dzR;
-		}
+		double *ed = &(errdata[i*17]);
 		fprintf( fp, "%d,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n",
-			i, dx0,dy0,dz0, opxL,opyL,opzL, dxL,dyL,dzL, ipL, opxR,opyR,opzR, dxR,dyR,dzR, ipR );
+			i, ed[0], ed[1], ed[2], ed[3], ed[4], ed[5], ed[6], ed[7], ed[8], ed[9],
+			ed[10], ed[11], ed[12], ed[13], ed[14], ed[15], ed[16] );
 	}
+
 end:
 	return ret;
 }
@@ -298,16 +267,17 @@ int crease::dumpm2m3( char *fname )
 	FILE *fp=fopen( fname, "w" );
 	if( !fp ){
 		ret = -1;
-	} else {		fprintf( fp, "m2\n" );
-	fprintf( fp, "%f\t%f\t%f\n", m2[0], m2[1], m2[2] );
-	fprintf( fp, "%f\t%f\t%f\n", m2[3], m2[4], m2[5] );
-	fprintf( fp, "%f\t%f\t%f\n", m2[6], m2[7], m2[8] );
-	fprintf( fp, "m3\n" );
-	fprintf( fp, "%f\t%f\t%f\t%f\n", m3[0], m3[1], m3[2], m3[3] );
-	fprintf( fp, "%f\t%f\t%f\t%f\n", m3[4], m3[5], m3[6], m3[7] );
-	fprintf( fp, "%f\t%f\t%f\t%f\n", m3[8], m3[9], m3[10], m3[11] );
-	fprintf( fp, "%f\t%f\t%f\t%f\n", m3[12], m3[13], m3[14], m3[15] );
-	fclose(fp); fp=NULL;
+	} else {
+		fprintf( fp, "m2\n" );
+		fprintf( fp, "%f\t%f\t%f\n", m2[0], m2[1], m2[2] );
+		fprintf( fp, "%f\t%f\t%f\n", m2[3], m2[4], m2[5] );
+		fprintf( fp, "%f\t%f\t%f\n", m2[6], m2[7], m2[8] );
+		fprintf( fp, "m3\n" );
+		fprintf( fp, "%f\t%f\t%f\t%f\n", m3[0], m3[1], m3[2], m3[3] );
+		fprintf( fp, "%f\t%f\t%f\t%f\n", m3[4], m3[5], m3[6], m3[7] );
+		fprintf( fp, "%f\t%f\t%f\t%f\n", m3[8], m3[9], m3[10], m3[11] );
+		fprintf( fp, "%f\t%f\t%f\t%f\n", m3[12], m3[13], m3[14], m3[15] );
+		fclose(fp); fp=NULL;
 	}
 
 end:
@@ -349,7 +319,6 @@ int crease::dumpAll( char *fname )
 			case ALPHA: fprintf( fp, "alpha,"); break;
 			case ALPHA0: fprintf( fp, "cosa,sina,tana,da,"); break;
 			case DA: fprintf( fp, "da,"); break;
-			case PB: fprintf( fp, "Pbl,Pbr,"); break;
 			case BETA: fprintf( fp, "betal, betar,"); break;
 			case BETA0: fprintf( fp, "cotbl,cotbr,cosbl,sinbl,cosbr,sinbr,"); break;
 			case R3: fprintf( fp, "rlx,rly,rlz,rrx,rry,rrz,"); break;
@@ -401,7 +370,6 @@ int crease::dumpAll( char *fname )
 				case ALPHA: fprintf( fp, "%f,", alpha[j] ); break;
 				case ALPHA0: fprintf( fp, "%f,%f,%f,%f,", cosa[j], sina[j], tana[j], da[j] ); break;
 				case DA: fprintf( fp, "%f,", da[j] ); break;
-				case PB: break;
 				case BETA: fprintf( fp, "%f,%f,", betal[j], betar[j] ); break;
 				case BETA0: fprintf( fp, "%f,%f,%f,%f,%f,%f,", cotbl[j], cotbr[j], cosbl[j], sinbl[j], cosbr[j], sinbr[j] ); break;
 				case R3: fprintf( fp, "%f,%f,%f,%f,%f,%f,", rlx[j], rly[j], rlz[j], rrx[j], rry[j], rrz[j] ); break;
@@ -415,6 +383,289 @@ int crease::dumpAll( char *fname )
 end:
 	if( fp ){ fclose( fp ); fp=NULL; }
 	return ret;
+}
+
+// return -1: error, 0: flg_usecp=0, 1: flg_usecp=1
+int crease::loadMotion( char *fname )
+{
+	int flg_usecp=0;
+	FILE *fp=NULL;
+	int tmpPcnt;
+	char buf[1024], str[32];
+
+	if( fname==NULL ){
+		return -1;
+	}
+	fp = fopen( fname, "r" );
+	if( !fp ){
+		return -1;
+	}
+
+	if( fgets( buf, 1024, fp) ){
+		sscanf( buf, "%d", &flg_usecp );
+	} else {
+		flg_usecp = -1; goto end;
+	}
+	if( fgets( buf, 1024, fp) ){
+		int sret = sscanf( buf, "%d %d %d %d", &FM_fidx_org, &FM_fidx_min, &FM_fidx_max, &tmpPcnt );
+		if( tmpPcnt != Pcnt || sret < 4 ){
+			flg_usecp = -1; goto end;
+		}
+	} else {
+		flg_usecp = -1; goto end;
+	}
+
+	for( int i=0; i<MAX_FRAME; i++ )
+	{
+		if( fgets( buf, 1024, fp) ){
+			int sret = sscanf( buf, "%d %d %d", &(flg_FM_Pt[i]), &(flg_FM_Pa[i]), &(flg_FM_m3[i]) );
+			if( sret < 3 ){
+				flg_usecp = -1; goto end;
+			}
+		} else {
+			flg_usecp = -1; goto end;
+		}
+
+		fgets( buf, 1024, fp);
+		if(flg_FM_Pt[i]){
+			if( flg_usecp ){
+				char *pt = buf, ret[128];
+				for( int j=-1; j<Pcnt; j++ ){
+					int res = csvread( &pt, ret, '\t' );
+					if( j<0 ){ continue; } // "Pt"
+					FM_Pt[i][j] = atof(ret);
+					if( !res ){
+						break;
+					}
+				}
+			} else {
+				char *pt = buf, ret[128];
+				for( int j=-1; j<Xcnt; j++ ){
+					int res = csvread( &pt, ret, '\t' );
+					if( j<0 ){ continue; } // "tr"
+					FM_tr[i][j] = atof(ret);
+					if( !res ){
+						break;
+					}
+				}
+			}
+		}
+
+		fgets( buf, 1024, fp);
+		if(flg_FM_Pa[i]){
+			if( flg_usecp ){
+				char *pt = buf, ret[128];
+				for( int j=-1; j<Pcnt; j++ ){
+					int res = csvread( &pt, ret, '\t' );
+					if( j<0 ){ continue; } // "Pa"
+					FM_Pa[i][j] = atof(ret);
+					if( !res ){
+						break;
+					}
+				}
+			} else {
+				char *pt = buf, ret[128];
+				for( int j=-1; j<Xcnt; j++ ){
+					int res = csvread( &pt, ret, '\t' );
+					if( j<0 ){ continue; } // "alpha"
+					FM_alpha[i][j] = atof(ret);
+					if( !res ){
+						break;
+					}
+				}
+			}
+		}
+
+		fgets( buf, 1024, fp);
+		if(flg_FM_m3[i]){
+			sscanf( buf, "%s %lf %lf %lf %lf", str, &(FM_m3[i][0]), &(FM_m3[i][1]), &(FM_m3[i][2]), &(FM_m3[i][3]) );
+			fgets( buf, 1024, fp);
+			sscanf( buf, "%lf %lf %lf %lf", &(FM_m3[i][4]), &(FM_m3[i][5]), &(FM_m3[i][6]), &(FM_m3[i][7]) );
+			fgets( buf, 1024, fp);
+			sscanf( buf, "%lf %lf %lf %lf", &(FM_m3[i][8]), &(FM_m3[i][9]), &(FM_m3[i][10]), &(FM_m3[i][11]) );
+			fgets( buf, 1024, fp);
+			sscanf( buf, "%lf %lf %lf %lf", &(FM_m3[i][12]), &(FM_m3[i][13]), &(FM_m3[i][14]), &(FM_m3[i][15]) );
+		}
+	}
+end:
+	if(fp) { fclose( fp ); fp=NULL; }
+	return flg_usecp;
+}
+
+int crease::dumpMotion( char *fname, int flg_usecp )
+{
+	int ret=0;
+	FILE *fp=NULL;
+
+	if( fname==NULL ){
+		ret = -1; goto end;
+	}
+	fp = fopen( fname, "w" );
+	if( !fp ){
+		ret = -1; goto end;
+	}
+	fprintf( fp, "%d\t//flg_usecp\n", flg_usecp );
+	fprintf( fp, "%d\t%d\t%d\t%d\t//fidx_org, fidx_min, fidx_max, Pcnt\n",
+		FM_fidx_org, FM_fidx_min, FM_fidx_max, Pcnt );
+
+	for( int i=0; i<MAX_FRAME; i++ )
+	{
+		fprintf( fp, "%d\t%d\t%d\t//flg_Pt, flg_Pa, flg_m3\n", flg_FM_Pt[i], flg_FM_Pa[i], flg_FM_m3[i] );
+		if(flg_FM_Pt[i]){
+			if( flg_usecp ){
+				fprintf( fp, "Pt\t" );
+				for( int j=0; j<Pcnt; j++ ){ fprintf( fp, "%f\t", FM_Pt[i][j] ); }
+				fprintf( fp, "\n" );
+			} else {
+				fprintf( fp, "tr\t" );
+				for( int j=0; j<Xcnt; j++ ){ fprintf( fp, "%f\t", FM_tr[i][j] ); }
+				fprintf( fp, "\n" );
+			}
+		} else {
+			fprintf( fp, "Pt\t-\n" );
+		}
+		if(flg_FM_Pa[i]){
+			if( flg_usecp ){
+				fprintf( fp, "Pa\t" );
+				for( int j=0; j<Pcnt; j++ ){ fprintf( fp, "%f\t", FM_Pa[i][j] ); }
+				fprintf( fp, "\n" );
+			} else {
+				fprintf( fp, "alpha\t" );
+				for( int j=0; j<Xcnt; j++ ){ fprintf( fp, "%f\t", FM_alpha[i][j] ); }
+				fprintf( fp, "\n" );
+			}
+		} else {
+			fprintf( fp, "Pa\t-\n" );
+		}
+		if(flg_FM_m3[i]){
+			fprintf( fp, "m3\t%f\t%f\t%f\t%f\n", FM_m3[i][0], FM_m3[i][1], FM_m3[i][2], FM_m3[i][3] );
+			fprintf( fp, "\t%f\t%f\t%f\t%f\n", FM_m3[i][4], FM_m3[i][5], FM_m3[i][6], FM_m3[i][7] );
+			fprintf( fp, "\t%f\t%f\t%f\t%f\n", FM_m3[i][8], FM_m3[i][9], FM_m3[i][10], FM_m3[i][11] );
+			fprintf( fp, "\t%f\t%f\t%f\t%f\n", FM_m3[i][12], FM_m3[i][13], FM_m3[i][14], FM_m3[i][15] );
+		} else {
+			fprintf( fp, "m3\t-\n" );
+		}
+	}
+end:
+	if(fp) { fclose( fp ); fp=NULL; }
+	return ret;
+}
+
+// return -1: error, 0: flg_usecp=0, 1: flg_usecp=1
+int crease::loadMotionFrame( int frm, char *fname )
+{
+	int flg_usecp=0;
+	FILE *fp=NULL;
+	char buf[1024], str[32];
+
+	if( fname==NULL ){
+		return -1;
+	}
+	fp = fopen( fname, "r" );
+	if( !fp ){
+		return -1;
+	}
+
+	fgets( buf, 1024, fp ); // flg_usecp
+	sscanf( buf, "%d", &flg_usecp );
+
+	fgets( buf, 1024, fp ); // flg_FM_Pt[i], flg_FM_Pa[i], flg_FM_m3[i]
+	flg_FM_Pt[frm] = flg_FM_Pa[frm] = flg_FM_m3[frm] = 1;
+
+	fgets( buf, 1024, fp);
+	if( flg_usecp ){
+		char *pt = buf, ret[128];
+		for( int i=-1; i<Pcnt; i++ ){
+			int res = csvread( &pt, ret, '\t' );
+			if( i<0 ){ continue; } // "Pt"
+			FM_Pt[frm][i] = atof(ret);
+			if( !res ){
+				break;
+			}
+		}
+	} else {
+		char *pt = buf, ret[128];
+		for( int i=-1; i<Xcnt; i++ ){
+			int res = csvread( &pt, ret, '\t' );
+			if( i<0 ){ continue; } // "tr"
+			FM_tr[frm][i] = atof(ret);
+			if( !res ){
+				break;
+			}
+		}
+	}
+	fgets( buf, 1024, fp);
+	if( flg_usecp ){
+		char *pt = buf, ret[128];
+		for( int i=-1; i<Pcnt; i++ ){
+			int res = csvread( &pt, ret, '\t' );
+			if( i<0 ){ continue; } // "Pa"
+			FM_Pa[frm][i] = atof(ret);
+			if( !res ){
+				break;
+			}
+		}
+	} else {
+		char *pt = buf, ret[128];
+		for( int i=-1; i<Xcnt; i++ ){
+			int res = csvread( &pt, ret, '\t' );
+			if( i<0 ){ continue; } // "alpha"
+			FM_alpha[frm][i] = atof(ret);
+			if( !res ){
+				break;
+			}
+		}
+	}
+	fgets( buf, 1024, fp);
+	sscanf( buf, "%s %lf %lf %lf %lf", str, &(FM_m3[frm][0]), &(FM_m3[frm][1]), &(FM_m3[frm][2]), &(FM_m3[frm][3]) );
+	fgets( buf, 1024, fp);
+	sscanf( buf, "%lf %lf %lf %lf", &(FM_m3[frm][4]), &(FM_m3[frm][5]), &(FM_m3[frm][6]), &(FM_m3[frm][7]) );
+	fgets( buf, 1024, fp);
+	sscanf( buf, "%lf %lf %lf %lf", &(FM_m3[frm][8]), &(FM_m3[frm][9]), &(FM_m3[frm][10]), &(FM_m3[frm][11]) );
+	fgets( buf, 1024, fp);
+	sscanf( buf, "%lf %lf %lf %lf", &(FM_m3[frm][12]), &(FM_m3[frm][13]), &(FM_m3[frm][14]), &(FM_m3[frm][15]) );
+
+	fclose( fp );
+	return flg_usecp;
+}
+
+int crease::dumpMotionFrame( int frm, char *fname, int flg_usecp )
+{
+	int ret=0;
+	FILE *fp=NULL;
+
+	if( fname==NULL ){
+		ret = -1; return ret;
+	}
+	fp = fopen( fname, "w" );
+	if( !fp ){
+		ret = -1; return ret;
+	}
+	fprintf( fp, "%d\t//flg_usecp\n", flg_usecp );
+	fprintf( fp, "%d\t%d\t%d\t//flg_Pt, flg_Pa, flg_m3\n", flg_FM_Pt[frm], flg_FM_Pa[frm], flg_FM_m3[frm] );
+	if( flg_usecp ){
+		fprintf( fp, "Pt\t" );
+		for( int j=0; j<Pcnt; j++ ){ fprintf( fp, "%f\t", FM_Pt[frm][j] ); }
+		fprintf( fp, "\n" );
+
+		fprintf( fp, "Pa\t" );
+		for( int j=0; j<Pcnt; j++ ){ fprintf( fp, "%f\t", FM_Pa[frm][j] ); }
+		fprintf( fp, "\n" );
+	} else{
+		fprintf( fp, "tr\t" );
+		for( int j=0; j<Xcnt; j++ ){ fprintf( fp, "%f\t", FM_tr[frm][j] ); }
+		fprintf( fp, "\n" );
+
+		fprintf( fp, "alpha\t" );
+		for( int j=0; j<Xcnt; j++ ){ fprintf( fp, "%f\t", FM_alpha[frm][j] ); }
+		fprintf( fp, "\n" );
+	}
+	fprintf( fp, "m3\t%f\t%f\t%f\t%f\n", FM_m3[frm][0], FM_m3[frm][1], FM_m3[frm][2], FM_m3[frm][3] );
+	fprintf( fp, "\t%f\t%f\t%f\t%f\n", FM_m3[frm][4], FM_m3[frm][5], FM_m3[frm][6], FM_m3[frm][7] );
+	fprintf( fp, "\t%f\t%f\t%f\t%f\n", FM_m3[frm][8], FM_m3[frm][9], FM_m3[frm][10], FM_m3[frm][11] );
+	fprintf( fp, "\t%f\t%f\t%f\t%f\n", FM_m3[frm][12], FM_m3[frm][13], FM_m3[frm][14], FM_m3[frm][15] );
+
+	fclose( fp );
 }
 
 #if 1

@@ -57,24 +57,24 @@ void GraphWindow3D::init()
 
 void GraphWindow3D::SetLightMat()
 {
-	GLfloat light_ambient[] = { 1.0, 1.0, 1.0, 1.0 };
-	GLfloat light_diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
-	GLfloat light_specular[] = { 0.5, 0.5, 0.5, 1.0 };
+	GLfloat light_ambient[] = { 0.5, 0.5, 0.5, 1.0 };
+	GLfloat light_diffuse[] = { 0.5, 0.5, 0.5, 1.0 };
+	GLfloat light_specular[] = { 0.1, 0.1, 0.1, 1.0 };
 	//	GLfloat light_position[] = {0.0, 0.0, 0.0, 1.0 }; // positional light, origin = camera pos
-	//	GLfloat light_position[] = {1.0, 1.0, 1.0, 0.0 }; // directional light, from right-top-front
+	GLfloat light_position[] = {1.0, 1.0, 1.0, 0.0 }; // directional light, from right-top-front
 	glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-	//	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-	glEnable(GL_LIGHT0);
+	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+	//	glEnable(GL_LIGHT0);
 	//	glEnable(GL_LIGHTING); // enable before 3D drawings
 
 	GLfloat mat_ambient[] = { 1.0, 1.0, 1.0, 1.0 };
 	GLfloat mat_specular[] = { 0.5, 0.5, 0.5, 1.0 };
 	GLfloat mat_shininess[] = { 10.0 };
-	glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
-	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-	glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, mat_shininess);
 
 	//	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_DEPTH_TEST);
@@ -90,7 +90,7 @@ void GraphWindow3D::SetRTS()
 
 void GraphWindow3D::drawAxis()
 {
-	glDisable(GL_LIGHTING);
+	//glDisable(GL_LIGHTING);
 	glLineWidth(3.0);
 	glBegin(GL_LINES);
 	glColor3f(1.0,0.0,0.0);	glVertex3f(0.0,0.0,0.0);	glVertex3f(100.0,0.0,0.0);

@@ -16,13 +16,20 @@ crease::~crease()
 
 void crease::init()
 {
+	XcntOrg = XCNT_DEF;
+	XspcOrg = XSPC_DEF;
+
 	rl=0;
 	flg_org=0;
-	flg_src_s1e1=0;
+	//flg_src_s1e1=0;
+	flg_xspc_def=1;
 
 	org_idx = -1;
 	org_cnt = 0;
 	org_x = org_y = NULL;
+
+	memset( CPx, 0, sizeof(double)*CCNT );
+	memset( CPy, 0, sizeof(double)*CCNT );
 
 	Pcnt = 0;
 	memset( Px2d, 0, sizeof(double)*MAX_CPCNT );
@@ -115,6 +122,9 @@ int crease::copy( crease *c )
 	org_x = c->org_x;
 	org_y = c->org_y;
 
+	memcpy( CPx, c->CPx, sizeof(double)*CCNT );
+	memcpy( CPy, c->CPy, sizeof(double)*CCNT );
+
 	Pcnt = c->Pcnt;
 	memcpy( Px2d, c->Px2d, sizeof(double)*MAX_CPCNT );
 	memcpy( Py2d, c->Py2d, sizeof(double)*MAX_CPCNT );
@@ -204,3 +214,13 @@ void crease::init_rrflg()
 	}
 }
 
+int crease::org2CP()
+{
+	int ret=0, nv2[] = {0,0,0,0, 1, 2, 3,3,3,3};
+	double t0[MAX_SPCNT];
+	Bspline bs;
+	ret = bs.calcT( this->org_cnt, 3, 1, t0, this->org_x, this->org_y, NULL );
+	ret = bs.calcCP( this->org_x, this->org_y, NULL, this->org_cnt, nv2, 10, 4/*degree*/, t0, CCNT, CPx, CPy, NULL );
+end:
+	return ret;
+}

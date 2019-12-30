@@ -42,27 +42,38 @@ extern int m_inverse( double *m, int l );
 // dst=1 : q1[4] = q1[4] * q2[4]
 extern void mult_quat(float *q1, float *q2, int dst = 0);
 
-// rotmat[9] or [16] -> quat[4], matsize: 3 or 4
+// rotmat[9] or [16] -> quat[4](x,y,z,w), matsize: 3 or 4
 // reference URL: http://marupeke296.com/DXG_No58_RotQuaternionTrans.html
 extern int mat_quat( float *mat, float *quat, int matsize=4 );
 extern int mat_quat( double *mat, double *quat, int matsize=4 );
 
-// quat[4] -> rotmat[9] or [16], matsize: 3 or 4
+// quat[4](x,y,z,w) -> rotmat[9] or [16], matsize: 3 or 4
 // reference URL: http://marupeke296.com/DXG_No58_RotQuaternionTrans.html
 extern void quat_mat( float *quat, float *mat, int matsize=4 );
 extern void quat_mat( double *quat, double *mat, int matsize=4 );
+
+// quat[4](x,y,z,w) -> axis[3](x,y,z), ang
+// éQçl: http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToAngle/index.htm
+extern void quat_axis_ang(float *quat, float *axis, float *ang);
+extern void quat_axis_ang(double *quat, double *axis, double *ang);
+extern void axis_ang_quat(float *axis, float ang, float *quat);
+extern void axis_ang_quat(double *axis, double ang, double *quat);
 
 extern double normalize_v2( double *x, double *y );
 extern double normalize_v3( double *x, double *y, double *z );
 
 extern int getMat( int vcnt,
-		   double *vx0, double *vy0, double *vz0,
-		   double *vx1, double *vy1, double *vz1,
+				  double *vx0, double *vy0, double *vz0,
+				  double *vx1, double *vy1, double *vz1,
+				  double *_mat );
+
+extern int getMatRot( int vcnt,
+				  double *vx0, double *vy0, double *vz0,
+				  double *vx1, double *vy1, double *vz1,
 				  double *_mat );
 
 // return -1: no intersection
 extern int intersectionOfLine( double sx0, double sy0, double ex0, double ey0,
 					   double sx1, double sy1, double ex1, double ey1,
 					   double *ix, double *iy, double *l0, double *l1 );
-
 

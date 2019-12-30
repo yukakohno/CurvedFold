@@ -20,15 +20,23 @@ protected:
 	void draw3DCurveFold();
 
 public:
-	int disp_axis;
+	int disp_axis, disp_axis2;
 	int disp_X;
 	int disp_TNB;
 	int disp_R;
 	int disp_PLY;
 	int disp_PTN;
 	int disp_CP, ppos, pprm;
+	int disp_ONE;
+	int disp_PRI;
+	int disp_stitch;
+	int disp_LIN_SMOOTH;
+	int disp_POLY_OFFSET;
 
 	int flg_addcurve; // 0:-, 1:trim, 2:fold
+
+	int divtype;
+	int divnum;
 
 	papermodel *ppm;
 	int disp_maxrlen;
@@ -44,7 +52,6 @@ public:
 	int vcnt;
 	double *vx,*vy,*vz;
 
-public:
 	GraphWindow3DCF(int X, int Y, int W, int H, const char *L);
 	GraphWindow3DCF(int X, int Y, int W, int H);
 	~GraphWindow3DCF();
@@ -52,6 +59,10 @@ public:
 	void init();
 	void initTexture();
 	void initObject();
+	void resetObjTrans();
+	void resetObjRot();
+
+	void exportImage(char *filename);
 };
 
 #endif	// GRAPHWINDOWCF

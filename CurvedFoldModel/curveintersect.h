@@ -24,6 +24,8 @@ public:
 	// type of intersecting vertex
 	cvertex_type cvtype[MAXFCX];
 
+	curvedraw *dc;
+
 	// index of ruling if cvtype== CVTYPE_RUL_*
 	// index of X if cvtype== CVTYPE_FCURVE_*
 	// undefined if cvtype== CVTYPE_PAPER_*
