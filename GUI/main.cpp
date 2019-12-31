@@ -105,6 +105,7 @@ int main(int argc, char* argv[])
 	gwin_cp->disp_PRI = gwin->disp_PRI;
 	gwin_cp->ppos = gwin->ppos;
 	gwin_cp->pprm = gwin->pprm;
+	gwin_cp->disp_TGT = gwin->disp_TGT;
 	gwin_gr->ppm = &(cwin->ppm);
 	cwin->gwin = gwin;
 	cwin->gwin_cp = gwin_cp;

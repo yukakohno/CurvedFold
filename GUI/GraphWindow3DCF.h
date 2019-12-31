@@ -30,6 +30,7 @@ public:
 	int disp_ONE;
 	int disp_PRI;
 	int disp_stitch;
+	int disp_TGT;
 	int disp_LIN_SMOOTH;
 	int disp_POLY_OFFSET;
 

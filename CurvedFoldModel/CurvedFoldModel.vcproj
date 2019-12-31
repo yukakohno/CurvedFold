@@ -228,6 +228,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\papermodel_optFold.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\papermodel_poly.cpp"
 				>
 			</File>

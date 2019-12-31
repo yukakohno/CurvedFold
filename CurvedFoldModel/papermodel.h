@@ -9,6 +9,7 @@
 #define MAX_CRS_CNT 10
 #define MAX_CRS_OTYPE 5
 #define MAX_STP_CNT 300
+#define MAX_TGT_CNT 100
 
 #define MAX_PL_FCNT 1000	// MAX # of faces on polygon, > MAX_SPCNT*(MAXCN+1)
 #define MAX_PL_ECNT 250		// MAX # of edges on polygon, > MAX_SPCNT*2+MAXCN*2
@@ -169,6 +170,27 @@ public:
 	int getParam_stitch( int divnum, int rulingOnly );
 	int getParam_calcRE();
 	int getParam_optimize( int divnum );
+
+	// ------------------------- optFold -------------------------------------------
+
+	int tgcnt;
+	double tgx[MAX_TGT_CNT], tgy[MAX_TGT_CNT], tgz[MAX_TGT_CNT];
+	double ogx[MAX_TGT_CNT], ogy[MAX_TGT_CNT], ogz[MAX_TGT_CNT];
+	double ogx_cp[MAX_TGT_CNT], ogy_cp[MAX_TGT_CNT];
+	double tgap[MAX_TGT_CNT], avetgap;
+
+	int saveTgt( char *fname );
+	int loadTgt( char *fname );
+	int getTgt2D3D();
+	double calcRulCross( double *xx, double *xy, double *rx, double *ry, double *rlen, int cvcnt );
+	int checkCollision();
+	int checkRulAngle();
+	int checkRulCross();
+	int checkRulCross( double &_area );
+	int checkRulCreaseCross();
+	int optMat( int mode );
+	int optFold();
+	int optTorsion();
 };
 
 #endif

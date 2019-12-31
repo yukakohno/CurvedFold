@@ -178,5 +178,10 @@ int papermodel::postproc()
 	}
 
 	calcRulingPly();	// TODO: 2D,3Dƒ|ƒŠƒSƒ“A•ÏŠ·s—ñì¬
+	getTgt2D3D();
+	//checkCollision();
+	//checkRulCross();
+	//checkRulAngle();
+	//checkRulCreaseCross();
 	return 0;
 }

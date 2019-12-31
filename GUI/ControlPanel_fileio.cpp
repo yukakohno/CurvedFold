@@ -423,3 +423,20 @@ void ControlPanel::cb_btn_saverul( Fl_Widget *wgt, void *idx )
 	crease *c = &(This->ppm.crs[0]);
 	c->dumpPb("output/rulings.txt");
 }
+
+void ControlPanel::cb_btn_loadtpt( Fl_Widget *wgt, void *idx)
+{
+	ControlPanel *This = (ControlPanel *)idx;
+	papermodel *ppm = &(This->ppm);
+	ppm->loadTgt("input/target.txt");
+	This->gwin->redraw();
+}
+
+void ControlPanel::cb_btn_savetpt( Fl_Widget *wgt, void *idx)
+{
+	ControlPanel *This = (ControlPanel *)idx;
+	papermodel *ppm = &(This->ppm);
+	ppm->saveTgt("output/target.txt");
+	//This->gwin->redraw();
+}
+

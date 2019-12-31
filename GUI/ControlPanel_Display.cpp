@@ -148,3 +148,14 @@ void ControlPanel::cb_cb_dispOFST(Fl_Widget *wgt, void *idx)
 	gwin->disp_POLY_OFFSET = ((Fl_Check_Button*)wgt)->value();
 	gwin->redraw();
 }
+
+void ControlPanel::cb_cb_dispTGT(Fl_Widget *wgt, void *idx)
+{
+	ControlPanel *This = (ControlPanel *)idx;
+	GraphWindow3DCF *gwin = This->gwin;
+	gwin->disp_TGT = ((Fl_Check_Button*)wgt)->value();
+	gwin->redraw();
+	GraphWindowCP *gwin_cp = This->gwin_cp;
+	gwin_cp->disp_TGT = ((Fl_Check_Button*)wgt)->value();
+	gwin_cp->redraw();
+}

@@ -23,6 +23,10 @@ void ControlPanel::cb_btn_R2TA0(Fl_Widget *wgt, void *idx)
 			ppm->set_postproc_type( PPTYPE_PRICURVE );
 			ppm->postproc();
 			ppm->set_postproc_type( PPTYPE_UNDEF );
+			if( This->cb_optmat->value() && ppm->tgcnt>3 ){
+				ppm->optMat( CMODE_R );
+			}
+
 			This->gwin->redraw();
 			This->gwin_cp->redraw();
 			This->gwin_gr->redraw();
@@ -76,10 +80,48 @@ void ControlPanel::idle(void *idx)
 	//printf("acnt=%d\n", This->acnt);
 	This->vs_xmang1->value( This->acnt );
 	This->vs_xmang1->do_callback();
+	//This->btn_optmat->do_callback();
+	printf( "average gap = %f\n", This->ppm.avetgap );
 }
 
 //-----------------------------
 
+void ControlPanel::cb_btn_optmat(Fl_Widget *wgt, void *idx)
+{
+	ControlPanel *This = (ControlPanel *)idx;
+	papermodel *ppm = &(This->ppm);
+	int mode = This->value_grpfix();	// CMODE_A, CMODE_B, CMODE_C, MODE_T, MODE_FA, MODE_TFA
+
+	int ret = ppm->optMat( mode );
+
+	This->gwin->redraw();
+	This->gwin_cp->redraw();
+	This->gwin_gr->redraw();
+}
+
+void ControlPanel::cb_btn_optfold(Fl_Widget *wgt, void *idx)
+{
+	ControlPanel *This = (ControlPanel *)idx;
+	papermodel *ppm = &(This->ppm);
+
+	int ret = ppm->optFold();
+
+	This->gwin->redraw();
+	This->gwin_cp->redraw();
+	This->gwin_gr->redraw();
+}
+
+void ControlPanel::cb_btn_opttr(Fl_Widget *wgt, void *idx)
+{
+	ControlPanel *This = (ControlPanel *)idx;
+	papermodel *ppm = &(This->ppm);
+
+	int ret = ppm->optTorsion();
+
+	This->gwin->redraw();
+	This->gwin_cp->redraw();
+	This->gwin_gr->redraw();
+}
 void ControlPanel::cb_btn_start(Fl_Widget *wgt, void *idx)
 {
 	ControlPanel *This = (ControlPanel *)idx;

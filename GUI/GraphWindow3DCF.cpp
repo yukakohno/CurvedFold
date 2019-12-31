@@ -138,19 +138,20 @@ void GraphWindow3DCF::init()
 {
 	GraphWindow3D::init();
 
-	disp_axis = 0;
+	disp_axis = 1;
 	disp_axis2 = 0;
 	disp_X = 1;
 	disp_TNB = 0;
-	disp_R = 1;
+	disp_R = 0;
 	disp_maxrlen = 0;
-	disp_PLY = 0;
+	disp_PLY = 1;
 	disp_PTN = 1;
-	disp_CP = 1;	ppos = 0;	pprm = 0;
+	disp_CP = 0;	ppos = 0;	pprm = 0;
 	disp_ONE = 0;
 	disp_PRI = 1;
 	disp_stitch = 0;
-	disp_LIN_SMOOTH = 1;
+	disp_TGT = 1;
+	disp_LIN_SMOOTH = 0;
 
 	flg_addcurve = 0;
 
@@ -546,6 +547,44 @@ void GraphWindow3DCF::draw3DCurveFold()
 		glDisable(GL_LIGHTING);
 		glDisable(GL_LIGHT0);
 		glDisable(GL_POLYGON_OFFSET_FILL);
+	}
+
+	//
+	// Target points
+	//
+	if( disp_TGT ){
+		for( i=0; i<ppm->tgcnt; i++ )
+		{
+			glColor3f( 0.5, 0.5, 0.5 );
+			glPushMatrix();
+			glTranslatef( ppm->tgx[i], ppm->tgy[i], ppm->tgz[i] );
+			glutSolidSphere( 0.5, 8, 8 );
+			glPopMatrix();
+
+			float r,g,b;
+			if( ppm->tgap[i] >= 0 ){
+				r = ppm->tgap[i]*0.05; r = r < 1.0 ? r : 1.0;
+				g = 1.0 - r;
+				b = 0.0;
+			} else {
+				b = -ppm->tgap[i]*0.05; b = b < 1.0 ? b : 1.0;
+				g = 1.0 - b;
+				r = 0.0;
+			}
+			glColor3f( r, g, b );
+			glPushMatrix();
+			glTranslatef( ppm->ogx[i], ppm->ogy[i], ppm->ogz[i] );
+			glutSolidSphere( 1.5, 8, 8 );
+			glPopMatrix();
+
+			glLineWidth(1.0);
+			glBegin(GL_LINES);
+			glColor3f( 0.5, 0.5, 0.5 );
+			glVertex3f( ppm->tgx[i], ppm->tgy[i], ppm->tgz[i] );
+			glColor3f( r, g, b );
+			glVertex3f( ppm->ogx[i], ppm->ogy[i], ppm->ogz[i] );
+			glEnd();
+		}
 	}
 
 		} // if( !disp_ONE || disp_ONE && dc==0 )

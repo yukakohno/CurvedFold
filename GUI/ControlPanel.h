@@ -35,7 +35,7 @@
 #define CPANEL
 
 enum DISP { D_X, D_TNB, D_R, D_RLEN, D_PLY, D_PTN, D_CP, D_AX2, D_ONE, D_PRI, D_R1, D_ST,
-			D_LSMT, D_OFST };
+			D_LSMT, D_OFST, D_TGT };
 
 class ControlPanel : public Fl_Window
 {
@@ -74,10 +74,12 @@ public:
 	Fl_Button *btn_load;
 	Fl_File_Chooser *fc;
 	Fl_Button *btn_loadtex;
+	Fl_Button *btn_loadtpt;
 	Fl_Button *btn_loadrul;
 	Fl_Button *btn_savelog;
 	Fl_Button *btn_savescreen;
 	//Fl_Button *btn_saveerr;
+	Fl_Button *btn_savetpt;
 	Fl_Button *btn_saverul;
 
 private:
@@ -87,6 +89,8 @@ private:
 	static void cb_btn_saveerr( Fl_Widget *wgt, void *idx);
 	static void cb_btn_loadrul( Fl_Widget *wgt, void *idx);
 	static void cb_btn_saverul( Fl_Widget *wgt, void *idx);
+	static void cb_btn_loadtpt( Fl_Widget *wgt, void *idx);
+	static void cb_btn_savetpt( Fl_Widget *wgt, void *idx);
 
 	// ------------------------- EVALUATE -------------------------------------------
 public:
@@ -123,6 +127,7 @@ private:
 	static void cb_cb_dispST(Fl_Widget *wgt, void *idx);
 	static void cb_cb_dispLSMT(Fl_Widget *wgt, void *idx);
 	static void cb_cb_dispOFST(Fl_Widget *wgt, void *idx);
+	static void cb_cb_dispTGT(Fl_Widget *wgt, void *idx);
 
 	// ------------------------- CONFIGURATION -------------------------------------------
 public:
@@ -166,8 +171,12 @@ public:
 	Fl_Value_Slider *vs_xmang0;
 	Fl_Value_Slider *vs_xmang1;
 	Fl_Button *btn_R2TA0;
+	Fl_Button *btn_optmat;
+	Fl_Button *btn_optfold;
+	Fl_Button *btn_opttr;
 	Fl_Button *btn_start;
 	Fl_Button *btn_stop;
+	Fl_Check_Button *cb_optmat;
 
 private:
 	int fcnt;
@@ -177,6 +186,9 @@ private:
 	static void cb_btn_R2TA0(Fl_Widget *wgt, void *idx);
 	static void cb_vs_xmang(Fl_Widget *wgt, void *idx);
 	static void idle(void *idx);
+	static void cb_btn_optmat(Fl_Widget *wgt, void *idx);
+	static void cb_btn_optfold(Fl_Widget *wgt, void *idx);
+	static void cb_btn_opttr(Fl_Widget *wgt, void *idx);
 	static void cb_btn_start(Fl_Widget *wgt, void *idx);
 	static void cb_btn_stop(Fl_Widget *wgt, void *idx);
 

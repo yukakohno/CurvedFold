@@ -255,6 +255,10 @@ void ControlPanel::createPanel()
 			//btn_loadtex->callback(cb_btn_loadtex, (void*)this);
 			g->add(btn_loadtex);
 
+			btn_loadtpt = new Fl_Button(wgt_x+90, wgt_y, 45, 20, "tpt");
+			btn_loadtpt->callback(cb_btn_loadtpt, (void*)this);
+			g->add(btn_loadtpt);
+
 			btn_loadrul = new Fl_Button(wgt_x+135, wgt_y, 45, 20, "rul");
 			btn_loadrul->callback(cb_btn_loadrul, (void*)this);
 			g->add(btn_loadrul);
@@ -274,6 +278,9 @@ void ControlPanel::createPanel()
 			btn_savescreen->callback(cb_btn_savescreen, (void*)this);
 			g->add(btn_savescreen);
 
+			btn_savetpt = new Fl_Button(wgt_x+90, wgt_y, 45, 20, "tpt");
+			btn_savetpt->callback(cb_btn_savetpt, (void*)this);
+			g->add(btn_savetpt);
 #if 0
 			btn_saveerr = new Fl_Button(wgt_x+90, wgt_y, 45, 20, "err");
 			btn_saveerr->callback(cb_btn_saveerr, (void*)this);
@@ -395,6 +402,13 @@ void ControlPanel::createPanel()
 			cb_disp[D_ST]->value(this->gwin->disp_stitch);
 			cb_disp[D_ST]->callback(cb_cb_dispST, (void*)this);
 			g->add(cb_disp[D_ST]);
+
+			wgt_x += 45;
+
+			cb_disp[D_TGT] = new Fl_Check_Button(wgt_x, wgt_y, 45, 20, "TGT");
+			cb_disp[D_TGT]->value(this->gwin->disp_TGT);
+			cb_disp[D_TGT]->callback(cb_cb_dispTGT, (void*)this);
+			g->add(cb_disp[D_TGT]);
 #if 1
 			wgt_x = 10;
 			wgt_y += 25;
@@ -463,6 +477,20 @@ void ControlPanel::createPanel()
 
 			wgt_y += 25;
 
+			btn_optmat = new Fl_Button(wgt_x,  wgt_y, 60, 20, "Opt Mat");
+			btn_optmat->callback(cb_btn_optmat, (void*)this);
+			g->add(btn_optmat);
+
+			btn_optfold = new Fl_Button(wgt_x+60,  wgt_y, 50, 20, "Angle");
+			btn_optfold->callback(cb_btn_optfold, (void*)this);
+			g->add(btn_optfold);
+
+			btn_opttr = new Fl_Button(wgt_x+110,  wgt_y, 50, 20, "Torsion");
+			btn_opttr->callback(cb_btn_opttr, (void*)this);
+			g->add(btn_opttr);
+
+			wgt_y += 25;
+
 			btn_start = new Fl_Button(wgt_x,  wgt_y, 60, 20, "start");
 			btn_start->callback(cb_btn_start, (void*)this);
 			g->add(btn_start);
@@ -470,6 +498,10 @@ void ControlPanel::createPanel()
 			btn_stop = new Fl_Button(wgt_x+70, wgt_y, 60, 20, "stop");
 			btn_stop->callback(cb_btn_stop, (void*)this);
 			g->add(btn_stop);
+
+			cb_optmat = new Fl_Check_Button(wgt_x+140, wgt_y, 20, 20, "mat");
+			cb_optmat->value( 0 );
+			g->add(cb_optmat);
 		}
 		g->end();
 	}

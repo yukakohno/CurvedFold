@@ -272,6 +272,30 @@ void GraphWindowCP::draw()
 	}
 	fl_line_style( FL_SOLID, 1 );
 
+	// Target points
+	if( disp_TGT ){
+		for( int i=0; i<ppm->tgcnt; i++ )
+		{
+			int r,g,b;
+			if( ppm->tgap[i] >= 0 ){
+				r = (int)(ppm->tgap[i]*0.05*256); r = r < 255 ? r : 255;
+				g = 255 - r;
+				b = 0;
+			} else {
+				b = (int)(-ppm->tgap[i]*0.05*255); b = b < 255 ? b : 255;
+				g = 255 - b;
+				r = 0;
+			}
+			fl_color(r, g, b);
+			fl_line_style( FL_SOLID, 2 );
+			fl_circle( (int)(mt[0]*ppm->ogx_cp[i]+mt[1]*ppm->ogy_cp[i]+mt[2]),
+				(int)(mt[3]*ppm->ogx_cp[i]+mt[4]*ppm->ogy_cp[i]+mt[5]), 3*wscl);
+
+			//glTranslatef( ppm->ogx[i], ppm->ogy[i], ppm->ogz[i] );
+			//glutSolidSphere( 1.5, 8, 8 );
+		}
+	}
+	
 	// TN
 	if(	disp_TNB ){
 		fl_color(255, 0, 0);
