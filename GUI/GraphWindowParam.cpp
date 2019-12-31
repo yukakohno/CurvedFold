@@ -23,7 +23,7 @@ void GraphWindowParam::init()
 #define MAXV 9
 void GraphWindowParam::draw()
 {
-	int i,j, gflg[MAXV]={1,1,1,1,1,1,1,1,1};
+	int i,j, gflg[MAXV]={1,1,1,1,1,1,1,0,0};
 	int gsx[MAXV], gsy[MAXV], gw[MAXV], gh[MAXV], goy[MAXV], lw[MAXV];
 	double *gcp[MAXV], *gv[MAXV], go[MAXV], gc[MAXV];
 	unsigned char col[MAXV][3]={ {255,0,255}, {0,200,0}, {0,0,255}/*{127,127,255}*/, {255,0,0},
@@ -47,16 +47,18 @@ void GraphWindowParam::draw()
 	}
 
 	gsy[0] = gsy[1] = 0;
-	gsy[2] = gsy[3] = gsy[0] + gh[0] +10;
-	gsy[4] = gsy[2] + gh[2] +10;
+	gsy[3] = gsy[0] + gh[0] +10;
+	gsy[4] = gsy[3] + gh[3] +10;
+	gsy[2] = gsy[4] + gh[4] +10;
 	gsy[7] = gsy[8] = gsy[4] + gh[4] +10;
 	gsy[5] = gsy[6] = gsy[8] + gh[8] +10;
 
 	//goy[0] = goy[1] = gsy[0]+gh[0]/2;
 	goy[0] = goy[1] = gsy[0]+gh[0];
-	goy[2] = goy[3] = gsy[2]+gh[2]/2;
-	//goy[4] = gsy[4]+gh[4]/2;
-	goy[4] = gsy[4] + gh[4];
+	goy[3] = gsy[3]+gh[3]/2;
+	goy[4] = gsy[4]+gh[4]/2;
+	//goy[4] = gsy[4] + gh[4];
+	goy[2] = gsy[2] + gh[2]/2;
 	goy[5] = goy[6] = gsy[5]+gh[5]/2;
 	goy[7] = goy[8] = gsy[7] + gh[7];
 
@@ -81,16 +83,14 @@ void GraphWindowParam::draw()
 		gv[1] = c->kv;		go[1] = goy[1];			gc[1] = -gh[1]/0.05;		lw[1]=1;
 		gv[2] = c->tr;		go[2] = goy[2];			gc[2] = -gh[2]/0.05;
 		gv[3] = c->da;		go[3] = goy[3];			gc[3] = -gh[3]/0.05;		lw[3]=1;
-		gv[4] = c->alpha;	go[4] = goy[4];			gc[4] = -gh[4]/M_PI*2.0;
+		gv[4] = c->alpha;	go[4] = goy[4];			gc[4] = -gh[4]/M_PI;		//lw[4]=1;
 		gv[5] = c->betal;	go[5] = gsy[5]+gh[5];	gc[5] = -gh[5]/M_PI;
 		gv[6] = c->betar;	go[6] = gsy[6]+gh[6];	gc[6] = -gh[6]/M_PI;
-		//gv[7] = ppm->cverr;
-		go[7] = goy[7];		gc[7] = -gh[7];
-		//gv[8] = ppm->cvminerr;
-		go[8] = goy[8];		gc[8] = -gh[8];			lw[8]=1;
+		//gv[7] = ppm->cverr;		go[7] = goy[7];		gc[7] = -gh[7];
+		//gv[8] = ppm->cvminerr;	go[8] = goy[8];		gc[8] = -gh[8];			lw[8]=1;
 	}
 
-#if 1
+#if 0
 	{
 		crease *c0 = &(ppm->crs[0]);
 		int sx=gsx[4];
@@ -114,13 +114,14 @@ void GraphWindowParam::draw()
 		}
 	}
 #endif
-#if 1
+#if 0
 	{
 		crease *c0 = &(ppm->crs[0]);
 		int sx=gsx[7];
 		double o=go[7], c=-gh[7]/0.01, x;
 		double dxP = (double)gw[7]/(double)(Pcnt-1);
 		double dxX = (double)gw[7]/(double)(Xcnt-1);
+#if 0
 		for( int k=c0->FM_fidx_min; k<=c0->FM_fidx_max; k++ )
 		{
 			if( c0->flg_FM_Pt[k]>0 ){
@@ -140,6 +141,7 @@ void GraphWindowParam::draw()
 				fl_circle( (int)x, (int)(o+ t*c), 3 );
 			}
 		}
+#endif
 		fl_color( col[2][0], col[2][1], col[2][2] );
 		fl_line_style( FL_SOLID, 2 );
 		for( j=0, x=sx; j<Xcnt-1; j++, x+=dxX ){
@@ -180,12 +182,7 @@ void GraphWindowParam::draw()
 			fl_line_style( FL_SOLID, 2 );
 			if( lw[i]>1 ){
 				for( j=0, x=sx; j<Xcnt-1; j++, x+=dxX ){
-					if( i==4 /* angle */ && ( v[j]<0.0 || v[j+1]<0.0 )){
-						// valley fold
-						fl_line( (int)x, (int)(o-v[j]*c), (int)(x+dxX), (int)(o-v[j+1]*c) );
-					} else {
-						fl_line( (int)x, (int)(o+v[j]*c), (int)(x+dxX), (int)(o+v[j+1]*c) );
-					}
+					fl_line( (int)x, (int)(o+v[j]*c), (int)(x+dxX), (int)(o+v[j+1]*c) );
 				}
 			} else {
 				for( j=0, x=sx; j<Xcnt-1; j+=2, x+=2*dxX ){

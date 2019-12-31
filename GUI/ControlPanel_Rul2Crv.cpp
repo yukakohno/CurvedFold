@@ -1,0 +1,103 @@
+#define _USE_MATH_DEFINES
+#include <math.h>
+#include <windows.h>
+#include "ControlPanel.h"
+#include "../CurvedFoldModel/util.h"
+
+void ControlPanel::cb_btn_R2TA0(Fl_Widget *wgt, void *idx)
+{
+	ControlPanel *This = (ControlPanel *)idx;
+	int mode = This->value_grpfix();	// CMODE_A, CMODE_B, CMODE_C, CMODE_R
+	int prm = This->value_grpparam();	// P_CV2D, P_CV3D, P_TRSN, P_FLDA, P_RULL, P_RULR, ...
+	if( mode == CMODE_R && ( prm == P_RULL || prm == P_RULR || prm == P_RULL1 || prm == P_RULR1 ) )
+	{
+		papermodel *ppm = &(This->ppm);
+		crease *c = &(ppm->crs[0]);
+		double mang = This->vs_xmang0->value()/180.0*M_PI;
+
+		ppm->re_sidx = 0;
+		ppm->re_eidx = c->Xcnt;
+		int ret = c->calcR_TA( 1/*flg_interpolate*/, &ppm->rp, ppm->re_sidx, ppm->re_eidx, mang );
+
+		if( ret==0 ){
+			ppm->set_postproc_type( PPTYPE_PRICURVE );
+			ppm->postproc();
+			ppm->set_postproc_type( PPTYPE_UNDEF );
+			This->gwin->redraw();
+			This->gwin_cp->redraw();
+			This->gwin_gr->redraw();
+#if 1
+		} else if( ret==-1 ){
+			This->acnt_inc = false;
+		} else if( ret==-2 ){
+			This->acnt_inc = true;
+#endif
+		}
+	}
+}
+
+void ControlPanel::cb_vs_xmang(Fl_Widget *wgt, void *idx)
+{
+	ControlPanel *This = (ControlPanel *)idx;
+	int val = This->vs_xmang1->value();
+	This->vs_xmang0->value( val );
+	if( val==0 ){
+		This->gwin->disp_R = This->gwin_cp->disp_R = 0; // don't display rulings in folding angle=0
+		crease *c = &(This->ppm.crs[0]);
+		switch( This->fcnt ){
+			case 0: c->loadPb("input/rulings00.txt"); break;
+			case 1: c->loadPb("input/rulings01.txt"); break;
+			case 2: c->loadPb("input/rulings02.txt"); break;
+			case 3: c->loadPb("input/rulings03.txt"); break;
+			case 4: c->loadPb("input/rulings04.txt"); break;
+			case 5: c->loadPb("input/rulings05.txt"); break;
+			case 6: c->loadPb("input/rulings06.txt"); break;
+		}
+		This->fcnt++;
+		if( This->fcnt>6 ){ This->fcnt=0; }
+		//if( This->fcnt>1 ){ This->fcnt=0; }
+	} else if( This->cb_disp[D_R]->value() != 0 ){
+		This->gwin->disp_R = This->gwin_cp->disp_R = 1;
+	}
+	This->btn_R2TA0->do_callback();
+}
+
+void ControlPanel::idle(void *idx)
+{
+	ControlPanel *This = (ControlPanel *)idx;
+
+	if( This->acnt_inc ){
+		This->acnt++;
+	} else {
+		This->acnt--;
+	}
+	Sleep(1);
+
+	//printf("acnt=%d\n", This->acnt);
+	This->vs_xmang1->value( This->acnt );
+	This->vs_xmang1->do_callback();
+}
+
+//-----------------------------
+
+void ControlPanel::cb_btn_start(Fl_Widget *wgt, void *idx)
+{
+	ControlPanel *This = (ControlPanel *)idx;
+	//This->acnt = (int)This->vs_xmang1->value();
+	papermodel *ppm = &(This->ppm);
+	crease *c = &(ppm->crs[0]);
+
+	if( !This->flg_idle_active ){
+		This->flg_idle_active = true;
+		Fl::add_idle( ControlPanel::idle, This );
+	}
+}
+
+void ControlPanel::cb_btn_stop(Fl_Widget *wgt, void *idx)
+{
+	ControlPanel *This = (ControlPanel *)idx;
+	if( This->flg_idle_active ){
+		This->flg_idle_active = false;
+		Fl::remove_idle( ControlPanel::idle, This );
+	}
+}

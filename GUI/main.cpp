@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
 	Fl_Box *bx_bg= new Fl_Box(GCF_W+GCP_W, 0, LBL_W, GCF_H,"");	bx_bg->box( FL_FLAT_BOX );	bx_bg->color( FL_WHITE );
 	Fl_Box *bx_lbl0= new Fl_Box(GCF_W+GCP_W, bx_y   , LBL_W, 40, "curv\n2D");	bx_lbl0->labelcolor( fl_rgb_color(col[0][0],col[0][1],col[0][2]));
 	Fl_Box *bx_lbl1= new Fl_Box(GCF_W+GCP_W, bx_y-40, LBL_W, 40, "curv\n3D");	bx_lbl1->labelcolor( fl_rgb_color(col[1][0],col[1][1],col[1][2]));	bx_y+=gr1_hgt;
-	Fl_Box *bx_lbl2= new Fl_Box(GCF_W+GCP_W, bx_y-40, LBL_W, 20, "torsion");	bx_lbl2->labelcolor( fl_rgb_color(col[2][0],col[2][1],col[2][2]));
+	//Fl_Box *bx_lbl2= new Fl_Box(GCF_W+GCP_W, bx_y-40, LBL_W, 20, "torsion");	bx_lbl2->labelcolor( fl_rgb_color(col[2][0],col[2][1],col[2][2]));
 	Fl_Box *bx_lbl3= new Fl_Box(GCF_W+GCP_W, bx_y-20, LBL_W, 60, "diff.\nfold\nangle");	bx_lbl3->labelcolor( fl_rgb_color(col[3][0],col[3][1],col[3][2]));	bx_y+=gr1_hgt;
 	Fl_Box *bx_lbl4= new Fl_Box(GCF_W+GCP_W, bx_y-20, LBL_W, 40, "fold\nangle");	bx_lbl4->labelcolor( fl_rgb_color(col[4][0],col[4][1],col[4][2]));	bx_y+=gr1_hgt;
 	//Fl_Box *bx_lbl7= new Fl_Box(GCF_W+GCP_W, bx_y-10, LBL_W, 20, "error");	bx_lbl7->labelcolor( fl_rgb_color(col[7][0],col[7][1],col[7][2]));
@@ -113,7 +113,8 @@ int main(int argc, char* argv[])
 
 	int ret = cwin->ppm.crs[0].load("input/P.txt");
 	ret = cwin->ppm.crs[0].loadm2m3("input/m2m3.txt");
-	cwin->rb_fix[CMODE_A]->setonly();
+	cwin->rb_fix[CMODE_B]->setonly();
+	cwin->rb_param[P_CV2D]->setonly();
 	cwin->ppm.set_postproc_type( PPTYPE_OPEN );
 	cwin->refresh(1);
 	cwin->ppm.set_postproc_type( PPTYPE_UNDEF );
@@ -124,6 +125,8 @@ int main(int argc, char* argv[])
 	cwin->vs_fmot2->bounds( -(c0->FM_fidx_org - c0->FM_fidx_min), c0->FM_fidx_max - c0->FM_fidx_org );
 	cwin->update_bx_FM( c0, c0->FM_fidx_org );
 	cwin->vs_divnum->do_callback();
+	cwin->rb_fix[CMODE_R]->setonly();
+	cwin->rb_param[P_RULL]->setonly();
 
 	Fl::run();
 

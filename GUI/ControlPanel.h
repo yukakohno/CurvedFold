@@ -24,7 +24,7 @@
 #define RECDIR "input/"
 
 //#define TEXFNAME "texture/no_tex.jpg"
-#define TEXFNAME "texture/grid_bw3.org.jpg"
+#define TEXFNAME "texture/grid_bw3.jpg"
 //#define TEXFNAME "texture/cp.jpg"
 #define TEXWIDTH  256	// texture width
 #define TEXHEIGHT 256	// texture height
@@ -74,15 +74,19 @@ public:
 	Fl_Button *btn_load;
 	Fl_File_Chooser *fc;
 	Fl_Button *btn_loadtex;
+	Fl_Button *btn_loadrul;
 	Fl_Button *btn_savelog;
 	Fl_Button *btn_savescreen;
-	Fl_Button *btn_saveerr;
+	//Fl_Button *btn_saveerr;
+	Fl_Button *btn_saverul;
 
 private:
 	static void cb_btn_load( Fl_Widget *wgt, void *idx);
 	static void cb_btn_savelog( Fl_Widget *wgt, void *idx);
 	static void cb_btn_savescreen( Fl_Widget *wgt, void *idx);
 	static void cb_btn_saveerr( Fl_Widget *wgt, void *idx);
+	static void cb_btn_loadrul( Fl_Widget *wgt, void *idx);
+	static void cb_btn_saverul( Fl_Widget *wgt, void *idx);
 
 	// ------------------------- EVALUATE -------------------------------------------
 public:
@@ -156,6 +160,25 @@ private:
 	static void cb_btn_R2TA(Fl_Widget *wgt, void *idx);
 	static void cb_btn_RPar(Fl_Widget *wgt, void *idx);
 	static void cb_btn_apply(Fl_Widget *wgt, void *idx);
+
+	// ------------------------- RULING2CURVE --------------------------------------
+public:
+	Fl_Value_Slider *vs_xmang0;
+	Fl_Value_Slider *vs_xmang1;
+	Fl_Button *btn_R2TA0;
+	Fl_Button *btn_start;
+	Fl_Button *btn_stop;
+
+private:
+	int fcnt;
+	int acnt;
+	bool acnt_inc;
+	bool flg_idle_active;
+	static void cb_btn_R2TA0(Fl_Widget *wgt, void *idx);
+	static void cb_vs_xmang(Fl_Widget *wgt, void *idx);
+	static void idle(void *idx);
+	static void cb_btn_start(Fl_Widget *wgt, void *idx);
+	static void cb_btn_stop(Fl_Widget *wgt, void *idx);
 
 	// ------------------------- RECTIFY -------------------------------------------
 public:

@@ -31,6 +31,10 @@ ControlPanel::ControlPanel(int X, int Y, int W, int H, const char *L, GraphWindo
 	astepk = 3.0;
 	an_fcnt = 20;
 
+	fcnt = acnt = 0;
+	acnt_inc = true;
+	flg_idle_active = false;
+
 	sprintf( filepath, "./input/" );
 
 	createPanel();
@@ -232,7 +236,7 @@ void ControlPanel::createPanel()
 	Fl_Tabs* tab = new Fl_Tabs(0, 0, this->w(), this->h());
 	{
 		Fl_Group* g = new Fl_Group(0, 20, this->w(), this->h()-20, "D0");
-		g->hide();
+		//g->hide();
 		{ 
 			wgt_x = 10;
 			wgt_y = 20;
@@ -251,6 +255,10 @@ void ControlPanel::createPanel()
 			//btn_loadtex->callback(cb_btn_loadtex, (void*)this);
 			g->add(btn_loadtex);
 
+			btn_loadrul = new Fl_Button(wgt_x+135, wgt_y, 45, 20, "rul");
+			btn_loadrul->callback(cb_btn_loadrul, (void*)this);
+			g->add(btn_loadrul);
+			
 			wgt_x = 10;
 			wgt_y += 20;
 
@@ -266,9 +274,14 @@ void ControlPanel::createPanel()
 			btn_savescreen->callback(cb_btn_savescreen, (void*)this);
 			g->add(btn_savescreen);
 
+#if 0
 			btn_saveerr = new Fl_Button(wgt_x+90, wgt_y, 45, 20, "err");
 			btn_saveerr->callback(cb_btn_saveerr, (void*)this);
 			g->add(btn_saveerr);
+#endif
+			btn_saverul = new Fl_Button(wgt_x+135, wgt_y, 45, 20, "rul");
+			btn_saverul->callback(cb_btn_saverul, (void*)this);
+			g->add(btn_saverul);
 
 			wgt_x = 10;
 			wgt_y += 25;
@@ -423,6 +436,40 @@ void ControlPanel::createPanel()
 
 			wgt_x = 10;
 			wgt_y += 25;
+
+			// ------------------------- RULING 2 CURVE -------------------------------------------
+			Fl_Box *bx_RulCrv= new Fl_Box(0, wgt_y, g->w(), 20, "--- RULING 2 CURVE ---");	wgt_y += 20;
+
+			vs_xmang1 = new Fl_Value_Slider(wgt_x, wgt_y, 180, 20);
+			vs_xmang1->bounds( -90, 90 );	vs_xmang1->step(2);	vs_xmang1->value(40);
+			vs_xmang1->align(FL_ALIGN_LEFT);
+			vs_xmang1->type(FL_HORIZONTAL);
+			vs_xmang1->callback(cb_vs_xmang, (void*)this);
+			g->add( vs_xmang1 );
+
+			wgt_y += 25;
+
+			vs_xmang0 = new Fl_Value_Slider(wgt_x, wgt_y, 180, 20);
+			vs_xmang0->bounds( -90, 90 );	vs_xmang0->step(1);	vs_xmang0->value(45);
+			vs_xmang0->align(FL_ALIGN_LEFT);
+			vs_xmang0->type(FL_HORIZONTAL);
+			g->add( vs_xmang0 );
+
+			wgt_y += 25;
+
+			btn_R2TA0 = new Fl_Button(wgt_x,  wgt_y, 150, 20, "Apply Ruling Angle");
+			btn_R2TA0->callback(cb_btn_R2TA0, (void*)this);
+			g->add(btn_R2TA0);
+
+			wgt_y += 25;
+
+			btn_start = new Fl_Button(wgt_x,  wgt_y, 60, 20, "start");
+			btn_start->callback(cb_btn_start, (void*)this);
+			g->add(btn_start);
+
+			btn_stop = new Fl_Button(wgt_x+70, wgt_y, 60, 20, "stop");
+			btn_stop->callback(cb_btn_stop, (void*)this);
+			g->add(btn_stop);
 		}
 		g->end();
 	}
@@ -561,8 +608,8 @@ void ControlPanel::createPanel()
 		g->end();
 	}
 	{
-		Fl_Group* g = new Fl_Group(0, 20, this->w(), this->h()-20, "D2");
-		//g->hide();
+		Fl_Group* g = new Fl_Group(0, 20, this->w(), this->h()-20, "D3");
+		g->hide();
 		{ 
 			// ------------------------- FOLDING ANGLE ------------------------------------
 

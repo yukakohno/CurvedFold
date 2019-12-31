@@ -409,3 +409,17 @@ void ControlPanel::cb_btn_loadframe(Fl_Widget *wgt, void *idx)
 	c->updateFM( 1 );
 	This->update_bx_FM(c, frm);
 }
+
+void ControlPanel::cb_btn_loadrul( Fl_Widget *wgt, void *idx )
+{
+	ControlPanel *This = (ControlPanel *)idx;
+	crease *c = &(This->ppm.crs[0]);
+	c->loadPb("input/rulings.txt");
+}
+
+void ControlPanel::cb_btn_saverul( Fl_Widget *wgt, void *idx )
+{
+	ControlPanel *This = (ControlPanel *)idx;
+	crease *c = &(This->ppm.crs[0]);
+	c->dumpPb("output/rulings.txt");
+}

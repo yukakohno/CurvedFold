@@ -155,7 +155,7 @@ void GraphWindow3DCF::init()
 	flg_addcurve = 0;
 
 	divtype = 1;
-	divnum = 6;
+	divnum = 1;
 
 	ppm = NULL;
 

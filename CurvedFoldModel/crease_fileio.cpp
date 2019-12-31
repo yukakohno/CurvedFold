@@ -676,6 +676,55 @@ int crease::dumpMotionFrame( int frm, char *fname, int flg_usecp )
 	fclose( fp );
 }
 
+int crease::loadPb( char *fname )
+{
+	int ret=0;
+	FILE *fp=NULL;
+	char buf[256];
+
+	if( fname==NULL ){
+		ret = -1; return ret;
+	}
+	fp = fopen( fname, "r" );
+	if( !fp ){
+		ret = -1; return ret;
+	}
+	fgets( buf, 1024, fp);
+	sscanf( buf, "%lf %lf %lf %lf %lf %lf %lf", &Pbl[0], &Pbl[1], &Pbl[2], &Pbl[3], &Pbl[4], &Pbl[5], &Pbl[6] );
+	fgets( buf, 1024, fp);
+	sscanf( buf, "%lf %lf %lf %lf %lf %lf %lf", &Pbr[0], &Pbr[1], &Pbr[2], &Pbr[3], &Pbr[4], &Pbr[5], &Pbr[6] );
+
+	fclose( fp );
+	return ret;
+}
+
+int crease::dumpPb( char *fname )
+{
+	int ret=0;
+	FILE *fp=NULL;
+	char buf[256];
+
+	if( fname==NULL ){
+		ret = -1; return ret;
+	}
+	fp = fopen( fname, "w" );
+	if( !fp ){
+		ret = -1; return ret;
+	}
+	for( int i=0; i<Pcnt; i++ ){
+		fprintf( fp, "%f\t", Pbl[i] );
+	}
+	fprintf( fp, "\n" );
+
+	for( int i=0; i<Pcnt; i++ ){
+		fprintf( fp, "%f\t", Pbr[i] );
+	}
+	fprintf( fp, "\n" );
+
+	fclose( fp );
+	return ret;
+}
+
 #if 1
 int crease::checkCP3D( char *fname )
 {

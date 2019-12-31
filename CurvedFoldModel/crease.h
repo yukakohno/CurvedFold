@@ -146,6 +146,9 @@ public:
 	int loadMotionFrame( int frm, char *fname );	// return -1: error, 0: flg_usecp=0, 1: flg_usecp=1
 	int dumpMotionFrame( int frm, char *fname, int flg_usecp );
 
+	int loadPb( char *fname );
+	int dumpPb( char *fname );
+
 	int check180( char *fname );	// ’¸“_Žü‚è‚ÌŠp“x
 	int check180( FILE *fp );
 	int checkquadplane( char *fname );	// quad ‚Ì•½–Ê“x
