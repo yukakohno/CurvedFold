@@ -403,13 +403,13 @@ int GraphWindowCP::handle(int event)
 				int thres=8;
 				if( this->flg_addcurve ){
 					flg_psize = 5;	ccnt=0;
-				} else if( abs( (ox+psx*wscl) - push_x ) < thres ){
+				} else if( abs( (int)(ox+psx*wscl) - push_x ) < thres ){
 					flg_psize = 1;
-				} else if( abs( (ox+pex*wscl) - push_x ) < thres ){
+				} else if( abs( (int)(ox+pex*wscl) - push_x ) < thres ){
 					flg_psize = 2;
-				} else if( abs( (oy+psy*hscl) - push_y ) < thres ){
+				} else if( abs( (int)(oy+psy*hscl) - push_y ) < thres ){
 					flg_psize = 3;
-				} else if( abs( (oy+pey*hscl) - push_y ) < thres ){
+				} else if( abs( (int)(oy+pey*hscl) - push_y ) < thres ){
 					flg_psize = 4;
 				} else {
 					flg_psize = 0;

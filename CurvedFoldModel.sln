@@ -1,29 +1,41 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CurvedFoldModel", "CurvedFoldModel\CurvedFoldModel.vcproj", "{2DE4C8CD-8069-49C4-8E0A-99CB083C5366}"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29209.62
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CurvedFoldModel", "CurvedFoldModel\CurvedFoldModel.vcxproj", "{2DE4C8CD-8069-49C4-8E0A-99CB083C5366}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GUI", "GUI\GUI.vcproj", "{CF5B580A-D017-40FA-B9B5-B2ABA1D4948C}"
-	ProjectSection(ProjectDependencies) = postProject
-		{2DE4C8CD-8069-49C4-8E0A-99CB083C5366} = {2DE4C8CD-8069-49C4-8E0A-99CB083C5366}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GUI", "GUI\GUI.vcxproj", "{CF5B580A-D017-40FA-B9B5-B2ABA1D4948C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
 		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{2DE4C8CD-8069-49C4-8E0A-99CB083C5366}.Debug|Win32.ActiveCfg = Debug|Win32
 		{2DE4C8CD-8069-49C4-8E0A-99CB083C5366}.Debug|Win32.Build.0 = Debug|Win32
+		{2DE4C8CD-8069-49C4-8E0A-99CB083C5366}.Debug|x64.ActiveCfg = Debug|x64
+		{2DE4C8CD-8069-49C4-8E0A-99CB083C5366}.Debug|x64.Build.0 = Debug|x64
 		{2DE4C8CD-8069-49C4-8E0A-99CB083C5366}.Release|Win32.ActiveCfg = Release|Win32
 		{2DE4C8CD-8069-49C4-8E0A-99CB083C5366}.Release|Win32.Build.0 = Release|Win32
+		{2DE4C8CD-8069-49C4-8E0A-99CB083C5366}.Release|x64.ActiveCfg = Release|x64
+		{2DE4C8CD-8069-49C4-8E0A-99CB083C5366}.Release|x64.Build.0 = Release|x64
 		{CF5B580A-D017-40FA-B9B5-B2ABA1D4948C}.Debug|Win32.ActiveCfg = Debug|Win32
 		{CF5B580A-D017-40FA-B9B5-B2ABA1D4948C}.Debug|Win32.Build.0 = Debug|Win32
+		{CF5B580A-D017-40FA-B9B5-B2ABA1D4948C}.Debug|x64.ActiveCfg = Debug|x64
+		{CF5B580A-D017-40FA-B9B5-B2ABA1D4948C}.Debug|x64.Build.0 = Debug|x64
 		{CF5B580A-D017-40FA-B9B5-B2ABA1D4948C}.Release|Win32.ActiveCfg = Release|Win32
 		{CF5B580A-D017-40FA-B9B5-B2ABA1D4948C}.Release|Win32.Build.0 = Release|Win32
+		{CF5B580A-D017-40FA-B9B5-B2ABA1D4948C}.Release|x64.ActiveCfg = Release|x64
+		{CF5B580A-D017-40FA-B9B5-B2ABA1D4948C}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F89C2674-29CE-4A9B-A36A-149558025F47}
 	EndGlobalSection
 EndGlobal
