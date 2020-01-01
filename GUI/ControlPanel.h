@@ -24,7 +24,7 @@
 #define RECDIR "input/"
 
 //#define TEXFNAME "texture/no_tex.jpg"
-#define TEXFNAME "texture/grid_bw3.org.jpg"
+#define TEXFNAME "texture/grid_bw3.jpg"
 //#define TEXFNAME "texture/cp.jpg"
 #define TEXWIDTH  256	// texture width
 #define TEXHEIGHT 256	// texture height

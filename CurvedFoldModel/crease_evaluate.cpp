@@ -133,7 +133,7 @@ int crease::checkRulingCross( double *errdata, int row, int col )
 		b = l0_*rly_cp[li];
 		c = l1_*rlx_cp[i];
 		d = l1_*rly_cp[i];
-		errdata[li*col ] = abs(a*d-b*c)*0.5;
+		errdata[li*col ] = fabs(a*d-b*c)*0.5;
 		li=i;
 	}
 
@@ -154,7 +154,7 @@ int crease::checkRulingCross( double *errdata, int row, int col )
 		b = l0_*rry_cp[li];
 		c = l1_*rrx_cp[i];
 		d = l1_*rry_cp[i];
-		errdata[li*col+1] = abs(a*d-b*c)*0.5;
+		errdata[li*col+1] = fabs(a*d-b*c)*0.5;
 		li=i;
 	}
 
