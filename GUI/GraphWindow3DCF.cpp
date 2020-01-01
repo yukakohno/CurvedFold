@@ -822,7 +822,7 @@ void GraphWindow3DCF::exportImage(char *filename)
 
 	cv::Mat image( cv::Size(imgw, imgh), CV_8UC3 );
 	for (int j = 0; j < imgh; j++) {
-		for (int i = 0; i < imgh; i++) {
+		for (int i = 0; i < imgw; i++) {
 			image.at<cv::Vec3b>(j, i)[0] = img[(imgh-1-j)*imgstep + i*3+2];
 			image.at<cv::Vec3b>(j, i)[1] = img[(imgh-1-j)*imgstep + i*3+1];
 			image.at<cv::Vec3b>(j, i)[2] = img[(imgh-1-j)*imgstep + i*3];
