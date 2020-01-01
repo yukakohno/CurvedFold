@@ -477,13 +477,13 @@ int GraphWindowCP::handle(int event)
 			push_y = Fl::event_y();
 			if( Fl::event_button() == FL_LEFT_MOUSE ){
 				int thres=8;
-				if( abs( (ox+psx*wscl) - push_x ) < thres ){
+				if( abs( (int)(ox+psx*wscl) - push_x ) < thres ){
 					flg_psize = 1;
-				} else if( abs( (ox+pex*wscl) - push_x ) < thres ){
+				} else if( abs( (int)(ox+pex*wscl) - push_x ) < thres ){
 					flg_psize = 2;
-				} else if( abs( (oy+psy*hscl) - push_y ) < thres ){
+				} else if( abs( (int)(oy+psy*hscl) - push_y ) < thres ){
 					flg_psize = 3;
-				} else if( abs( (oy+pey*hscl) - push_y ) < thres ){
+				} else if( abs( (int)(oy+pey*hscl) - push_y ) < thres ){
 					flg_psize = 4;
 				} else {
 					flg_psize = 0;

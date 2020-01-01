@@ -5,8 +5,8 @@
 #include <math.h>
 
 //#include <GL/glu.h>
-//#include <GL/glut.h>
-#include "glut.h"
+#include <GL/glut.h>
+//#include <glut.h>
 #include <FL/Fl.h>
 #include <FL/gl.h>
 #include <FL/Enumerations.H>
@@ -16,13 +16,9 @@
 #include "../CurvedFoldModel/util.h"
 
 /* OpenCV */
-#include <cxcore.h>
-#include <cv.h>
-#include <highgui.h>
+#include <opencv2/opencv.hpp>
 //using namespace std;
 //using namespace cv;
-
-GLint obj1List, obj2List;       /* ディスプレイリスト名 */
 
 GraphWindow3DCF::GraphWindow3DCF(int X, int Y, int W, int H, const char *L)
 : GraphWindow3D(X, Y, W, H, L)
@@ -58,13 +54,14 @@ void GraphWindow3DCF::initTexture()
 	GLubyte texture[TEXHEIGHT][TEXWIDTH][4];
 
 	/* テクスチャ画像の読み込み */
-#if 0
+#if 1
 	cv::Mat tex = cv::imread(TEXFNAME, 1);
 	for(int j=0 ; j<tex.rows; j++){
 		for(int i=0 ; i<tex.cols; i++){
-			texture[j][i][0] = ((cv::Vec3b &)tex.at<uchar>(j,i))[0];
-			texture[j][i][1] = ((cv::Vec3b &)tex.at<uchar>(j,i))[1];
-			texture[j][i][2] = ((cv::Vec3b &)tex.at<uchar>(j,i))[2];
+			texture[j][i][0] = (GLubyte)((cv::Vec3b &)tex.at<cv::Vec3b>(j,i))[0];
+			texture[j][i][1] = (GLubyte)((cv::Vec3b &)tex.at<cv::Vec3b>(j,i))[1];
+			texture[j][i][2] = (GLubyte)((cv::Vec3b &)tex.at<cv::Vec3b>(j,i))[2];
+			texture[j][i][3] = (GLubyte)255;
 		}
 	}
 #elif 0
@@ -124,11 +121,8 @@ void GraphWindow3DCF::initTexture()
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 	/* テクスチャの割り当て */
-	obj1List = glGenLists(1);
-	glNewList(obj1List, GL_COMPILE);
-	gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, TEXWIDTH, TEXHEIGHT,
-		GL_RGBA, GL_UNSIGNED_BYTE, texture);
-	glEndList();
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, TEXWIDTH, TEXHEIGHT,
+		0, GL_RGBA, GL_UNSIGNED_BYTE, texture);
 
 	/* アルファテストの判別関数 */
 	//glAlphaFunc(GL_GREATER, 0.5);
@@ -204,8 +198,12 @@ void GraphWindow3DCF::draw3DCurveFold()
 	float gcolor[12][3] = {{1,0,0},{1,.4,0},{1,.7,0}, {1,1,0},{.7,1,0},{.4,1,0},
 	{0,1,0},{0,1,.5},{0,.5,1}, {0,0,1},{.5,0,1},{1,0,1}};
 	GLfloat mat_col[10][4] = {{1,0,0,1},{1,1,0,1},{0,1,0,1},{0,1,1,1},{0,0,1,1},{1,0,1,1},{.5,0,0,1},{0,.5,0,1},{0,0,.5,1},{.5,.5,.5,1}};
-	int Pcnt = ppm->crs[0].Pcnt;
-	int Xcnt = ppm->crs[0].Xcnt;
+	int Pcnt = 0, Xcnt = 0;
+	if (ppm == NULL) {
+		return;
+	}
+	Pcnt = ppm->crs[0].Pcnt;
+	Xcnt = ppm->crs[0].Xcnt;
 
 	glPushMatrix();
 
@@ -499,8 +497,6 @@ void GraphWindow3DCF::draw3DCurveFold()
 			glEnable(GL_POLYGON_OFFSET_FILL);
 		}
 		glPolygonOffset(1.0, 1.0);
-
-		glCallList(obj1List);
 
 #if 1	// CP上のポリゴンを座標変換して表示
 		glColor3f( 1.0, 0.0, 1.0 );
@@ -824,15 +820,15 @@ void GraphWindow3DCF::exportImage(char *filename)
 
 	glReadPixels(0,0, imgw, imgh, GL_RGB, GL_UNSIGNED_BYTE, img);
 
-	IplImage *image = cvCreateImage( cvSize(imgw, imgh), IPL_DEPTH_8U, 3);
-	IplImage *image2 = cvCreateImage( cvSize(imgw, imgh), IPL_DEPTH_8U, 3);
-	for( int i=0; i<imgh; i++ ){
-		memcpy( &(image->imageData[i*imgstep]), &(img[(imgh-1-i)*imgstep]), sizeof(unsigned char)*imgstep );
+	cv::Mat image( cv::Size(imgw, imgh), CV_8UC3 );
+	for (int j = 0; j < imgh; j++) {
+		for (int i = 0; i < imgh; i++) {
+			image.at<cv::Vec3b>(j, i)[0] = img[(imgh-1-j)*imgstep + i*3+2];
+			image.at<cv::Vec3b>(j, i)[1] = img[(imgh-1-j)*imgstep + i*3+1];
+			image.at<cv::Vec3b>(j, i)[2] = img[(imgh-1-j)*imgstep + i*3];
+		}
 	}
-	cvCvtColor( image, image2, CV_BGR2RGB );
-	cvSaveImage( filename, image2 );
-	cvReleaseImage( &image );
-	cvReleaseImage( &image2 );
+	imwrite( filename, image);
 
 	delete[] img; img = NULL;
 }

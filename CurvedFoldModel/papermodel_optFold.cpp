@@ -194,7 +194,7 @@ double papermodel::calcRulCross( double *xx, double *xy, double *rx, double *ry,
 		b = l0_*ry[i];
 		c = l1_*rx[i+1];
 		d = l1_*ry[i+1];
-		area = sqrt(abs(a*d-b*c))+0.01;
+		area = sqrt(fabs(a*d-b*c))+0.01;
 		diff += area;
 	}
 end:
