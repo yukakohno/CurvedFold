@@ -72,8 +72,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\fltk-1.3.5;C:\opencv\build\include;C:\opencv\build\include\opencv;C:\opencv\build\include\opencv2;C:\freeglut\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\fltk-1.3.5\lib;C:\opencv\build\x64\vc12\lib;C:\freeglut\lib\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\fltk-1.3.5;C:\opencv-4.2.0\build\include;C:\freeglut\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\fltk-1.3.5\lib;C:\opencv-4.2.0\build\x64\vc15\lib;C:\freeglut\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
@@ -82,8 +82,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\fltk-1.3.5;C:\opencv\build\include;C:\opencv\build\include\opencv;C:\opencv\build\include\opencv2;C:\freeglut\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\fltk-1.3.5\lib;C:\opencv\build\x64\vc12\lib;C:\freeglut\lib\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\fltk-1.3.5;C:\opencv-4.2.0\build\include;C:\freeglut\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\fltk-1.3.5\lib;C:\opencv-4.2.0\build\x64\vc15\lib;C:\freeglut\lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

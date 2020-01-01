@@ -13,40 +13,10 @@
 #pragma comment(lib,"fltkzlib.lib")
 #endif
 
-#if 0
-	#ifdef _DEBUG
-		#pragma comment(lib,"opencv_world420d.lib")
-	#else
-		#pragma comment(lib,"opencv_world420.lib")
-	#endif
+#ifdef _DEBUG
+#pragma comment(lib,"opencv_world420d.lib")
 #else
-	#ifdef _DEBUG
-		#pragma comment(lib,"opencv_core249d.lib")
-		#pragma comment(lib,"opencv_imgproc249d.lib")
-		#pragma comment(lib,"opencv_highgui249d.lib")
-	//	#pragma comment(lib,"opencv_objdetect249d.lib")
-	//	#pragma comment(lib,"opencv_ml249d.lib")
-	//	#pragma comment(lib,"opencv_features2d249d.lib")
-	//	#pragma comment(lib,"opencv_video249d.lib")
-	//	#pragma comment(lib,"opencv_calib3d249d.lib")
-	//	#pragma comment(lib,"opencv_flann249d.lib")
-	//	#pragma comment(lib,"opencv_contrib249d.lib")
-	//	#pragma comment(lib,"opencv_legacy249d.lib")
-	//	#pragma comment(lib,"opencv_gpu249d.lib")
-	#else
-		#pragma comment(lib,"opencv_core249.lib")
-		#pragma comment(lib,"opencv_imgproc249.lib")
-		#pragma comment(lib,"opencv_highgui249.lib")
-	//	#pragma comment(lib,"opencv_objdetect249.lib")
-	//	#pragma comment(lib,"opencv_ml249.lib")
-	//	#pragma comment(lib,"opencv_features2d249.lib")
-	//	#pragma comment(lib,"opencv_video249.lib")
-	//	#pragma comment(lib,"opencv_calib3d249.lib")
-	//	#pragma comment(lib,"opencv_flann249.lib")
-	//	#pragma comment(lib,"opencv_contrib249.lib")
-	//	#pragma comment(lib,"opencv_legacy249.lib")
-	//	#pragma comment(lib,"opencv_gpu249.lib")
-	#endif
+#pragma comment(lib,"opencv_world420.lib")
 #endif
 
 #include "GraphWindow3DCF.h"
