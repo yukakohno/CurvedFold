@@ -13,7 +13,7 @@ double papermodel::calcAveDiff( double *tr0, double *tr1, double max, int cvcnt 
 	double diff=0.0, df;
 	memset( cverr, 0.0, sizeof(double)*MAX_SPCNT );
 	for( int i=3; i<cvcnt-3; i++ ){
-		df = abs(tr0[i]-tr1[i]);
+		df = fabs(tr0[i]-tr1[i]);
 		diff += df;
 		cverr[i] = df/max;
 	}
@@ -59,7 +59,7 @@ double papermodel::calcRulCross( double *xx, double *xy, double *rx, double *ry,
 		b = l0_*ry[i];
 		c = l1_*rx[i+1];
 		d = l1_*ry[i+1];
-		area = cverr[i] = sqrt(abs(a*d-b*c))+0.01;
+		area = cverr[i] = sqrt(fabs(a*d-b*c))+0.01;
 		diff += area;
 		cverr[i] /= hCrs_cvmaxerr[hCrs_evaltype];
 	}
