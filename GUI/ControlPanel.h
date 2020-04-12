@@ -20,6 +20,7 @@
 #include "GraphWindowParam.h"
 #include "../CurvedFoldModel/papermodel.h"
 #include "common.h"
+#include <vector>
 
 #define RECDIR "input/"
 
@@ -199,11 +200,24 @@ public:
 	Fl_Button* btn_optfold;
 	Fl_Button* btn_optfold2;
 	Fl_Button* btn_opttr;
+	Fl_Button* btn_makelist;
+	Fl_Button* btn_startrul;
+	Fl_Button* btn_stoprul;
 
 private:
+	std::vector<double> vPbl;
+	std::vector<double> vPbr;
+	bool flg_idlerul_active;
+	int idlerul_idx;
+
 	static void cb_btn_optfold(Fl_Widget* wgt, void* idx);
 	static void cb_btn_optfold2(Fl_Widget* wgt, void* idx);
 	static void cb_btn_opttr(Fl_Widget* wgt, void* idx);
+	static void idlerul(void* idx);
+	static void cb_btn_makelist(Fl_Widget* wgt, void* idx);
+	static void cb_btn_startrul(Fl_Widget* wgt, void* idx);
+	static void cb_btn_stoprul(Fl_Widget* wgt, void* idx);
+
 	// ------------------------- HISTORY --------------------------------------
 public:
 	Fl_Check_Button* cb_history;

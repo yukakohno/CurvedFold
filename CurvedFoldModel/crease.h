@@ -160,6 +160,7 @@ public:
 	int check180( double *errdata, int row, int col );
 	int checkquadplane( double *errdata, int row, int col );
 	int checkRulingCross( double *errdata, int row, int col );
+	int checkRulingCross( int rl ); // -1:left, 1:right
 
 	// ------------------------- proseq -------------------------------------------
 

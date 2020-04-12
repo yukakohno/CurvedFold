@@ -34,6 +34,9 @@ ControlPanel::ControlPanel(int X, int Y, int W, int H, const char *L, GraphWindo
 	fcnt = acnt = 0;
 	acnt_inc = true;
 	flg_idle_active = false;
+	flg_idlerul_active = false;
+	idlerul_idx = 0;
+
 	hist_head = hist_size = 0;
 
 	sprintf( filepath, "./input/" );
@@ -861,6 +864,21 @@ void ControlPanel::createPanel()
 		btn_opttr->callback(cb_btn_opttr, (void*)this);
 		btn_opttr->deactivate();
 		g->add(btn_opttr);
+
+		wgt_x = 10;
+		wgt_y += 25;
+
+		btn_startrul = new Fl_Button(wgt_x, wgt_y, 60, 20, "start");	wgt_x += 70;
+		btn_startrul->callback(cb_btn_startrul, (void*)this);
+		g->add(btn_startrul);
+
+		btn_stoprul = new Fl_Button(wgt_x, wgt_y, 60, 20, "stop");	wgt_x += 70;
+		btn_stoprul->callback(cb_btn_stoprul, (void*)this);
+		g->add(btn_stoprul);
+
+		btn_makelist = new Fl_Button(wgt_x, wgt_y, 40, 20, "list");
+		btn_makelist->callback(cb_btn_makelist, (void*)this);
+		g->add(btn_makelist);
 
 		wgt_x = 10;
 		wgt_y += 25;

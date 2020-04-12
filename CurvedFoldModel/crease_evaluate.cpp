@@ -4,6 +4,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
+#include <fstream>
 
 #include "crease.h"
 #include "util.h"
@@ -103,12 +104,55 @@ int crease::checkquadplane( double *errdata, int row, int col )
 	return ret;
 }
 
+// return index of rulings crossing, -1 if no crossing
+int crease::checkRulingCross( int rl ) // -1:left, 1:right
+{
+	double ex[MAX_SPCNT], ey[MAX_SPCNT]; // end point
+
+	if ( rl<0 ) {
+		for (int i = Xsidx; i <= Xeidx; i++) {
+			ex[i] = Xx2d[i] + rllen[i] * rlx_cp[i];
+			ey[i] = Xy2d[i] + rllen[i] * rly_cp[i];
+		}
+	}
+	else {
+		for (int i = Xsidx; i <= Xeidx; i++) {
+			ex[i] = Xx2d[i] + rrlen[i] * rrx_cp[i];
+			ey[i] = Xy2d[i] + rrlen[i] * rry_cp[i];
+		}
+	}
+#if 0
+	{
+		std::ofstream fout("./output/debug_RulingEnds.csv");
+		fout << "x,y" << std::endl;
+		for (int i = Xsidx; i <= Xeidx; i++) {
+			fout << Xx2d[i] << "," << Xy2d[i] << std::endl;
+			fout << ex[i] << "," << ey[i] << std::endl;
+			fout << std::endl;
+		}
+	}
+#endif
+	for (int li = Xsidx, i = Xsidx + 1; i <= Xeidx; i++) {
+		double ix, iy, l0, l1;
+		if (rllen[i] == 0.0) {
+			continue;
+		}
+		int ret = intersectionOfLine(Xx2d[li], Xy2d[li], ex[li], ey[li], Xx2d[i], Xy2d[i], ex[i], ey[i], &ix, &iy, &l0, &l1);
+		if (ret==0) { // -1: no intersection, 0: intersection
+			return i;
+		}
+		li = i;
+	}
+	return -1;
+}
+
 int crease::checkRulingCross( double *errdata, int row, int col )
 {
 	int ret=0, li=0;
 	double lex[MAX_SPCNT], ley[MAX_SPCNT], rex[MAX_SPCNT], rey[MAX_SPCNT];
-	memset( errdata, 0, sizeof(double)*row*col );
-
+	if (errdata) {
+		memset(errdata, 0, sizeof(double) * row * col);
+	}
 	for( int i=Xsidx;  i<=Xeidx; i++ ){
 		lex[i] = Xx2d[i]+rllen[i]*rlx_cp[i];
 		ley[i] = Xy2d[i]+rllen[i]*rly_cp[i];
@@ -133,7 +177,9 @@ int crease::checkRulingCross( double *errdata, int row, int col )
 		b = l0_*rly_cp[li];
 		c = l1_*rlx_cp[i];
 		d = l1_*rly_cp[i];
-		errdata[li*col ] = fabs(a*d-b*c)*0.5;
+		if (errdata) {
+			errdata[li * col] = fabs(a * d - b * c) * 0.5;
+		}
 		li=i;
 	}
 
@@ -154,7 +200,9 @@ int crease::checkRulingCross( double *errdata, int row, int col )
 		b = l0_*rry_cp[li];
 		c = l1_*rrx_cp[i];
 		d = l1_*rry_cp[i];
-		errdata[li*col+1] = fabs(a*d-b*c)*0.5;
+		if (errdata) {
+			errdata[li * col + 1] = fabs(a * d - b * c) * 0.5;
+		}
 		li=i;
 	}
 
