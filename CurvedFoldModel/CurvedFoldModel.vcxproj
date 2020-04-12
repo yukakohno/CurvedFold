@@ -143,6 +143,7 @@
     <ClCompile Include="papermodel_rulLength.cpp" />
     <ClCompile Include="papermodel_spherepart.cpp" />
     <ClCompile Include="papermodel_stitch.cpp" />
+    <ClCompile Include="polynomial.cpp" />
     <ClCompile Include="Quaternion.cpp" />
     <ClCompile Include="Spline.cpp" />
     <ClCompile Include="util.cpp" />
@@ -155,6 +156,7 @@
     <ClInclude Include="curvedraw.h" />
     <ClInclude Include="curveintersect.h" />
     <ClInclude Include="papermodel.h" />
+    <ClInclude Include="polynomial.h" />
     <ClInclude Include="Quaternion.h" />
     <ClInclude Include="Spline.h" />
     <ClInclude Include="util.h" />
