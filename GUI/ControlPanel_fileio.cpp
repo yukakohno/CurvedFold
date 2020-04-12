@@ -413,8 +413,23 @@ void ControlPanel::cb_btn_loadframe(Fl_Widget *wgt, void *idx)
 void ControlPanel::cb_btn_loadrul( Fl_Widget *wgt, void *idx )
 {
 	ControlPanel *This = (ControlPanel *)idx;
-	crease *c = &(This->ppm.crs[0]);
-	c->loadPb("input/rulings.txt");
+	crease* c = &(This->ppm.crs[0]);
+	Fl_File_Chooser* fc = This->fc_rul;
+
+	fc->show();
+
+	while (fc->visible())
+		Fl::wait();
+
+	if(fc->count() > 0)
+	{
+		char fname[1024];
+		strcpy(fname, fc->value());
+		c->loadPb(fname);
+		This->btn_R2TA0->do_callback();
+		//This->gwin->redraw();
+		//This->gwin_cp->redraw();
+	}
 }
 
 void ControlPanel::cb_btn_saverul( Fl_Widget *wgt, void *idx )

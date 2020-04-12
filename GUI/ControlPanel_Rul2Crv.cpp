@@ -1,5 +1,6 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <iostream>
 #include <windows.h>
 #include "ControlPanel.h"
 #include "../CurvedFoldModel/util.h"
@@ -47,8 +48,18 @@ void ControlPanel::cb_vs_xmang(Fl_Widget *wgt, void *idx)
 	This->vs_xmang0->value( val );
 	if( val==0 ){
 		This->gwin->disp_R = This->gwin_cp->disp_R = 0; // don't display rulings in folding angle=0
-		crease *c = &(This->ppm.crs[0]);
-		switch( This->fcnt ){
+	} else if( This->cb_disp[D_R]->value() != 0 ){
+		This->gwin->disp_R = This->gwin_cp->disp_R = 1;
+	}
+	This->btn_R2TA0->do_callback();
+}
+
+void ControlPanel::cb_btn_switchRuling(Fl_Widget* wgt, void* idx)
+{
+	ControlPanel* This = (ControlPanel*)idx;
+	crease* c = &(This->ppm.crs[0]);
+	std::cout << This->fcnt << std::endl;
+	switch (This->fcnt) {
 			case 0: c->loadPb("input/rulings00.txt"); break;
 			case 1: c->loadPb("input/rulings01.txt"); break;
 			case 2: c->loadPb("input/rulings02.txt"); break;
@@ -58,11 +69,9 @@ void ControlPanel::cb_vs_xmang(Fl_Widget *wgt, void *idx)
 			case 6: c->loadPb("input/rulings06.txt"); break;
 		}
 		This->fcnt++;
-		if( This->fcnt>6 ){ This->fcnt=0; }
+	if (This->fcnt > 6) { This->fcnt = 0; }
 		//if( This->fcnt>1 ){ This->fcnt=0; }
-	} else if( This->cb_disp[D_R]->value() != 0 ){
-		This->gwin->disp_R = This->gwin_cp->disp_R = 1;
-	}
+
 	This->btn_R2TA0->do_callback();
 }
 

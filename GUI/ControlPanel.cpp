@@ -262,6 +262,7 @@ void ControlPanel::createPanel()
 
 			btn_loadrul = new Fl_Button(wgt_x+135, wgt_y, 45, 20, "rul");
 			btn_loadrul->callback(cb_btn_loadrul, (void*)this);
+			fc_rul = new Fl_File_Chooser(RECDIR, "([rulings]*.{txt})", Fl_File_Chooser::SINGLE, "Fl_File_Chooser");
 			g->add(btn_loadrul);
 			
 			wgt_x = 10;
@@ -804,6 +805,10 @@ void ControlPanel::createPanel()
 		g->add(vs_xmang0);
 
 		wgt_y += 25;
+
+		btn_switchRuling = new Fl_Button(wgt_x, wgt_y, 60, 20, "switch");
+		btn_switchRuling->callback(cb_btn_switchRuling, (void*)this);
+		g->add(btn_switchRuling);
 
 		wgt_x += 60;
 

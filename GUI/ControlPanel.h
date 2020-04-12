@@ -77,6 +77,7 @@ public:
 	Fl_Button *btn_loadtpt;
 	Fl_File_Chooser* fc_tpt;
 	Fl_Button *btn_loadrul;
+	Fl_File_Chooser* fc_rul;
 	Fl_Button *btn_savelog;
 	Fl_Button *btn_savescreen;
 	//Fl_Button *btn_saveerr;
@@ -171,6 +172,7 @@ private:
 public:
 	Fl_Value_Slider *vs_xmang0;
 	Fl_Value_Slider *vs_xmang1;
+	Fl_Button *btn_switchRuling;
 	Fl_Button *btn_R2TA0;
 	Fl_Button *btn_optmat;
 	Fl_Button *btn_start;
@@ -183,6 +185,7 @@ private:
 	bool acnt_inc;
 	bool flg_idle_active;
 	static void cb_btn_R2TA0(Fl_Widget *wgt, void *idx);
+	static void cb_btn_switchRuling(Fl_Widget* wgt, void* idx);
 	static void cb_vs_xmang(Fl_Widget *wgt, void *idx);
 	static void idle(void *idx);
 	static void cb_btn_optmat(Fl_Widget *wgt, void *idx);
