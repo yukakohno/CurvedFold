@@ -172,8 +172,6 @@ public:
 	Fl_Value_Slider *vs_xmang1;
 	Fl_Button *btn_R2TA0;
 	Fl_Button *btn_optmat;
-	Fl_Button *btn_optfold;
-	Fl_Button *btn_opttr;
 	Fl_Button *btn_start;
 	Fl_Button *btn_stop;
 	Fl_Check_Button *cb_optmat;
@@ -187,10 +185,17 @@ private:
 	static void cb_vs_xmang(Fl_Widget *wgt, void *idx);
 	static void idle(void *idx);
 	static void cb_btn_optmat(Fl_Widget *wgt, void *idx);
-	static void cb_btn_optfold(Fl_Widget *wgt, void *idx);
-	static void cb_btn_opttr(Fl_Widget *wgt, void *idx);
 	static void cb_btn_start(Fl_Widget *wgt, void *idx);
 	static void cb_btn_stop(Fl_Widget *wgt, void *idx);
+
+	// ------------------------- OPTIMIZATION --------------------------------------
+public:
+	Fl_Button *btn_optfold;
+	Fl_Button *btn_opttr;
+
+private:
+	static void cb_btn_optfold(Fl_Widget *wgt, void *idx);
+	static void cb_btn_opttr(Fl_Widget *wgt, void *idx);
 
 	// ------------------------- RECTIFY -------------------------------------------
 public:

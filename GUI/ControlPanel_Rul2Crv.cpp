@@ -99,29 +99,6 @@ void ControlPanel::cb_btn_optmat(Fl_Widget *wgt, void *idx)
 	This->gwin_gr->redraw();
 }
 
-void ControlPanel::cb_btn_optfold(Fl_Widget *wgt, void *idx)
-{
-	ControlPanel *This = (ControlPanel *)idx;
-	papermodel *ppm = &(This->ppm);
-
-	int ret = ppm->optFold();
-
-	This->gwin->redraw();
-	This->gwin_cp->redraw();
-	This->gwin_gr->redraw();
-}
-
-void ControlPanel::cb_btn_opttr(Fl_Widget *wgt, void *idx)
-{
-	ControlPanel *This = (ControlPanel *)idx;
-	papermodel *ppm = &(This->ppm);
-
-	int ret = ppm->optTorsion();
-
-	This->gwin->redraw();
-	This->gwin_cp->redraw();
-	This->gwin_gr->redraw();
-}
 void ControlPanel::cb_btn_start(Fl_Widget *wgt, void *idx)
 {
 	ControlPanel *This = (ControlPanel *)idx;
