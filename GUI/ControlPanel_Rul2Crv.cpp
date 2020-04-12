@@ -76,21 +76,29 @@ void ControlPanel::cb_btn_switchRuling(Fl_Widget* wgt, void* idx)
 	This->btn_R2TA0->do_callback();
 }
 
-void ControlPanel::idle(void *idx)
+void ControlPanel::idle(void* idx)
 {
-	ControlPanel *This = (ControlPanel *)idx;
+	ControlPanel* This = (ControlPanel*)idx;
 
-	if( This->acnt_inc ){
+	if (This->acnt >= This->vs_xmang1->maximum()) {
+		This->acnt_inc = false;
+	}
+	if (This->acnt <= This->vs_xmang1->minimum()) {
+		This->acnt_inc = true;
+	}
+
+	if (This->acnt_inc) {
 		This->acnt++;
-	} else {
+	}
+	else {
 		This->acnt--;
 	}
 	Sleep(1);
 
 	//printf("acnt=%d\n", This->acnt);
-	This->vs_xmang1->value( This->acnt );
+	This->vs_xmang1->value(This->acnt);
 	This->vs_xmang1->do_callback();
-	//This->btn_optmat->do_callback();
+
 	printf( "average gap = %f\n", This->ppm.avetgap );
 }
 
