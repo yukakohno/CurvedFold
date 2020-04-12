@@ -15,6 +15,7 @@ void ControlPanel::cb_btn_optfold(Fl_Widget* wgt, void* idx)
 		ppm->optMat(CMODE_B); // B: Ü‚èü‚ÆÜ‚èŠp“x‚©‚çA3D‹Èü‚ð‹‚ß‚é
 	}
 	crease* c = &(This->ppm.crs[0]);
+	This->push_hist(c->Pcnt, CMODE_B, c->Px2d, c->Py2d, c->Px, c->Py, c->Pz, c->Pa, c->Pbl, c->Pbr, c->m3);
 
 	This->gwin->redraw();
 	This->gwin_cp->redraw();
@@ -64,6 +65,7 @@ void ControlPanel::cb_btn_optfold2(Fl_Widget* wgt, void* idx)
 		This->vs_xmang1->value(minval);
 		This->btn_R2TA0->do_callback();
 	}
+	This->push_hist(c->Pcnt, CMODE_R, c->Px2d, c->Py2d, c->Px, c->Py, c->Pz, c->Pa, c->Pbl, c->Pbr, c->m3);
 }
 
 void ControlPanel::cb_btn_opttr(Fl_Widget *wgt, void *idx)

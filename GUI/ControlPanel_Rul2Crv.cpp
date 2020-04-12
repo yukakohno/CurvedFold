@@ -38,6 +38,7 @@ void ControlPanel::cb_btn_R2TA0(Fl_Widget *wgt, void *idx)
 			This->acnt_inc = true;
 #endif
 		}
+		This->push_hist(c->Pcnt, CMODE_R, c->Px2d, c->Py2d, c->Px, c->Py, c->Pz, c->Pa, c->Pbl, c->Pbr, c->m3);
 	}
 }
 

@@ -29,6 +29,8 @@
 #define TEXWIDTH  256	// texture width
 #define TEXHEIGHT 256	// texture height
 
+#define MAX_HISTORY 100
+
 //#define EVERYOTHER	// ruling ‚ð‚P–{‚¨‚«‚É•\Ž¦
 
 #ifndef CPANEL
@@ -194,14 +196,35 @@ private:
 
 	// ------------------------- OPTIMIZATION --------------------------------------
 public:
-	Fl_Button *btn_optfold;
+	Fl_Button* btn_optfold;
 	Fl_Button* btn_optfold2;
-	Fl_Button *btn_opttr;
+	Fl_Button* btn_opttr;
 
 private:
-	static void cb_btn_optfold(Fl_Widget *wgt, void *idx);
+	static void cb_btn_optfold(Fl_Widget* wgt, void* idx);
 	static void cb_btn_optfold2(Fl_Widget* wgt, void* idx);
-	static void cb_btn_opttr(Fl_Widget *wgt, void *idx);
+	static void cb_btn_opttr(Fl_Widget* wgt, void* idx);
+	// ------------------------- HISTORY --------------------------------------
+public:
+	Fl_Check_Button* cb_history;
+	Fl_Value_Slider* vs_history;
+
+private:
+	static void cb_vs_history(Fl_Widget* wgt, void* idx);
+
+	int hist_head, hist_size;
+	int hist_mode[MAX_HISTORY], hist_cpcnt[MAX_HISTORY];
+	double histPx2d[MAX_HISTORY][MAX_CPCNT], histPy2d[MAX_HISTORY][MAX_CPCNT];
+	double histPx[MAX_HISTORY][MAX_CPCNT], histPy[MAX_HISTORY][MAX_CPCNT], histPz[MAX_HISTORY][MAX_CPCNT];
+	double histPa[MAX_HISTORY][MAX_CPCNT];
+	double histPbl[MAX_HISTORY][MAX_CPCNT], histPbr[MAX_HISTORY][MAX_CPCNT];
+	double hist_m3[MAX_HISTORY][16];
+	int push_hist(int cpcnt, int mode, double* Px2d, double* Py2d,
+		double* Px, double* Py, double* Pz,
+		double* Pa, double* Pbl, double* Pbr, double* _m3);
+	int access_hist(int idx, int* cpcnt, int* mode, double* Px2d, double* Py2d,
+		double* Px, double* Py, double* Pz,
+		double* Pa, double* Pbl, double* Pbr, double* _m3);
 
 	// ------------------------- RECTIFY -------------------------------------------
 public:

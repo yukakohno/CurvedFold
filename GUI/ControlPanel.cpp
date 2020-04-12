@@ -34,6 +34,7 @@ ControlPanel::ControlPanel(int X, int Y, int W, int H, const char *L, GraphWindo
 	fcnt = acnt = 0;
 	acnt_inc = true;
 	flg_idle_active = false;
+	hist_head = hist_size = 0;
 
 	sprintf( filepath, "./input/" );
 
@@ -199,6 +200,7 @@ void ControlPanel::refresh(int init)
 			}
 			break;
 	}
+	this->push_hist(_c->Pcnt, mode, _c->Px2d, _c->Py2d, _c->Px, _c->Py, _c->Pz, _c->Pa, _c->Pbl, _c->Pbr, _c->m3);
 	this->gwin->ppm = &(this->ppm);
 	this->gwin->redraw();
 	this->gwin_cp->redraw();
@@ -862,6 +864,23 @@ void ControlPanel::createPanel()
 
 		wgt_x = 10;
 		wgt_y += 25;
+
+		// ------------------------- HISTORY -------------------------------------------
+
+		Fl_Box* bx_Hist = new Fl_Box(0, wgt_y, g->w(), 20, "--- HISTORY ---");	wgt_y += 20;
+
+		cb_history = new Fl_Check_Button(wgt_x, wgt_y, 20, 20, "history");
+		cb_history->value(1);
+		g->add(cb_history);
+
+		wgt_y += 25;
+
+		vs_history = new Fl_Value_Slider(wgt_x, wgt_y, 180, 20);
+		vs_history->bounds(0, MAX_HISTORY-1);	vs_history->step(1);	vs_history->value(0);
+		vs_history->align(FL_ALIGN_LEFT);
+		vs_history->type(FL_HORIZONTAL);
+		vs_history->callback(cb_vs_history, (void*)this);
+		g->add(vs_history);
 
 	}
 	g->end();
