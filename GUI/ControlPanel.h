@@ -195,10 +195,12 @@ private:
 	// ------------------------- OPTIMIZATION --------------------------------------
 public:
 	Fl_Button *btn_optfold;
+	Fl_Button* btn_optfold2;
 	Fl_Button *btn_opttr;
 
 private:
 	static void cb_btn_optfold(Fl_Widget *wgt, void *idx);
+	static void cb_btn_optfold2(Fl_Widget* wgt, void* idx);
 	static void cb_btn_opttr(Fl_Widget *wgt, void *idx);
 
 	// ------------------------- RECTIFY -------------------------------------------

@@ -848,6 +848,10 @@ void ControlPanel::createPanel()
 		btn_optfold->callback(cb_btn_optfold, (void*)this);
 		g->add(btn_optfold);
 
+		btn_optfold2 = new Fl_Button(wgt_x, wgt_y, 120, 20, "Angle(FixRuling)");	wgt_x += 40;
+		btn_optfold2->callback(cb_btn_optfold2, (void*)this);
+		g->add(btn_optfold2);
+
 		wgt_x = 10;
 		wgt_y += 25;
 
