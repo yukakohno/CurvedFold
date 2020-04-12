@@ -257,6 +257,7 @@ void ControlPanel::createPanel()
 
 			btn_loadtpt = new Fl_Button(wgt_x+90, wgt_y, 45, 20, "tpt");
 			btn_loadtpt->callback(cb_btn_loadtpt, (void*)this);
+			fc_tpt = new Fl_File_Chooser(RECDIR, "({target}*.{txt})", Fl_File_Chooser::SINGLE, "Fl_File_Chooser");
 			g->add(btn_loadtpt);
 
 			btn_loadrul = new Fl_Button(wgt_x+135, wgt_y, 45, 20, "rul");

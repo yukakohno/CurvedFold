@@ -426,10 +426,23 @@ void ControlPanel::cb_btn_saverul( Fl_Widget *wgt, void *idx )
 
 void ControlPanel::cb_btn_loadtpt( Fl_Widget *wgt, void *idx)
 {
-	ControlPanel *This = (ControlPanel *)idx;
-	papermodel *ppm = &(This->ppm);
-	ppm->loadTgt("input/target.txt");
+	ControlPanel* This = (ControlPanel*)idx;
+	papermodel* ppm = &(This->ppm);
+	Fl_File_Chooser* fc = This->fc_tpt;
+
+	fc->show();
+
+	while (fc->visible())
+		Fl::wait();
+
+	if (fc->count() > 0)
+	{
+		char fname[1024];
+		strcpy(fname, fc->value());
+		ppm->loadTgt(fname);
 	This->gwin->redraw();
+		This->gwin_cp->redraw();
+	}
 }
 
 void ControlPanel::cb_btn_savetpt( Fl_Widget *wgt, void *idx)

@@ -75,6 +75,7 @@ public:
 	Fl_File_Chooser *fc;
 	Fl_Button *btn_loadtex;
 	Fl_Button *btn_loadtpt;
+	Fl_File_Chooser* fc_tpt;
 	Fl_Button *btn_loadrul;
 	Fl_Button *btn_savelog;
 	Fl_Button *btn_savescreen;
