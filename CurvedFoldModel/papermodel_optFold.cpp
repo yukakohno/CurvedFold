@@ -138,7 +138,7 @@ int papermodel::getTgt2D3D()
 			}
 		}
 		if( !flg ){
-			printf("ogx[%d] = ogy[%d] = ogz[%d] = 0.0\n", i,i,i );
+			//printf("ogx[%d] = ogy[%d] = ogz[%d] = 0.0\n", i,i,i );
 			ogx[i] = ogy[i] = ogz[i] = 0.0;
 		} else {
 //			double dx = tgx[i] - ogx[i];
@@ -536,6 +536,11 @@ int papermodel::checkRulCreaseCross()
 int papermodel::optMat( int mode )
 {
 	int ret=0;
+
+	if (tgcnt == 0) {
+		std::cout << "no target point." << std::endl;
+		return -1;
+	}
 
 	double tgx0[MAX_TGT_CNT], tgy0[MAX_TGT_CNT], tgz0[MAX_TGT_CNT];
 	double ogx0[MAX_TGT_CNT], ogy0[MAX_TGT_CNT], ogz0[MAX_TGT_CNT];
