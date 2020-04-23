@@ -45,7 +45,7 @@ void ControlPanel::cb_btn_optfold2(Fl_Widget* wgt, void* idx)
 		double mang = val / 180.0 * M_PI;
 		ppm->re_sidx = 0;
 		ppm->re_eidx = c->Xcnt;
-		int ret = c->calcR_TA(1/*flg_interpolate*/, &ppm->rp, ppm->re_sidx, ppm->re_eidx, mang);
+		int ret = c->calcR_TA(1/*flg_interpolate*/, &ppm->rp, ppm->re_sidx, ppm->re_eidx, mang, 0);
 
 		if (ret == 0) {
 			ppm->set_postproc_type(PPTYPE_PRICURVE);

@@ -84,7 +84,7 @@ int crease::calcCPX_A( int flg_interpolate, rectify_params *rp )
 	return 0;
 }
 
-int crease::calcR_TA( int flg_interpolate, rectify_params *rp, int mini, int maxi, double malpha )
+int crease::calcR_TA( int flg_interpolate, rectify_params *rp, int mini, int maxi, double malpha, int retry_mode)
 {
 	int ret = 0;
 	if( flg_interpolate ){
@@ -103,13 +103,14 @@ int crease::calcR_TA( int flg_interpolate, rectify_params *rp, int mini, int max
 		int m = (maxi+mini)/2;
 		alpha[m]=malpha;
 	}
-	ret = calcRul2TA( 1, mini, maxi );	// Br, Bl -> tr,alpha
-	if( rp->flg_rectifyA ){ rectifyAlphaBezier( &rp->rectA ); }
+	ret = calcRul2TA( retry_mode, mini, maxi );	// Br, Bl -> tr,
+	if (ret == 0) {
+		if (rp->flg_rectifyA) { rectifyAlphaBezier(&rp->rectA); }
 	calcAK2D_K();				// alpha, k2d -> kv
-	if( rp->flg_rectifyT ){ rectifyTauBezier2( &rp->rectT ); }
-	calcXTNB( m3 );				// kv,tr -> X -> calcTNB();
+		if (rp->flg_rectifyT) { rectifyTauBezier2(&rp->rectT); }
+		calcXTNB(m3);				// kv,tr -> X -> calcTNB();
 	calcDA();
-	calcRuling( rp->flg_rectifyR, rp->rectifyR_kvthres );
+		calcRuling(rp->flg_rectifyR, rp->rectifyR_kvthres);
 
 	setP_k(-1);
 	setP_t(-1);
@@ -117,45 +118,7 @@ int crease::calcR_TA( int flg_interpolate, rectify_params *rp, int mini, int max
 	setP_a(-1);
 	//setP_Bl(-1);
 	//setP_Br(-1);
-
+	}
 	return ret;
 }
 
-int crease::calcR_TA2( rectify_params *rp,
-					  int mini, int maxi )
-{
-#if 0
-	memset(fileioflg,0,sizeof(int)*30);
-	fileioflg[D2] = 1;
-	fileioflg[K2] = 1;
-	fileioflg[D3] = 1;
-	fileioflg[K3] = 1;
-	fileioflg[T3] = 1;
-	fileioflg[ALPHA] = 1;
-	fileioflg[DA] = 1;
-	fileioflg[BETA] = 1;
-	dumpAll( "output/0.csv" );
-#endif
-	//calcXTN2d( m2 );			// k2d -> X2d -> calcTN2d();	// Ü‚èü‚Í•Ï‚¦‚È‚¢
-	calcRul2TA( 1, mini, maxi );	// Br, Bl -> tr,alpha
-	//dumpAll( "output/1.csv" );
-	if( rp->flg_rectifyA ){ rectifyAlphaBezier( &rp->rectA ); }
-	calcAK2D_K();				// alpha, k2d -> kv
-	//dumpAll( "output/2.csv" );
-	if( rp->flg_rectifyT ){ rectifyTauBezier2( &rp->rectT ); }
-	calcXTNB( m3 );				// kv,tr -> X -> calcTNB();
-	//dumpAll( "output/3.csv" );
-	calcDA();
-	//dumpAll( "output/4.csv" );
-	calcRuling( rp->flg_rectifyR, rp->rectifyR_kvthres );
-	//dumpAll( "output/5.csv" );
-
-	setP_k(-1);
-	setP_t(-1);
-	//setP_k2(-1);
-	setP_a(-1);
-	//setP_Bl(-1);
-	//setP_Br(-1);
-
-	return 0;
-}

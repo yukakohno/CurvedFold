@@ -198,7 +198,7 @@ void ControlPanel::refresh(int init)
 			break;
 		case CMODE_R:	// ruling angle -> torsion, alpha -> 3D‹ÈüAÜ‚èŠp“x
 			if( prm==P_RULL || prm==P_RULR ){ // Ruling Left, Ruling Right
-				_c->calcR_TA( 0/*flg_interpolate*/, &_ppm->rp, -1, -1, 2*M_PI );
+				_c->calcR_TA( 0/*flg_interpolate*/, &_ppm->rp, -1, -1, 2*M_PI, 2 );
 				_ppm->postproc();
 			}
 			break;

@@ -225,9 +225,14 @@ end:
 //#define MAX_ALPHA 85.0/180.0*M_PI
 
 // crease->tr,alpha算出
-int crease::calcRul2TA( int besteffort, int mini, int maxi )
+int crease::calcRul2TA( int retry_mode,	int mini, int maxi )
+// retry_mode
+// 0: quit and return ret!=0 
+// 1: use same alpha and torsion at the edge, return ret!=0
+// 2: change alpha and retry
+// return 0: OK, -1/-2: NG
 {
-	int i, m=Xcnt/2, flg, ret=0;
+	int i, m=Xcnt/2, flg=0, ret=0;
 	double datana[MAX_SPCNT], ttana[MAX_SPCNT], alpha_[MAX_SPCNT], da_[MAX_SPCNT], tr_[MAX_SPCNT];
 	double tan_a, minalpha, maxalpha;
 
@@ -266,38 +271,40 @@ int crease::calcRul2TA( int besteffort, int mini, int maxi )
 				break;
 			case -1:
 				alpha_[m] -= DIF_ALPHA;
-				if( alpha_[m]<minalpha ){
-					printf( " alpha_[m=%d] = %f < minalpha()\n", m, alpha_[m], minalpha );
-				} else {
+				if( alpha_[m]>=minalpha ){
 					//printf( " alpha_[m=%d] = %f\n", m, alpha_[m] );
 					flg = 0;
+				} else {
+					//printf( " alpha_[m=%d] = %f < minalpha()\n", m, alpha_[m], minalpha );
 				}
 				break;
 			case -2:
 				alpha_[m] += DIF_ALPHA;
-				if( alpha_[m]>maxalpha ){
-					printf( " alpha_[m=%d] = %f > maxalpha()\n", m, alpha_[m], maxalpha );
-				} else {
+				if( alpha_[m]<maxalpha ){
 					//printf( " alpha_[m=%d] = %f\n", m, alpha_[m] );
 					flg = 0;
+				} else {
+					//printf( " alpha_[m=%d] = %f > maxalpha()\n", m, alpha_[m], maxalpha );
 				}
 				break;
 		}
 		if( flg!=0 ){
-			ret = 1;
+			ret = flg;
 			break; // for(c)
 		}
+
 		tan_a = tan(alpha_[m]);
 		da_[m] = datana[m]*tan_a;
 		tr_[m] = ttana[m]*tan_a;
 
+		// set range [mini, m-1]
 		for( i=m-1; i>=mini; i-- ){
 			alpha_[i] = alpha_[i+1] - da_[i+1]*XspcOrg;
 			if( alpha_[i] >= maxalpha ){
-				printf( " alpha_[%d] = %f >= maxalpha(%f)\n", i, alpha_[i], maxalpha );
+				//printf( " alpha_[%d] = %f >= maxalpha(%f)\n", i, alpha_[i], maxalpha );
 				flg = -1;	break; // for(i)
 			} else if( alpha_[i] < minalpha ){
-				printf( " alpha_[%d] = %f < minalpha(%f)\n", i, alpha_[i], minalpha );
+				//printf( " alpha_[%d] = %f < minalpha(%f)\n", i, alpha_[i], minalpha );
 				flg = -2;	break; // for(i)
 			} else {
 				tan_a = tan(alpha_[i]);
@@ -306,27 +313,36 @@ int crease::calcRul2TA( int besteffort, int mini, int maxi )
 			}
 		}
 		if( flg<0 ){
-			if( besteffort ){
-				// とりあえず同じ値で埋める
-				int ii = i+1;
-				for( ; i>=mini; i-- ){
+			// 0: quit and return ret!=0
+			if (retry_mode == 0) {
+				ret = flg;
+				break; // for(c)
+			}
+			// 1: use same alpha and torsion at the edge, return ret!=0
+			if (retry_mode == 1) {
+				int ii = i + 1;
+				for (; i >= mini; i--) {
 					alpha_[i] = alpha_[ii];
 					da_[i] = 0;
 					tr_[i] = tr_[ii];
 				}
 				ret = flg;
 				flg = 0;
-			} else {
-				continue; // for(c) alpha[m]修正してリトライ
+			}
+			// 2: change alpha and retry
+			if (retry_mode == 2) {
+				continue; // for(c)
 			}
 		}
+
+		// set range [m+1, maxi]
 		for( i=m+1; i<maxi; i++ ){
 			alpha_[i] = alpha_[i-1] + da_[i-1]*XspcOrg;
 			if( alpha_[i] >= maxalpha ){
-				printf( " alpha_[%d] = %f >= maxalpha(%f)\n", i, alpha_[i], maxalpha );
+				//printf( " alpha_[%d] = %f >= maxalpha(%f)\n", i, alpha_[i], maxalpha );
 				flg = -1;	break; // for(i)
 			} else if( alpha_[i] < minalpha ){
-				printf( " alpha_[%d] = %f < minalpha(%f)\n", i, alpha_[i], minalpha );
+				//printf( " alpha_[%d] = %f < minalpha(%f)\n", i, alpha_[i], minalpha );
 				flg = -2;	break; // for(i)
 			} else {
 				tan_a = tan(alpha_[i]);
@@ -335,33 +351,27 @@ int crease::calcRul2TA( int besteffort, int mini, int maxi )
 			}
 		}
 		if( flg<0 ){
-			if( besteffort ){
-				// とりあえず同じ値で埋める
-				int ii = i-1;
-				for( ; i<mini; i++ ){
+			// 0: quit and return ret!=0
+			if (retry_mode == 0) {
+				ret = flg;
+				break; // for(c)
+			}
+			// 1: use same alpha and torsion at the edge, return ret!=0
+			if (retry_mode == 1) {
+				int ii = i - 1;
+				for (; i < maxi; i++) {
 					alpha_[i] = alpha_[ii];
 					da_[i] = 0;
 					tr_[i] = tr_[ii];
 				}
 				ret = flg;
 				flg = 0;
-			} else {
-				continue; // for(c) alpha[m]修正してリトライ
+				break; // for(c)
 			}
-		}
-		if( flg==0 ){
-			// とりあえず同じ値で埋める
-			for( i=mini; i>=0; i-- ){
-				alpha_[i] = alpha_[mini];
-				da_[i] = 0;
-				tr_[i] = tr_[mini];
+			// 2: change alpha and retry
+			if (retry_mode == 2) {
+				continue; // for(c)
 			}
-			for( i=maxi; i<Xcnt; i++ ){
-				alpha_[i] = alpha_[maxi-1];
-				da_[i] = 0;
-				tr_[i] = tr_[maxi-1];
-			}
-			break; // for(c) 
 		}
 	}
 
@@ -379,11 +389,24 @@ int crease::calcRul2TA( int besteffort, int mini, int maxi )
 	}
 #endif
 	if( flg==0 ){
+		// set outside of the range [mini, maxi]
+		// とりあえず同じ値で埋める
+		for (i = mini; i >= 0; i--) {
+			alpha_[i] = alpha_[mini];
+			da_[i] = 0;
+			tr_[i] = tr_[mini];
+		}
+		for (i = maxi; i < Xcnt; i++) {
+			alpha_[i] = alpha_[maxi - 1];
+			da_[i] = 0;
+			tr_[i] = tr_[maxi - 1];
+		}
 		memcpy( alpha, alpha_, sizeof(double)*MAX_SPCNT );
 		memcpy( da, da_, sizeof(double)*MAX_SPCNT );
 		memcpy( tr, tr_, sizeof(double)*MAX_SPCNT );
 	} else {
-		printf("crease::calcRul2TA(): using original parameters\n");
+		//printf("crease::calcRul2TA(): using original parameters\n");
+		ret = flg;
 	}
 #if 0
 	FILE *fp = fopen("output/Rul2TA.csv","w");

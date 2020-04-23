@@ -562,7 +562,7 @@ int papermodel::optMat( int mode )
 		case 0/*CMODE_A*/:	crs[0].calcXA_CP( 1/*flg_interpolate*/, &rp );	break;
 		case 1/*CMODE_B*/:	crs[0].calcCPA_X( 1/*flg_interpolate*/, &rp );	break;
 		case 2/*CMODE_C*/:	crs[0].calcCPX_A( 1/*flg_interpolate*/, &rp );	break;
-		case 3/*CMODE_R*/:	crs[0].calcR_TA( 0/*flg_interpolate*/, &rp, -1, -1, 2*M_PI );	break;
+		case 3/*CMODE_R*/:	crs[0].calcR_TA( 0/*flg_interpolate*/, &rp, -1, -1, 2*M_PI, 0 );	break;
 	}
 	set_postproc_type( PPTYPE_PRICURVE );
 	postproc();

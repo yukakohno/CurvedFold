@@ -18,7 +18,7 @@ void ControlPanel::cb_btn_R2TA0(Fl_Widget *wgt, void *idx)
 
 		ppm->re_sidx = 0;
 		ppm->re_eidx = c->Xcnt;
-		int ret = c->calcR_TA( 1/*flg_interpolate*/, &ppm->rp, ppm->re_sidx, ppm->re_eidx, mang );
+		int ret = c->calcR_TA( 1/*flg_interpolate*/, &ppm->rp, ppm->re_sidx, ppm->re_eidx, mang, 0 );
 
 		if( ret==0 ){
 			ppm->set_postproc_type( PPTYPE_PRICURVE );

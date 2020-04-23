@@ -39,7 +39,7 @@ void ControlPanel::cb_vs_history(Fl_Widget* wgt, void* idx)
 		c->calcCPX_A(ppm->flg_interpolate, &ppm->rp);
 		break;
 	case CMODE_R:	// ruling angle -> torsion, alpha -> 3D‹ÈüAÜ‚èŠp“x
-		c->calcR_TA(ppm->flg_interpolate, &ppm->rp, -1, -1, 2 * M_PI);
+		c->calcR_TA(ppm->flg_interpolate, &ppm->rp, -1, -1, 2 * M_PI, 1);
 		break;
 	}
 	ppm->set_postproc_type(PPTYPE_PRICURVE);

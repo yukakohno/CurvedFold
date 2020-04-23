@@ -167,8 +167,7 @@ public:
 	int calcXA_CP( int flg_interpolate, rectify_params *rp );
 	int calcCPA_X( int flg_interpolate, rectify_params *rp );
 	int calcCPX_A( int flg_interpolate, rectify_params *rp );
-	int calcR_TA( int flg_interpolate, rectify_params *rp, int mini, int maxi, double ma );
-	int calcR_TA2( rectify_params *rp, int mini, int maxi ); // calcR_TA( flg_interpolate=0 ) ‚Æ“¯‚¶‚È‚Ì‚Å•sg—p
+	int calcR_TA( int flg_interpolate, rectify_params *rp, int mini, int maxi, double ma, int retry_mode );
 
 	// ------------------------- interpolate -------------------------------------------
 
@@ -221,7 +220,12 @@ public:
 	int calcAK2D_K(); // alpha, k2d -> kv
 	int calcDA(); // alpha, X -> da
 
-	int calcRul2TA( int besteffort, int mini, int maxi ); // papermodel->tr,alpha
+	int calcRul2TA( int retry_mode, int mini, int maxi ); // papermodel->tr,alpha
+	// retry_mode
+	// 0: quit and return ret<0 
+	// 1: use same alpha and torsion at the edge, return ret<0
+	// 2: change alpha and retry
+	// return 0: OK, -1/-2: NG
 
 	// ------------------------- beta -------------------------------------------
 

@@ -160,7 +160,7 @@ void ControlPanel::cb_btn_R2TA2(Fl_Widget *wgt, void *idx)
 	{
 		papermodel *ppm = &(This->ppm);
 		crease *c = &(ppm->crs[0]);
-		c->calcR_TA( 0/*flg_interpolate*/, &ppm->rp, ppm->re_sidx, ppm->re_eidx, 2*M_PI );
+		c->calcR_TA( 0/*flg_interpolate*/, &ppm->rp, ppm->re_sidx, ppm->re_eidx, 2*M_PI, 2 );
 		ppm->set_postproc_type( PPTYPE_PRICURVE );
 		ppm->postproc();
 		ppm->set_postproc_type( PPTYPE_UNDEF );
