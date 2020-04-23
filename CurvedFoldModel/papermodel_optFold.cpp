@@ -571,6 +571,57 @@ int papermodel::optMat( int mode )
 	return ret;
 }
 
+int papermodel::calcAvetgap()
+{
+	int ret = 0;
+
+	if (tgcnt == 0) {
+		std::cout << "no target point." << std::endl;
+		return -1;
+	}
+
+	double tgx0[MAX_TGT_CNT], tgy0[MAX_TGT_CNT], tgz0[MAX_TGT_CNT];
+	double ogx0[MAX_TGT_CNT], ogy0[MAX_TGT_CNT], ogz0[MAX_TGT_CNT];
+	memcpy(tgx0, tgx, sizeof(double) * tgcnt);
+	memcpy(tgy0, tgy, sizeof(double) * tgcnt);
+	memcpy(tgz0, tgz, sizeof(double) * tgcnt);
+	memcpy(ogx0, ogx, sizeof(double) * tgcnt);
+	memcpy(ogy0, ogy, sizeof(double) * tgcnt);
+	memcpy(ogz0, ogz, sizeof(double) * tgcnt);
+
+	double mat[16];
+	getMat(tgcnt, ogx0, ogy0, ogz0, tgx0, tgy0, tgz0, mat);
+
+	double dx, dy, dz, diff, diff0 = 0.0, diff1 = 0.0;
+#if 1
+	for (int i = 0; i < tgcnt; i++ ) {
+		ogx0[i] = mat[0] * ogx[i] + mat[1] * ogy[i] + mat[2] * ogz[i] + mat[3];
+		ogy0[i] = mat[4] * ogx[i] + mat[5] * ogy[i] + mat[6] * ogz[i] + mat[7];
+		ogz0[i] = mat[8] * ogx[i] + mat[9] * ogy[i] + mat[10] * ogz[i] + mat[11];
+		dx = ogx0[i] - tgx[i];
+		dy = ogy0[i] - tgy[i];
+		dz = ogz0[i] - tgz[i];
+		diff = sqrt(dx * dx + dy * dy + dz * dz);
+		diff0 += diff;
+	}
+#else
+	for (int i = 0; i < tgcnt; i++) {
+		tgx0[i] = mat[0] * tgx[i] + mat[1] * tgy[i] + mat[2] * tgz[i] + mat[3];
+		tgy0[i] = mat[4] * tgx[i] + mat[5] * tgy[i] + mat[6] * tgz[i] + mat[7];
+		tgz0[i] = mat[8] * tgx[i] + mat[9] * tgy[i] + mat[10] * tgz[i] + mat[11];
+		dx = tgx0[i] - ogx[i];
+		dy = tgy0[i] - ogy[i];
+		dz = tgz0[i] - ogz[i];
+		diff = sqrt(dx * dx + dy * dy + dz * dz);
+		diff1 += diff;
+	}
+#endif
+	//std::cout << "diff0=" << diff0/(double)tgcnt << ", diff1=" << diff1/(double)tgcnt << std::endl;
+	this->avetgap = diff0 / (double)tgcnt;
+
+	return ret;
+}
+
 int onStrip(double Xx0, double Xy0, double Xx1, double Xy1,
 	double rx0, double ry0, double rx1, double ry1,
 	double px, double py )

@@ -52,8 +52,10 @@ void ControlPanel::cb_btn_optfold2(Fl_Widget* wgt, void* idx)
 			ppm->postproc();
 			ppm->set_postproc_type(PPTYPE_UNDEF);
 			if (This->cb_optmat->value() && ppm->tgcnt > 3) {
-				ppm->optMat(CMODE_R);
+				ppm->calcAvetgap();
+				//ppm->optMat(CMODE_R);
 			}
+			//std::cout << "ppm->avetgap=" << ppm->avetgap << std::endl;
 			if (mintgap > ppm->avetgap) {
 				minval = val;
 				mintgap = ppm->avetgap;
@@ -61,11 +63,12 @@ void ControlPanel::cb_btn_optfold2(Fl_Widget* wgt, void* idx)
 		}
 	}
 	if (minval > -180) {
+		std::cout << "gap=" << mintgap << std::endl;
 		This->vs_xmang0->value(minval);
 		This->vs_xmang1->value(minval);
-		This->btn_R2TA0->do_callback();
+		This->btn_R2TA0->do_callback(); // includes This->push_hist()
 	}
-	This->push_hist(c->Pcnt, CMODE_R, c->Px2d, c->Py2d, c->Px, c->Py, c->Pz, c->Pa, c->Pbl, c->Pbr, c->m3);
+	//This->push_hist(c->Pcnt, CMODE_R, c->Px2d, c->Py2d, c->Px, c->Py, c->Pz, c->Pa, c->Pbl, c->Pbr, c->m3);
 }
 
 void ControlPanel::cb_btn_opttr(Fl_Widget *wgt, void *idx)

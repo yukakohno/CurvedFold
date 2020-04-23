@@ -188,6 +188,7 @@ public:
 	int checkRulCross();
 	int checkRulCross( double &_area );
 	int checkRulCreaseCross();
+	int calcAvetgap();
 	int optMat( int mode );
 	int optFold();
 	int optTorsion();
