@@ -45,9 +45,6 @@ void ControlPanel::cb_vs_history(Fl_Widget* wgt, void* idx)
 	ppm->set_postproc_type(PPTYPE_PRICURVE);
 	ppm->postproc();
 	ppm->set_postproc_type(PPTYPE_UNDEF);
-	//if (This->cb_optmat->value() && ppm->tgcnt > 3) {
-	//	ppm->optMat(CMODE_R);
-	//}
 
 	This->gwin->redraw();
 	This->gwin_cp->redraw();
