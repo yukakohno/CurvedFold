@@ -860,6 +860,13 @@ void ControlPanel::createPanel()
 		wgt_x = 10;
 		wgt_y += 25;
 
+		btn_optrulfold = new Fl_Button(wgt_x, wgt_y, 120, 20, "Ruling + Angle");	wgt_x += 120;
+		btn_optrulfold->callback(cb_btn_optrulfold, (void*)this);
+		g->add(btn_optrulfold);
+
+		wgt_x = 10;
+		wgt_y += 25;
+
 		btn_opttr = new Fl_Button(wgt_x, wgt_y, 40, 20, "Trsn");	wgt_x += 40;
 		btn_opttr->callback(cb_btn_opttr, (void*)this);
 		btn_opttr->deactivate();

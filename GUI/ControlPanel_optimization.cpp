@@ -82,6 +82,79 @@ void ControlPanel::cb_btn_opttr(Fl_Widget *wgt, void *idx)
 	This->gwin_cp->redraw();
 	This->gwin_gr->redraw();
 }
+void ControlPanel::cb_btn_optrulfold(Fl_Widget* wgt, void* idx)
+{
+	ControlPanel* This = (ControlPanel*)idx;
+	papermodel* ppm = &(This->ppm);
+	crease* c = &(ppm->crs[0]);
+	crease c0; memcpy(&c0, c, sizeof(crease));
+
+	if ( This->vPbl.size()==0 || This->vPbr.size()==0 ) {
+		return;
+	}
+
+	int minval = -180, minli = -1, minri = -1;
+	double mintgap = 10000;
+	int limax = This->vPbl.size() / c->Pcnt, rimax = This->vPbr.size() / c->Pcnt;
+	for (int li = 0; li < limax; li++ ) {
+	//for (int li = 300; li < limax; li+=limax) {
+		for (int i = 0; i < c->Pcnt; i++) {
+			c->Pbl[i] = This->vPbl[ li * c->Pcnt + i ];
+		}
+		for (int ri = 0; ri < rimax; ri++) {
+		//for (int ri = 300; ri < rimax; ri+=rimax) {
+			for (int i = 0; i < c->Pcnt; i++) {
+				c->Pbr[i] = This->vPbr[ ri * c->Pcnt + i ];
+			}
+			int valcnt = 0, valtotal = This->vs_xmang1->maximum() - This->vs_xmang1->minimum();
+			for (int val = This->vs_xmang1->minimum(); val < This->vs_xmang1->maximum(); val++) {
+				double mang = val / 180.0 * M_PI;
+				ppm->re_sidx = 0;
+				ppm->re_eidx = c->Xcnt;
+				int ret = c->calcR_TA(1/*flg_interpolate*/, &ppm->rp, ppm->re_sidx, ppm->re_eidx, mang, 0);
+
+				if (ret == 0) {
+					ppm->set_postproc_type(PPTYPE_PRICURVE);
+					ppm->postproc();
+					ppm->set_postproc_type(PPTYPE_UNDEF);
+					if (This->cb_optmat->value() && ppm->tgcnt > 3) {
+						ppm->calcAvetgap();
+						//ppm->optMat(CMODE_R);
+					}
+					//std::cout << "ppm->avetgap=" << ppm->avetgap << std::endl;
+					if (mintgap > ppm->avetgap) {
+						minval = val;
+						minli = li;
+						minri = ri;
+						mintgap = ppm->avetgap;
+					}
+					valcnt++;
+				}
+			}
+			std::cout << "li=" << li << "/" << limax << ", ri=" << ri << "/" << rimax
+				<< ", valcnt=" << valcnt << "/" << valtotal
+				<< ", mintgap=" << mintgap << ", minli=" << minli << ", minri=" << minri << ", minval=" << minval << std::endl;
+		}
+	}
+
+	if (minval > -180 && minli > -1 && minri > -1)
+	{
+		for (int i = 0; i < c->Pcnt; i++) {
+			c->Pbl[i] = This->vPbl[minli * c->Pcnt + i];
+		}
+		for (int i = 0; i < c->Pcnt; i++) {
+			c->Pbr[i] = This->vPbr[minri * c->Pcnt + i];
+		}
+		This->vs_xmang0->value(minval);
+		This->vs_xmang1->value(minval);
+		This->btn_R2TA0->do_callback();
+	} else {
+		memcpy(c, &c0, sizeof(crease));
+	}
+}
+
+// ------------------------- LIST RULINGS -------------------------------------------
+
 #define IPP 10
 int checkRulCross_recursive(papermodel *ppm, crease* c, int pidx, int rl, int *cnt, std::vector<double>& vPb)
 {

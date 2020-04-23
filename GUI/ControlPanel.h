@@ -202,6 +202,7 @@ public:
 	Fl_Button* btn_opttr;
 	Fl_Button* btn_optrul;
 	Fl_Button* btn_optcp;
+	Fl_Button* btn_optrulfold;
 
 private:
 	static void cb_btn_optfold(Fl_Widget* wgt, void* idx);
@@ -209,6 +210,7 @@ private:
 	static void cb_btn_opttr(Fl_Widget* wgt, void* idx);
 	static void cb_btn_optrul(Fl_Widget* wgt, void* idx);
 	static void cb_btn_optcp(Fl_Widget* wgt, void* idx);
+	static void cb_btn_optrulfold(Fl_Widget* wgt, void* idx);
 
 	// ------------------------- LIST RULINGS --------------------------------------
 public:
