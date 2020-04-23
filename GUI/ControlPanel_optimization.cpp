@@ -35,7 +35,7 @@ void ControlPanel::cb_btn_optfold2(Fl_Widget* wgt, void* idx)
 		return;
 	}
 
-	int minval=-1;
+	int minval=-180;
 	double mintgap = 10000;
 	for (int val = This->vs_xmang1->minimum(); val < This->vs_xmang1->maximum(); val++)
 	{
@@ -60,7 +60,7 @@ void ControlPanel::cb_btn_optfold2(Fl_Widget* wgt, void* idx)
 			}
 		}
 	}
-	if (minval > -1) {
+	if (minval > -180) {
 		This->vs_xmang0->value(minval);
 		This->vs_xmang1->value(minval);
 		This->btn_R2TA0->do_callback();
