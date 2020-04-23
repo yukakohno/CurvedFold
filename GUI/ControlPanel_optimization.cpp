@@ -170,10 +170,6 @@ int checkRulCross_recursive(papermodel *ppm, crease* c, int pidx, int rl, int *c
 			Pb[pidx] = (double)i / 180.0 * M_PI;
 
 			idx_crossing = checkRulCross_recursive(ppm, c, pidx + 1, rl, cnt, vPb);
-
-			if ( idx_crossing < (double)pidx/(double)c->Pcnt * (double)c->Xcnt ) {
-				break;
-			}
 			if ( idx_crossing > -1 ) {
 				continue;
 			}
@@ -190,12 +186,15 @@ void ControlPanel::cb_btn_makelist(Fl_Widget* wgt, void* idx)
 	crease c; memcpy(&c, _c, sizeof(crease));
 	int idx_crossing = -1, lcnt=0, rcnt=0;
 
-	idx_crossing = checkRulCross_recursive( ppm, &c, 0, -1, &lcnt, This->vPbl);
-	std::cout << "vPbl->size = " << This->vPbl.size() << ", " << This->vPbl.size()/c.Pcnt << std::endl;
-
-	//idx_crossing = checkRulCross_recursive( ppm, &c, 0, 1, &rcnt, This->vPbr);
-	//std::cout << "vPbr->size = " << This->vPbr.size() << ", " << This->vPbr.size()/c.Pcnt << std::endl;
-
+	if (This->rb_listleft->value() != 0) {
+		This->vPbl.clear();
+		idx_crossing = checkRulCross_recursive(ppm, &c, 0, -1, &lcnt, This->vPbl);
+		std::cout << "vPbl->size = " << This->vPbl.size() << ", " << This->vPbl.size() / c.Pcnt << std::endl;
+	} else {
+		This->vPbr.clear();
+		idx_crossing = checkRulCross_recursive(ppm, &c, 0, 1, &rcnt, This->vPbr);
+		std::cout << "vPbr->size = " << This->vPbr.size() << ", " << This->vPbr.size() / c.Pcnt << std::endl;
+	}
 }
 
 void ControlPanel::idlerul(void* idx)
@@ -203,8 +202,10 @@ void ControlPanel::idlerul(void* idx)
 	ControlPanel* This = (ControlPanel*)idx;
 	papermodel* ppm = &(This->ppm);
 	crease* c = &(ppm->crs[0]);
-#if 1
-	if (This->idlerul_idx >= This->vPbl.size()/ c->Pcnt) {
+
+	if (This->rb_listleft->value() != 0) {
+
+		if (This->idlerul_idx >= This->vPbl.size() / c->Pcnt) {
 		This->idlerul_idx = 0;
 	}
 #if 0
@@ -224,7 +225,7 @@ void ControlPanel::idlerul(void* idx)
 		normalize_v2(&(c->rlx_cp[j]), &(c->rly_cp[j]));
 		c->rllen[j] = ppm->pw * ppm->ph;
 	}
-#else
+	} else {
 	if (This->idlerul_idx >= This->vPbr.size() / c->Pcnt) {
 		This->idlerul_idx = 0;
 	}
@@ -245,7 +246,7 @@ void ControlPanel::idlerul(void* idx)
 		normalize_v2(&(c->rrx_cp[j]), &(c->rry_cp[j]));
 		c->rrlen[j] = ppm->pw * ppm->ph;
 	}
-#endif
+	}
 	c->calcRLenP(ppm->psx, ppm->psy, ppm->pex, ppm->pey);		// ruling’·‚³C³i˜güA‹Èü‚Ü‚Å‚Ì’·‚³—Dæj
 
 	This->gwin_cp->redraw();

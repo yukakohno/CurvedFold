@@ -849,13 +849,13 @@ void ControlPanel::createPanel()
 
 		Fl_Box* bx_Opt = new Fl_Box(0, wgt_y, g->w(), 20, "--- OPTIMIZATION ---");	wgt_y += 20;
 
+		btn_optfold2 = new Fl_Button(wgt_x, wgt_y, 120, 20, "Ruling(Fix) + Angle");	wgt_x += 120;
+		btn_optfold2->callback(cb_btn_optfold2, (void*)this);
+		g->add(btn_optfold2);
+
 		btn_optfold = new Fl_Button(wgt_x, wgt_y, 40, 20, "Angle");	wgt_x += 40;
 		btn_optfold->callback(cb_btn_optfold, (void*)this);
 		g->add(btn_optfold);
-
-		btn_optfold2 = new Fl_Button(wgt_x, wgt_y, 120, 20, "Angle(FixRuling)");	wgt_x += 40;
-		btn_optfold2->callback(cb_btn_optfold2, (void*)this);
-		g->add(btn_optfold2);
 
 		wgt_x = 10;
 		wgt_y += 25;
@@ -867,6 +867,10 @@ void ControlPanel::createPanel()
 
 		wgt_x = 10;
 		wgt_y += 25;
+
+		// ------------------------- LIST RULINGS -------------------------------------------
+
+		Fl_Box* bx_ListRul = new Fl_Box(0, wgt_y, g->w(), 20, "--- LIST RULINGS ---");	wgt_y += 20;
 
 		btn_startrul = new Fl_Button(wgt_x, wgt_y, 60, 20, "start");	wgt_x += 70;
 		btn_startrul->callback(cb_btn_startrul, (void*)this);
@@ -881,6 +885,19 @@ void ControlPanel::createPanel()
 		g->add(btn_makelist);
 
 		wgt_x = 10;
+		wgt_y += 25;
+
+		grp_list = new Fl_Group(0, wgt_y, g->w(), y_space);
+		rb_listleft = new Fl_Round_Button(wgt_x, wgt_y, 50, y_space, "left");
+		rb_listright = new Fl_Round_Button(wgt_x + 50, wgt_y, 50, y_space, "right");
+		rb_listleft->type(FL_RADIO_BUTTON);
+		rb_listright->type(FL_RADIO_BUTTON);
+		rb_listleft->setonly();
+		grp_list->add(rb_listleft);
+		grp_list->add(rb_listright);
+		grp_list->end();
+		g->add(grp_list);
+
 		wgt_y += 25;
 
 		// ------------------------- HISTORY -------------------------------------------

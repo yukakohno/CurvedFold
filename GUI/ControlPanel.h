@@ -200,9 +200,25 @@ public:
 	Fl_Button* btn_optfold;
 	Fl_Button* btn_optfold2;
 	Fl_Button* btn_opttr;
+	Fl_Button* btn_optrul;
+	Fl_Button* btn_optcp;
+
+private:
+	static void cb_btn_optfold(Fl_Widget* wgt, void* idx);
+	static void cb_btn_optfold2(Fl_Widget* wgt, void* idx);
+	static void cb_btn_opttr(Fl_Widget* wgt, void* idx);
+	static void cb_btn_optrul(Fl_Widget* wgt, void* idx);
+	static void cb_btn_optcp(Fl_Widget* wgt, void* idx);
+
+	// ------------------------- LIST RULINGS --------------------------------------
+public:
 	Fl_Button* btn_makelist;
 	Fl_Button* btn_startrul;
 	Fl_Button* btn_stoprul;
+
+	Fl_Group* grp_list;
+	Fl_Round_Button* rb_listleft;
+	Fl_Round_Button* rb_listright;
 
 private:
 	std::vector<double> vPbl;
@@ -210,9 +226,6 @@ private:
 	bool flg_idlerul_active;
 	int idlerul_idx;
 
-	static void cb_btn_optfold(Fl_Widget* wgt, void* idx);
-	static void cb_btn_optfold2(Fl_Widget* wgt, void* idx);
-	static void cb_btn_opttr(Fl_Widget* wgt, void* idx);
 	static void idlerul(void* idx);
 	static void cb_btn_makelist(Fl_Widget* wgt, void* idx);
 	static void cb_btn_startrul(Fl_Widget* wgt, void* idx);
