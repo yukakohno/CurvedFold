@@ -35,7 +35,10 @@ ControlPanel::ControlPanel(int X, int Y, int W, int H, const char *L, GraphWindo
 	acnt_inc = true;
 	flg_idle_active = false;
 	flg_idlerul_active = false;
+	flg_idletgt_active = false;
 	idlerul_idx = 0;
+	idletgt_idx = 0;
+	listtgcnt = 0;
 
 	hist_head = hist_size = 0;
 
@@ -905,6 +908,25 @@ void ControlPanel::createPanel()
 		grp_list->end();
 		g->add(grp_list);
 
+		wgt_y += 25;
+
+		// ------------------------- SAMPLE TARGET POINTS --------------------------------------
+
+		Fl_Box* bx_ListTgt = new Fl_Box(0, wgt_y, g->w(), 20, "--- SAMPLE TARGET POINTS ---");	wgt_y += 20;
+
+		btn_starttgt = new Fl_Button(wgt_x, wgt_y, 60, 20, "start");	wgt_x += 70;
+		btn_starttgt->callback(cb_btn_starttgt, (void*)this);
+		g->add(btn_starttgt);
+
+		btn_stoptgt = new Fl_Button(wgt_x, wgt_y, 60, 20, "stop");	wgt_x += 70;
+		btn_stoptgt->callback(cb_btn_stoptgt, (void*)this);
+		g->add(btn_stoptgt);
+
+		btn_listtgt = new Fl_Button(wgt_x, wgt_y, 40, 20, "list");
+		btn_listtgt->callback(cb_btn_listtgt, (void*)this);
+		g->add(btn_listtgt);
+
+		wgt_x = 10;
 		wgt_y += 25;
 
 		// ------------------------- HISTORY -------------------------------------------

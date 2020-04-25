@@ -233,6 +233,30 @@ private:
 	static void cb_btn_startrul(Fl_Widget* wgt, void* idx);
 	static void cb_btn_stoprul(Fl_Widget* wgt, void* idx);
 
+	// ------------------------- SAMPLE TARGET POINTS --------------------------------------
+public:
+	Fl_Button* btn_listtgt;
+	Fl_Button* btn_starttgt;
+	Fl_Button* btn_stoptgt;
+
+private:
+#define MAX_TGTLST 100
+
+	bool flg_idletgt_active;
+	int idletgt_idx;
+	int listtgcnt, tgcnt[MAX_TGTLST];
+	double tgx[MAX_TGTLST][MAX_TGT_CNT], tgy[MAX_TGTLST][MAX_TGT_CNT], tgz[MAX_TGTLST][MAX_TGT_CNT];
+	double ogx_cp[MAX_TGTLST][MAX_TGT_CNT], ogy_cp[MAX_TGTLST][MAX_TGT_CNT];
+	int tgPcnt[MAX_TGTLST];
+	double tgtPbl[MAX_TGTLST][MAX_CPCNT];
+	double tgtPbr[MAX_TGTLST][MAX_CPCNT];
+	double tgtPa[MAX_TGTLST][MAX_CPCNT];
+
+	static void idletgt(void* idx);
+	static void cb_btn_listtgt(Fl_Widget* wgt, void* idx);
+	static void cb_btn_starttgt(Fl_Widget* wgt, void* idx);
+	static void cb_btn_stoptgt(Fl_Widget* wgt, void* idx);
+
 	// ------------------------- HISTORY --------------------------------------
 public:
 	Fl_Check_Button* cb_history;

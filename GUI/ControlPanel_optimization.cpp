@@ -1,7 +1,12 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <iostream>
+#include <sstream>
+#include <iomanip>
+#include <fstream>
 #include <windows.h>
+#include <stdio.h>
+#include <time.h>
 #include "ControlPanel.h"
 #include "../CurvedFoldModel/util.h"
 
@@ -339,6 +344,12 @@ void ControlPanel::cb_btn_startrul(Fl_Widget* wgt, void* idx)
 	crease* c = &(ppm->crs[0]);
 
 	if (!This->flg_idlerul_active) {
+		if (This->rb_listleft->value() != 0 && This->vPbl.size() == 0) {
+			return;
+		}
+		if (This->rb_listright->value() != 0 && This->vPbr.size() == 0) {
+			return;
+		}
 		This->flg_idlerul_active = true;
 		Fl::add_idle(ControlPanel::idlerul, This);
 	}
@@ -353,3 +364,208 @@ void ControlPanel::cb_btn_stoprul(Fl_Widget* wgt, void* idx)
 	}
 }
 
+// ------------------------- SAMPLE TARGET POINTS --------------------------------------
+
+
+void ControlPanel::cb_btn_listtgt(Fl_Widget* wgt, void* idx)
+{
+	ControlPanel* This = (ControlPanel*)idx;
+	papermodel* ppm = &(This->ppm);
+	crease* c = &(ppm->crs[0]);
+	crease c0; memcpy(&c0, c, sizeof(crease));
+
+	srand((unsigned int)time(NULL));
+	int targetcnt = 100;
+
+	This->vPbl.clear();
+	This->vPbr.clear();
+
+	// random rulings left -> This->vPbl
+	for (int i = 0; i < 1000000; i++)
+	{
+		for (int j = 0; j < c->Pcnt; j++) {
+			c->Pbl[j] = ((double)rand() / (double)RAND_MAX) * M_PI; // [0, PI]
+		}
+		crease::interpolate_spline_RulAngle(c->Pbl, c->Pcnt, c->betal, c->Xcnt, c->cotbl, c->cosbl, c->sinbl);
+		for (int j = c->Xsidx; j <= c->Xeidx; j++) {
+			c->rlx_cp[j] = c->cosbl[j] * c->Tx2d[j] - c->sinbl[j] * c->Ty2d[j];
+			c->rly_cp[j] = c->sinbl[j] * c->Tx2d[j] + c->cosbl[j] * c->Ty2d[j];
+			normalize_v2(&(c->rlx_cp[j]), &(c->rly_cp[j]));
+			c->rllen[j] = ppm->pw * ppm->ph;
+		}
+		c->calcRLenP(ppm->psx, ppm->psy, ppm->pex, ppm->pey);		// ruling’·‚³C³i˜güA‹Èü‚Ü‚Å‚Ì’·‚³—Dæj
+		int idx_crossing = c->checkRulingCross(-1); // -1:left, 1:right
+		if (idx_crossing > -1) {
+			continue;
+		}
+		for (int k = 0; k < c->Pcnt; k++) {
+			This->vPbl.push_back(c->Pbl[k]);
+		}
+		if (This->vPbl.size() >= targetcnt * c->Pcnt) {
+			break;
+		}
+	}
+
+	// random rulings right -> This->vPbr
+	for (int i = 0; i < 1000000; i++)
+	{
+		for (int j = 0; j < c->Pcnt; j++) {
+			c->Pbr[j] = ((double)rand() / (double)RAND_MAX) * M_PI; // [0, PI]
+		}
+		crease::interpolate_spline_RulAngle(c->Pbr, c->Pcnt, c->betar, c->Xcnt, c->cotbr, c->cosbr, c->sinbr);
+		for (int j = c->Xsidx; j <= c->Xeidx; j++) {
+			c->rrx_cp[j] = c->cosbr[j] * c->Tx2d[j] + c->sinbr[j] * c->Ty2d[j];
+			c->rry_cp[j] = -c->sinbr[j] * c->Tx2d[j] + c->cosbr[j] * c->Ty2d[j];
+			normalize_v2(&(c->rrx_cp[j]), &(c->rry_cp[j]));
+			c->rrlen[j] = ppm->pw * ppm->ph;
+		}
+		c->calcRLenP(ppm->psx, ppm->psy, ppm->pex, ppm->pey);		// ruling’·‚³C³i˜güA‹Èü‚Ü‚Å‚Ì’·‚³—Dæj
+		int idx_crossing = c->checkRulingCross(1); // -1:left, 1:right
+		if (idx_crossing > -1) {
+			continue;
+		}
+		for (int k = 0; k < c->Pcnt; k++) {
+			This->vPbr.push_back(c->Pbr[k]);
+		}
+		if (This->vPbr.size() >= targetcnt * c->Pcnt) {
+			break;
+		}
+	}
+
+	This->listtgcnt = 0;
+	int cntl = (This->vPbl.size() / c->Pcnt);
+	int cntr = (This->vPbr.size() / c->Pcnt);
+	int targetcnt1 = cntl < cntr ? cntl : cntr;
+
+	// This->vPbl + This->vPbl + random folding angle -> This->tgt*
+	for (int j = 0; j < targetcnt1; j++) {
+
+		for (int i = 0; i < c->Pcnt; i++) {
+			c->Pbl[i] = This->vPbl[j * c->Pcnt + i];
+		}
+		for (int i = 0; i < c->Pcnt; i++) {
+			c->Pbr[i] = This->vPbr[j * c->Pcnt + i];
+		}
+		bool flg = false;
+		for (int i = 0; i < 1000000; i++)
+		{
+			double mang = ((double)rand() / (double)RAND_MAX - 0.5) * M_PI; // [-PI/2, PI/2]
+			ppm->re_sidx = 0;
+			ppm->re_eidx = c->Xcnt;
+			int ret = c->calcR_TA(1/*flg_interpolate*/, &ppm->rp, ppm->re_sidx, ppm->re_eidx, mang, 0);
+			if (ret == 0) {
+				flg = true;
+				break;
+			}
+		}
+		if (flg) {
+			This->tgPcnt[This->listtgcnt] = c->Pcnt;
+			memcpy(This->tgtPbl[This->listtgcnt], c->Pbl, sizeof(double) * MAX_CPCNT);
+			memcpy(This->tgtPbr[This->listtgcnt], c->Pbr, sizeof(double) * MAX_CPCNT);
+			memcpy(This->tgtPa[This->listtgcnt], c->Pa, sizeof(double) * MAX_CPCNT);
+
+			ppm->set_postproc_type(PPTYPE_PRICURVE);
+			ppm->postproc();
+			ppm->set_postproc_type(PPTYPE_UNDEF);
+
+			This->tgcnt[This->listtgcnt] = ppm->tgcnt;
+			memcpy(This->tgx[This->listtgcnt], ppm->ogx, sizeof(double) * MAX_TGT_CNT);
+			memcpy(This->tgy[This->listtgcnt], ppm->ogy, sizeof(double) * MAX_TGT_CNT);
+			memcpy(This->tgz[This->listtgcnt], ppm->ogz, sizeof(double) * MAX_TGT_CNT);
+			memcpy(This->ogx_cp[This->listtgcnt], ppm->ogx_cp, sizeof(double) * MAX_TGT_CNT);
+			memcpy(This->ogy_cp[This->listtgcnt], ppm->ogy_cp, sizeof(double) * MAX_TGT_CNT);
+
+			This->listtgcnt++;
+			std::cout << "listtgcnt=" << This->listtgcnt << std::endl;
+
+			if (This->listtgcnt >= MAX_TGTLST) {
+				break;
+			}
+		}
+	}
+#if 1
+	// file output
+	for (int i = 0; i < This->listtgcnt; i++) {
+		std::stringstream ss; ss << "./output/target" << std::setw(3) << std::setfill('0') << i << ".txt";
+		std::ofstream ofs( ss.str() );
+		for (int j = 0; j < This->tgcnt[i]; j++) {
+			ofs << This->tgx[i][j] << "\t" << This->tgy[i][j] << "\t" << This->tgz[i][j]
+				<< "\t" << This->ogx_cp[i][j] << "\t" << This->ogy_cp[i][j] << std::endl;
+		}
+		ofs.close();
+		ss.str(""); ss << "./output/rulings" << std::setw(3) << std::setfill('0') << i << ".txt";
+		ofs.open(ss.str());
+		for (int j = 0; j < This->tgPcnt[i]; j++) { ofs << This->tgtPbl[i][j] << "\t"; }
+		ofs << std::endl;
+		for (int j = 0; j < This->tgPcnt[i]; j++) { ofs << This->tgtPbr[i][j] << "\t"; }
+		ofs << std::endl;
+		ofs.close();
+	}
+#endif
+	memcpy(c, &c0, sizeof(crease));
+	ppm->set_postproc_type(PPTYPE_PRICURVE);
+	ppm->postproc();
+	ppm->set_postproc_type(PPTYPE_UNDEF);
+}
+
+void ControlPanel::idletgt(void* idx)
+{
+	ControlPanel* This = (ControlPanel*)idx;
+	papermodel* ppm = &(This->ppm);
+	crease* c = &(ppm->crs[0]);
+
+	if (This->listtgcnt==0) {
+		return;
+	}
+
+	if (This->idletgt_idx >= This->listtgcnt) {
+		This->idletgt_idx = 0;
+	}
+
+	ppm->tgcnt = This->tgcnt[This->idletgt_idx];
+	memcpy(ppm->tgx, This->tgx[This->idletgt_idx], sizeof(double)* MAX_TGT_CNT);
+	memcpy(ppm->tgy, This->tgy[This->idletgt_idx], sizeof(double) * MAX_TGT_CNT);
+	memcpy(ppm->tgz, This->tgz[This->idletgt_idx], sizeof(double) * MAX_TGT_CNT);
+	memcpy(ppm->ogx_cp, This->ogx_cp[This->idletgt_idx], sizeof(double) * MAX_TGT_CNT);
+	memcpy(ppm->ogy_cp, This->ogy_cp[This->idletgt_idx], sizeof(double) * MAX_TGT_CNT);
+	ppm->getTgt2D3D();
+#if 0
+	for (int i = 0; i < ppm->tgcnt; i++) {
+		std::cout << i << ":" << ppm->tgx[i] << "," << ppm->tgy[i] << "," << ppm->tgz[i]
+			<< "," << ppm->ogx[i] << "," << ppm->ogy[i] << "," << ppm->ogz[i]
+			<< "," << ppm->ogx_cp[i] << "," << ppm->ogy_cp[i] << std::endl;
+	}
+	std::cout << std::endl;
+#endif
+	This->btn_optfold2->do_callback();
+
+	This->gwin->redraw();
+	This->gwin_cp->redraw();
+	This->gwin_gr->redraw();
+	Sleep(1);
+
+	This->idletgt_idx++;
+}
+
+void ControlPanel::cb_btn_starttgt(Fl_Widget* wgt, void* idx)
+{
+	ControlPanel* This = (ControlPanel*)idx;
+
+	if (This->listtgcnt == 0) {
+		return;
+	}
+
+	if (!This->flg_idletgt_active) {
+		This->flg_idletgt_active = true;
+		Fl::add_idle(ControlPanel::idletgt, This);
+	}
+}
+
+void ControlPanel::cb_btn_stoptgt(Fl_Widget* wgt, void* idx)
+{
+	ControlPanel* This = (ControlPanel*)idx;
+	if (This->flg_idletgt_active) {
+		This->flg_idletgt_active = false;
+		Fl::remove_idle(ControlPanel::idletgt, This);
+	}
+}
