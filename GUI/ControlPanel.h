@@ -81,11 +81,15 @@ public:
 	Fl_File_Chooser* fc_tpt;
 	Fl_Button *btn_loadrul;
 	Fl_File_Chooser* fc_rul;
+	Fl_Button* btn_loadall;
+	Fl_File_Chooser* fc_all;
+
 	Fl_Button *btn_savelog;
 	Fl_Button *btn_savescreen;
 	//Fl_Button *btn_saveerr;
 	Fl_Button *btn_savetpt;
 	Fl_Button *btn_saverul;
+	Fl_Button* btn_saveall;
 
 private:
 	static void cb_btn_load( Fl_Widget *wgt, void *idx);
@@ -96,6 +100,8 @@ private:
 	static void cb_btn_saverul( Fl_Widget *wgt, void *idx);
 	static void cb_btn_loadtpt( Fl_Widget *wgt, void *idx);
 	static void cb_btn_savetpt( Fl_Widget *wgt, void *idx);
+	static void cb_btn_loadall(Fl_Widget* wgt, void* idx);
+	static void cb_btn_saveall(Fl_Widget* wgt, void* idx);
 
 	// ------------------------- EVALUATE -------------------------------------------
 public:

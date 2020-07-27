@@ -119,7 +119,7 @@ public:
 
 	// used in dumpAll()
 	int fileioflg[30];
-	enum{ PX2, XX2, TX2, NX2, D2, K2, PX3, XX3, TX3, NX3, BX3, D3, K3, T3, PA, ALPHA, ALPHA0, DA, PB, BETA, BETA0, R3, R2 };
+	enum{ PX3, XX3, TX3, NX3, BX3, D3, K3, T3, PX2, XX2, TX2, NX2, D2, K2, PA, ALPHA, ALPHA0, DA, PB, BETA, BETA0, R3, R2 };
 
 	crease();
 	~crease();
@@ -140,6 +140,7 @@ public:
 	int loadm2m3( char *fname );
 	int dumpm2m3( char *fname );
 	int dumpAll( char *fname );
+	int loadAll(char* fname);
 
 	int loadMotion( char *fname );	// return -1: error, 0: flg_usecp=0, 1: flg_usecp=1
 	int dumpMotion( char *fname, int flg_usecp );

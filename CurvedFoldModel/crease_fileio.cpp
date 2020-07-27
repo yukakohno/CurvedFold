@@ -301,29 +301,37 @@ int crease::dumpAll( char *fname )
 			continue;
 		}
 		switch( i ){
-			case PX2: fprintf( fp, "Px2d,Py2d,"); break;
-			case XX2: fprintf( fp, "Xx2d,Xy2d,"); break;
-			case TX2: fprintf( fp, "Tx2d,Ty2d,"); break;
-			case NX2: fprintf( fp, "Nx2d,Ny2d,"); break;
-			case D2: fprintf( fp, "d2d,"); break;
-			case K2: fprintf( fp, "k2d,"); break;
-			case PX3: fprintf( fp, "Px,Py,Pz,"); break;
-			case XX3: fprintf( fp, "Xx,Xy,Xz,"); break;
-			case TX3: fprintf( fp, "Tx,Ty,Tz,"); break;
-			case NX3: fprintf( fp, "Nx,Ny,Nz,"); break;
-			case BX3: fprintf( fp, "Bx,By,Bz,"); break;
-			case D3: fprintf( fp, "dx,"); break;
-			case K3: fprintf( fp, "kv,"); break;
-			case T3: fprintf( fp, "tr,"); break;
-			case PA: fprintf( fp, "Pz,"); break;
-			case ALPHA: fprintf( fp, "alpha,"); break;
-			case ALPHA0: fprintf( fp, "cosa,sina,tana,da,"); break;
-			case DA: fprintf( fp, "da,"); break;
-			case PB: fprintf( fp, "Pbl,Pbr,"); break;
-			case BETA: fprintf( fp, "betal, betar,"); break;
-			case BETA0: fprintf( fp, "cotbl,cotbr,cosbl,sinbl,cosbr,sinbr,"); break;
-			case R3: fprintf( fp, "rlx,rly,rlz,rrx,rry,rrz,"); break;
-			case R2: fprintf( fp, "rlx_cp,rly_cp,rrx_cp,rry_cp,"); break;
+		case PX3: fprintf(fp, "Px,Py,Pz,"); break;
+		case XX3: fprintf(fp, "Xx,Xy,Xz,"); break;
+		case TX3: fprintf(fp, "Tx,Ty,Tz,"); break;
+		case NX3: fprintf(fp, "Nx,Ny,Nz,"); break;
+		case BX3: fprintf(fp, "Bx,By,Bz,"); break;
+		case D3: fprintf(fp, "dx,"); break;
+		case K3: fprintf(fp, "kv,"); break;
+		case T3: fprintf(fp, "tr,"); break;
+
+		case PX2: fprintf(fp, "Px2d,Py2d,"); break;
+		case XX2: fprintf(fp, "Xx2d,Xy2d,"); break;
+		case TX2: fprintf(fp, "Tx2d,Ty2d,"); break;
+		case NX2: fprintf(fp, "Nx2d,Ny2d,"); break;
+		case D2: fprintf(fp, "d2d,"); break;
+		case K2: fprintf(fp, "k2d,"); break;
+
+		case PA: fprintf(fp, "Pz,"); break;
+		case ALPHA: fprintf(fp, "alpha,"); break;
+		case ALPHA0: fprintf(fp, "da,cosa,sina,tana,"); break;
+		case DA: fprintf(fp, "da,"); break;
+
+		case PB: fprintf(fp, "Pbr,Pbl,"); break;
+		case BETA: fprintf(fp, "betar, betal,"); break;
+		case BETA0:
+			//fprintf(fp, "cotbl,cotbr,cosbl,sinbl,cosbr,sinbr,");
+			fprintf(fp, "cosbr,cosbl,sinbr,sinbl,");
+			break;
+
+		case R3: fprintf(fp, "rrx,rry,rrz,rlx,rly,rlz,"); break;
+		case R2: fprintf(fp, "rrx_cp,rry_cp,rlx_cp,rly_cp,"); break;
+
 			default: break;
 		}
 	}
@@ -334,54 +342,66 @@ int crease::dumpAll( char *fname )
 			if( fileioflg[i]==0 ){ 
 				continue;
 			}
-			switch( i ){
-				case PX2:
-					if( j<Pcnt ){
-						fprintf( fp, "%f,%f,", Px2d[j], Py2d[j] );
-					} else {
-						fprintf( fp, ",,");
+			switch (i) {
+			case PX3:
+				if (j < Pcnt) {
+					fprintf(fp, "%f,%f,%f,", Px[j], Py[j], Px[j]);
+				}
+				else {
+					fprintf(fp, ",,,");
 					}
 					break;
-				case XX2: fprintf( fp, "%f,%f,", Xx2d[j], Xy2d[j] ); break;
-				case TX2: fprintf( fp, "%f,%f,", Tx2d[j], Ty2d[j] ); break;
-				case NX2: fprintf( fp, "%f,%f,", Nx2d[j], Ny2d[j] ); break;
-				case D2: fprintf( fp, "%f,", d2d[j] ); break;
-				case K2: fprintf( fp, "%f,", k2d[j] ); break;
-				case PX3:
-					if( j<Pcnt ){
-						fprintf( fp, "%f,%f,%f,", Px[j], Py[j], Px[j] );
-					} else {
-						fprintf( fp, ",,,");
+			case XX3: fprintf(fp, "%f,%f,%f,", Xx[j], Xy[j], Xz[j]); break;
+			case TX3: fprintf(fp, "%f,%f,%f,", Tx[j], Ty[j], Tz[j]); break;
+			case NX3: fprintf(fp, "%f,%f,%f,", Nx[j], Ny[j], Nz[j]); break;
+			case BX3: fprintf(fp, "%f,%f,%f,", Bx[j], By[j], Bz[j]); break;
+			case D3: fprintf(fp, "%f,", dx[j]); break;
+			case K3: fprintf(fp, "%f,", kv[j]); break;
+			case T3: fprintf(fp, "%f,", tr[j]); break;
+
+			case PX2:
+				if (j < Pcnt) {
+					fprintf(fp, "%f,%f,", Px2d[j], Py2d[j]);
+				}
+				else {
+					fprintf(fp, ",,");
 					}
 					break;
-				case XX3: fprintf( fp, "%f,%f,%f,", Xx[j], Xy[j], Xz[j] ); break;
-				case TX3: fprintf( fp, "%f,%f,%f,", Tx[j], Ty[j], Tz[j] ); break;
-				case NX3: fprintf( fp, "%f,%f,%f,", Nx[j], Ny[j], Nz[j] ); break;
-				case BX3: fprintf( fp, "%f,%f,%f,", Bx[j], By[j], Bz[j] ); break;
-				case D3: fprintf( fp, "%f,", dx[j] ); break;
-				case K3: fprintf( fp, "%f,", kv[j] ); break;
-				case T3: fprintf( fp, "%f,", tr[j] ); break;
+			case XX2: fprintf(fp, "%f,%f,", Xx2d[j], Xy2d[j]); break;
+			case TX2: fprintf(fp, "%f,%f,", Tx2d[j], Ty2d[j]); break;
+			case NX2: fprintf(fp, "%f,%f,", Nx2d[j], Ny2d[j]); break;
+			case D2: fprintf(fp, "%f,", d2d[j]); break;
+			case K2: fprintf(fp, "%f,", k2d[j]); break;
+
 				case PA:
-					if( j<Pcnt ){
-						fprintf( fp, "%f,", Pa[j] );
-					} else {
-						fprintf( fp, ",");
+				if (j < Pcnt) {
+					fprintf(fp, "%f,", Pa[j]);
+				}
+				else {
+					fprintf(fp, ",");
 					}
 					break;
-				case ALPHA: fprintf( fp, "%f,", alpha[j] ); break;
-				case ALPHA0: fprintf( fp, "%f,%f,%f,%f,", cosa[j], sina[j], tana[j], da[j] ); break;
-				case DA: fprintf( fp, "%f,", da[j] ); break;
+			case ALPHA: fprintf(fp, "%f,", alpha[j]); break;
+			case ALPHA0: fprintf(fp, "%f,%f,%f,%f,", da[j], cosa[j], sina[j], tana[j]); break;
+			case DA: fprintf(fp, "%f,", da[j]); break;
+
 				case PB:
-					if( j<Pcnt ){
-						fprintf( fp, "%f,%f,", Pbl[j], Pbr[j] );
-					} else {
-						fprintf( fp, ",,");
+				if (j < Pcnt) {
+					fprintf(fp, "%f,%f,", Pbr[j], Pbl[j]);
+				}
+				else {
+					fprintf(fp, ",,");
 					}
 					break;
-				case BETA: fprintf( fp, "%f,%f,", betal[j], betar[j] ); break;
-				case BETA0: fprintf( fp, "%f,%f,%f,%f,%f,%f,", cotbl[j], cotbr[j], cosbl[j], sinbl[j], cosbr[j], sinbr[j] ); break;
-				case R3: fprintf( fp, "%f,%f,%f,%f,%f,%f,", rlx[j], rly[j], rlz[j], rrx[j], rry[j], rrz[j] ); break;
-				case R2: fprintf( fp, "%f,%f,%f,%f,", rlx_cp[j], rly_cp[j], rrx_cp[j], rry_cp[j] ); break;
+			case BETA: fprintf(fp, "%f,%f,", betar[j], betal[j]); break;
+			case BETA0:
+				//fprintf(fp, "%f,%f,%f,%f,%f,%f,", cotbl[j], cotbr[j], cosbl[j], sinbl[j], cosbr[j], sinbr[j]);
+				fprintf(fp, "%f,%f,%f,%f,", cosbr[j], cosbl[j], sinbr[j], sinbl[j]);
+				break;
+
+			case R3: fprintf(fp, "%f,%f,%f,%f,%f,%f,", rrx[j], rry[j], rrz[j], rlx[j], rly[j], rlz[j]); break;
+			case R2: fprintf(fp, "%f,%f,%f,%f,", rrx_cp[j], rry_cp[j], rlx_cp[j], rly_cp[j]); break;
+
 				default: break;
 			}
 		}
@@ -932,3 +952,84 @@ end:
 	return ret;
 }
 #endif
+
+int crease::loadAll(char* fname)
+{
+	int cnt=0, ret=0;
+	char buf[2048], * pbuf = NULL, retbuf[2048];
+	FILE* fp = fopen(fname, "r");
+	if (fp == NULL) { ret = -1; goto end; }
+
+	fgets(buf, 1024, fp); // header
+
+	while(fgets(buf, 1024, fp)){
+		if (buf[0] == 10) { // '\n'
+			break;
+		}
+		pbuf = buf;
+		csvread(&pbuf, retbuf);	Xx[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	Xy[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	Xz[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	Tx[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	Ty[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	Tz[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	Nx[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	Ny[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	Nz[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	Bx[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	By[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	Bz[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	kv[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	tr[cnt] = atof(retbuf);
+
+		csvread(&pbuf, retbuf);	Xx2d[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	Xy2d[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	Tx2d[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	Ty2d[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	Nx2d[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	Ny2d[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	k2d[cnt] = atof(retbuf);
+
+		csvread(&pbuf, retbuf);	alpha[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	da[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	cosa[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	sina[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	tana[cnt] = atof(retbuf);
+
+		csvread(&pbuf, retbuf);	betar[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	betal[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	cosbr[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	cosbl[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	sinbr[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	sinbl[cnt] = atof(retbuf);
+
+		csvread(&pbuf, retbuf);	rrx[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	rry[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	rrz[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	rlx[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	rly[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	rlz[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	rrx_cp[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	rry_cp[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	rlx_cp[cnt] = atof(retbuf);
+		csvread(&pbuf, retbuf);	rly_cp[cnt] = atof(retbuf);
+
+/*header = ["X.x", "X.y", "X.z", "T.x", "T.y", "T.z",
+          "N.x", "N.y", "N.z", "B.x", "B.y", "B.z", "kv", "tr",
+          "X2d.x", "X2d.y", "T2d.x", "T2d.y", "N2d.x", "N2d.y", "k2d",
+          "alpha", "da", "cosa", "sina", "tana",
+          "betaR", "betaL", "cosbR", "cosbL", "sinbR", "sinbL",
+          "RulR.x", "RulR.y", "RulR.z", "RulL.x", "RulL.y", "RulL.z",
+          "RulR2d.x", "RulR2d.y", "RulL2d.x", "RulL2d.y"]
+*/
+		cnt++;
+	}
+	Xcnt = cnt;
+
+	for (int i = 0; i < Xcnt; i++) {
+		rrlen[i] = rllen[i] = maxrlen;
+	}
+
+end:
+	return ret;
+}

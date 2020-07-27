@@ -259,20 +259,29 @@ void ControlPanel::createPanel()
 			fc = new Fl_File_Chooser(RECDIR, "(*.{txt})", Fl_File_Chooser::SINGLE, "Fl_File_Chooser");
 			g->add(btn_load);
 
-			btn_loadtex = new Fl_Button(wgt_x+45, wgt_y, 45, 20, "tex");
+			btn_loadtex = new Fl_Button(wgt_x+45, wgt_y, 45, 20, "texture");
+			btn_loadtex->deactivate();
 			//btn_loadtex->callback(cb_btn_loadtex, (void*)this);
 			g->add(btn_loadtex);
 
-			btn_loadtpt = new Fl_Button(wgt_x+90, wgt_y, 45, 20, "tpt");
+			btn_loadtpt = new Fl_Button(wgt_x+90, wgt_y, 45, 20, "tgt_pt");
 			btn_loadtpt->callback(cb_btn_loadtpt, (void*)this);
 			fc_tpt = new Fl_File_Chooser(RECDIR, "({target}*.{txt})", Fl_File_Chooser::SINGLE, "Fl_File_Chooser");
 			g->add(btn_loadtpt);
 
-			btn_loadrul = new Fl_Button(wgt_x+135, wgt_y, 45, 20, "rul");
+			btn_loadrul = new Fl_Button(wgt_x+135, wgt_y, 45, 20, "rulings");
 			btn_loadrul->callback(cb_btn_loadrul, (void*)this);
 			fc_rul = new Fl_File_Chooser(RECDIR, "([rulings]*.{txt})", Fl_File_Chooser::SINGLE, "Fl_File_Chooser");
 			g->add(btn_loadrul);
 			
+			wgt_x = 10;
+			wgt_y += 20;
+
+			btn_loadall = new Fl_Button(wgt_x, wgt_y, 45, 20, "all");
+			btn_loadall->callback(cb_btn_loadall, (void*)this);
+			fc_all = new Fl_File_Chooser(RECDIR, "(*.{csv})", Fl_File_Chooser::SINGLE, "Fl_File_Chooser");
+			g->add(btn_loadall);
+
 			wgt_x = 10;
 			wgt_y += 20;
 
@@ -288,7 +297,7 @@ void ControlPanel::createPanel()
 			btn_savescreen->callback(cb_btn_savescreen, (void*)this);
 			g->add(btn_savescreen);
 
-			btn_savetpt = new Fl_Button(wgt_x+90, wgt_y, 45, 20, "tpt");
+			btn_savetpt = new Fl_Button(wgt_x+90, wgt_y, 45, 20, "tgt_pt");
 			btn_savetpt->callback(cb_btn_savetpt, (void*)this);
 			g->add(btn_savetpt);
 #if 0
@@ -296,9 +305,16 @@ void ControlPanel::createPanel()
 			btn_saveerr->callback(cb_btn_saveerr, (void*)this);
 			g->add(btn_saveerr);
 #endif
-			btn_saverul = new Fl_Button(wgt_x+135, wgt_y, 45, 20, "rul");
+			btn_saverul = new Fl_Button(wgt_x+135, wgt_y, 45, 20, "rulings");
 			btn_saverul->callback(cb_btn_saverul, (void*)this);
 			g->add(btn_saverul);
+
+			wgt_x = 10;
+			wgt_y += 20;
+
+			btn_saveall = new Fl_Button(wgt_x, wgt_y, 45, 20, "all");
+			btn_saveall->callback(cb_btn_saveall, (void*)this);
+			g->add(btn_saveall);
 
 			wgt_x = 10;
 			wgt_y += 25;

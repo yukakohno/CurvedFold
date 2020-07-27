@@ -468,3 +468,64 @@ void ControlPanel::cb_btn_savetpt( Fl_Widget *wgt, void *idx)
 	//This->gwin->redraw();
 }
 
+void ControlPanel::cb_btn_loadall(Fl_Widget* wgt, void* idx)
+{
+	ControlPanel* This = (ControlPanel*)idx;
+	GraphWindow3DCF* gwin = This->gwin;
+	Fl_File_Chooser* fc = This->fc_all;
+	char wgtlbl[256];	strcpy(wgtlbl, wgt->label());
+	int count;
+
+	fc->show();
+
+	while (fc->visible())
+		Fl::wait();
+
+	count = fc->count();
+
+	if (count > 0)
+	{
+		int sts = 0;
+		char fname[1024], fname_m2m3[1024];
+		strcpy(fname, fc->value());
+		strcpy(This->filepath, fname);
+		for (int i = strlen(This->filepath) - 2; i > 0; i--) {
+			if (This->filepath[i] == '/') {
+				This->filepath[i + 1] = 0;
+				break;
+			}
+		}
+		sprintf(fname_m2m3, "%sm2m3.txt", This->filepath);
+
+		This->ppm.crs[0].loadAll(fname);
+		This->ppm.crs[0].loadm2m3(fname_m2m3);
+
+		This->ppm.set_postproc_type(PPTYPE_OPEN);
+		This->ppm.postproc();
+		This->ppm.set_postproc_type(PPTYPE_UNDEF);
+
+		This->gwin->redraw();
+		This->gwin_cp->redraw();
+		This->gwin_gr->redraw();
+	}
+}
+
+void ControlPanel::cb_btn_saveall(Fl_Widget* wgt, void* idx)
+{
+	ControlPanel* This = (ControlPanel*)idx;
+	crease* c = &(This->ppm.crs[0]);
+
+	//	int fileioflg[30];
+	//	enum{ PX2, XX2, TX2, NX2, D2, K2, PX3, XX3, TX3, NX3, BX3, D3, K3, T3, PA, ALPHA, ALPHA0, DA, PB, BETA, BETA0, R3, R2 };
+	memset(c->fileioflg, 1, sizeof(int) * 30);
+	c->fileioflg[crease::PX2] = 0;
+	c->fileioflg[crease::D2] = 0;
+	c->fileioflg[crease::PX3] = 0;
+	c->fileioflg[crease::D3] = 0;
+	c->fileioflg[crease::PA] = 0;
+	c->fileioflg[crease::DA] = 0;
+	c->fileioflg[crease::PB] = 0;
+
+	c->dumpAll("./output/result.csv");
+}
+
