@@ -915,8 +915,22 @@ int papermodel::optFold()
 
 int papermodel::optTorsion()
 {
-	int ret=0;
+	int ret = 0;
+	crease* c = &(this->crs[0]);
 
 	return ret;
 }
 
+int papermodel::optRulings()
+{
+	int ret = 0;
+
+	return ret;
+}
+
+int papermodel::optCP()
+{
+	int ret = 0;
+
+	return ret;
+}

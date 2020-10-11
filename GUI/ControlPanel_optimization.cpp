@@ -89,6 +89,35 @@ void ControlPanel::cb_btn_opttr(Fl_Widget *wgt, void *idx)
 	This->gwin_cp->redraw();
 	This->gwin_gr->redraw();
 }
+
+void ControlPanel::cb_btn_optrul(Fl_Widget* wgt, void* idx)
+{
+	ControlPanel* This = (ControlPanel*)idx;
+	papermodel* ppm = &(This->ppm);
+
+	int ret = ppm->optRulings();
+	crease* c = &(This->ppm.crs[0]);
+	This->push_hist(c->Pcnt, CMODE_R, c->Px2d, c->Py2d, c->Px, c->Py, c->Pz, c->Pa, c->Pbl, c->Pbr, c->m3);
+
+	This->gwin->redraw();
+	This->gwin_cp->redraw();
+	This->gwin_gr->redraw();
+}
+
+void ControlPanel::cb_btn_optcp(Fl_Widget* wgt, void* idx)
+{
+	ControlPanel* This = (ControlPanel*)idx;
+	papermodel* ppm = &(This->ppm);
+
+	int ret = ppm->optCP();
+	crease* c = &(This->ppm.crs[0]);
+	This->push_hist(c->Pcnt, CMODE_R, c->Px2d, c->Py2d, c->Px, c->Py, c->Pz, c->Pa, c->Pbl, c->Pbr, c->m3);
+
+	This->gwin->redraw();
+	This->gwin_cp->redraw();
+	This->gwin_gr->redraw();
+}
+
 void ControlPanel::cb_btn_optrulfold(Fl_Widget* wgt, void* idx)
 {
 	ControlPanel* This = (ControlPanel*)idx;

@@ -915,6 +915,16 @@ void ControlPanel::createPanel()
 		btn_opttr->deactivate();
 		g->add(btn_opttr);
 
+		btn_optrul = new Fl_Button(wgt_x, wgt_y, 60, 20, "Rul");	wgt_x += 60;
+		btn_optrul->callback(cb_btn_optrul, (void*)this);
+		btn_optrul->deactivate();
+		g->add(btn_optrul);
+
+		btn_optcp = new Fl_Button(wgt_x, wgt_y, 60, 20, "CP");	wgt_x += 60;
+		btn_optcp->callback(cb_btn_optcp, (void*)this);
+		btn_optcp->deactivate();
+		g->add(btn_optcp);
+
 		wgt_x = 10;
 		wgt_y += 25;
 

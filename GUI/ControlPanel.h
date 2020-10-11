@@ -221,6 +221,8 @@ private:
 	static void cb_btn_optfold(Fl_Widget* wgt, void* idx);
 	static void cb_btn_optfold2(Fl_Widget* wgt, void* idx);
 	static void cb_btn_opttr(Fl_Widget* wgt, void* idx);
+	static void cb_btn_optrul(Fl_Widget* wgt, void* idx);
+	static void cb_btn_optcp(Fl_Widget* wgt, void* idx);
 	static void cb_btn_optrulfold(Fl_Widget* wgt, void* idx);
 	static void cb_btn_randrul(Fl_Widget* wgt, void* idx);
 	static void cb_btn_randrul2(Fl_Widget* wgt, void* idx);

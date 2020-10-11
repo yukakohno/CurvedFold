@@ -193,6 +193,8 @@ public:
 	int optMat( int mode );
 	int optFold();
 	int optTorsion();
+	int optRulings();
+	int optCP();
 };
 
 #endif
