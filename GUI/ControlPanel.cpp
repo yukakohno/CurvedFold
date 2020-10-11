@@ -282,6 +282,11 @@ void ControlPanel::createPanel()
 			fc_all = new Fl_File_Chooser(RECDIR, "(*.{csv})", Fl_File_Chooser::SINGLE, "Fl_File_Chooser");
 			g->add(btn_loadall);
 
+			btn_loadtptmask = new Fl_Button(wgt_x + 90, wgt_y, 45, 20, "tmask");
+			btn_loadtptmask->callback(cb_btn_loadtptmask, (void*)this);
+			fc_tptmask = new Fl_File_Chooser(RECDIR, "({tmask}*.{txt})", Fl_File_Chooser::SINGLE, "Fl_File_Chooser");
+			g->add(btn_loadtptmask);
+
 			wgt_x = 10;
 			wgt_y += 20;
 
@@ -868,25 +873,44 @@ void ControlPanel::createPanel()
 
 		Fl_Box* bx_Opt = new Fl_Box(0, wgt_y, g->w(), 20, "--- OPTIMIZATION ---");	wgt_y += 20;
 
-		btn_optfold2 = new Fl_Button(wgt_x, wgt_y, 120, 20, "Ruling(Fix) + Angle");	wgt_x += 120;
+		btn_optfold2 = new Fl_Button(wgt_x, wgt_y, 180, 20, "Angle with Fixed Rulings");	wgt_x += 100;
 		btn_optfold2->callback(cb_btn_optfold2, (void*)this);
 		g->add(btn_optfold2);
-
-		btn_optfold = new Fl_Button(wgt_x, wgt_y, 40, 20, "Angle");	wgt_x += 40;
-		btn_optfold->callback(cb_btn_optfold, (void*)this);
-		g->add(btn_optfold);
 
 		wgt_x = 10;
 		wgt_y += 25;
 
-		btn_optrulfold = new Fl_Button(wgt_x, wgt_y, 120, 20, "Ruling + Angle");	wgt_x += 120;
+		btn_randrul = new Fl_Button(wgt_x, wgt_y, 120, 20, "Random Rulings");	wgt_x += 120;
+		btn_randrul->callback(cb_btn_randrul, (void*)this);
+		g->add(btn_randrul);
+
+		cb_optrul = new Fl_Check_Button(wgt_x+5, wgt_y, 20, 20, "optimize");
+		cb_optrul->value(0);
+		g->add(cb_optrul);
+
+		wgt_x = 10;
+		wgt_y += 25;
+
+		btn_randrul2 = new Fl_Button(wgt_x, wgt_y, 180, 20, "Rulings and Angles");	wgt_x += 100;
+		btn_randrul2->callback(cb_btn_randrul2, (void*)this);
+		g->add(btn_randrul2);
+
+		wgt_x = 10;
+		wgt_y += 25;
+
+		btn_optfold = new Fl_Button(wgt_x, wgt_y, 60, 20, "Angle");	wgt_x += 60;
+		btn_optfold->callback(cb_btn_optfold, (void*)this);
+		g->add(btn_optfold);
+
+
+		btn_optrulfold = new Fl_Button(wgt_x, wgt_y, 100, 20, "Rul + Angle");	wgt_x += 100;
 		btn_optrulfold->callback(cb_btn_optrulfold, (void*)this);
 		g->add(btn_optrulfold);
 
 		wgt_x = 10;
 		wgt_y += 25;
 
-		btn_opttr = new Fl_Button(wgt_x, wgt_y, 40, 20, "Trsn");	wgt_x += 40;
+		btn_opttr = new Fl_Button(wgt_x, wgt_y, 60, 20, "Trsn");	wgt_x += 60;
 		btn_opttr->callback(cb_btn_opttr, (void*)this);
 		btn_opttr->deactivate();
 		g->add(btn_opttr);

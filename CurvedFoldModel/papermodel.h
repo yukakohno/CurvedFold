@@ -181,6 +181,7 @@ public:
 
 	int saveTgt( char *fname );
 	int loadTgt( char *fname );
+	int loadTgtMask(char* fname_tpt, char* fname_mask);
 	int getTgt2D3D();
 	double calcRulCross( double *xx, double *xy, double *rx, double *ry, double *rlen, int cvcnt );
 	int checkCollision();

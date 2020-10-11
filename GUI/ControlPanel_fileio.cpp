@@ -454,8 +454,30 @@ void ControlPanel::cb_btn_loadtpt( Fl_Widget *wgt, void *idx)
 	{
 		char fname[1024];
 		strcpy(fname, fc->value());
+		strcpy(This->fname_tpt, fc->value());
 		ppm->loadTgt(fname);
 	This->gwin->redraw();
+		This->gwin_cp->redraw();
+	}
+}
+
+void ControlPanel::cb_btn_loadtptmask(Fl_Widget* wgt, void* idx)
+{
+	ControlPanel* This = (ControlPanel*)idx;
+	papermodel* ppm = &(This->ppm);
+	Fl_File_Chooser* fc = This->fc_tptmask;
+
+	fc->show();
+
+	while (fc->visible())
+		Fl::wait();
+
+	if (fc->count() > 0)
+	{
+		char fname[1024];
+		strcpy(fname, fc->value());
+		ppm->loadTgtMask(This->fname_tpt, fname);
+		This->gwin->redraw();
 		This->gwin_cp->redraw();
 	}
 }

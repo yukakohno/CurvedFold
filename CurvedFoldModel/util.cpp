@@ -708,7 +708,156 @@ double normalize_v3( double *x, double *y, double *z )
 	*z = (*z)/len;
 	return len;
 }
+#if 1
+int getMat(int vcnt,
+	double* vx0, double* vy0, double* vz0,
+	double* vx1, double* vy1, double* vz1,
+	double* _mat)
+{
+	int i, cnt, ret = 0;
+	double mat[16], rm[16], tm0[16], tm1[16], eps = 0.0000001;
+	double rmat[3][3];
+	double tv00, tv01, tv02, tv10, tv11, tv12;
+	double w, sw, cw, p, sp, cp, k, ck, sk, F[3];
+	double dfdp[3][3], dfdp_coef[3][3][3];
+	double m[9], b0, b1, b2, dw, dp, dk;
 
+	if (vcnt < 3) {
+		ret = -1;
+		goto end;
+	}
+
+	// translation
+	tv00 = tv01 = tv02 = tv10 = tv11 = tv12 = 0;
+	for (i = 0; i < vcnt; i++) {
+		tv00 += vx0[i];	tv01 += vy0[i];	tv02 += vz0[i];
+		tv10 += vx1[i];	tv11 += vy1[i];	tv12 += vz1[i];
+	}
+	tv00 /= vcnt;	tv01 /= vcnt;	tv02 /= vcnt;
+	tv10 /= vcnt;	tv11 /= vcnt;	tv12 /= vcnt;
+	for (i = 0; i < vcnt; i++) {
+		vx0[i] -= tv00;	vy0[i] -= tv01;	vz0[i] -= tv02;
+		vx1[i] -= tv10;	vy1[i] -= tv11;	vz1[i] -= tv12;
+	}
+
+	// initial value for rotation matrix
+	w = 0;	cw = cos(w);	sw = sin(w);
+	p = 0;	cp = cos(p);	sp = sin(p);
+	k = 0;	ck = cos(k);	sk = sin(k);
+	cnt = 0;
+	dw = dp = dk = DBL_MAX;
+	while ((fabs(dw) > eps || fabs(dp) > eps || fabs(dk) > eps) && cnt < 100) {
+		memset(m, 0, sizeof(double) * 9);
+		b0 = b1 = b2 = 0;
+
+		rmat[0][0] = cp * ck;
+		rmat[0][1] = -cp * sk;
+		rmat[0][2] = sp;
+		rmat[1][0] = cw * sk + sw * sp * ck;
+		rmat[1][1] = cw * ck - sw * sp * sk;
+		rmat[1][2] = -sw * cp;
+		rmat[2][0] = sw * sk - cw * sp * ck;
+		rmat[2][1] = sw * ck + cw * sp * sk;
+		rmat[2][2] = cw * cp;
+
+		dfdp_coef[0][0][0] = 0;
+		dfdp_coef[0][0][1] = 0;
+		dfdp_coef[0][0][2] = 0;
+		dfdp_coef[0][1][0] = -sp * ck;
+		dfdp_coef[0][1][1] = sp * sk;
+		dfdp_coef[0][1][2] = cp;
+		dfdp_coef[0][2][0] = -cp * sk;
+		dfdp_coef[0][2][1] = -cp * ck;
+		dfdp_coef[0][2][2] = 0;
+
+		dfdp_coef[1][0][0] = -sw * sk + cw * sp * ck;
+		dfdp_coef[1][0][1] = -sw * ck - cw * sp * sk;
+		dfdp_coef[1][0][2] = -cw * cp;
+		dfdp_coef[1][1][0] = sw * cp * ck;
+		dfdp_coef[1][1][1] = -sw * cp * sk;
+		dfdp_coef[1][1][2] = sw * sp;
+		dfdp_coef[1][2][0] = cw * ck - sw * sp * sk;
+		dfdp_coef[1][2][1] = -cw * sk - sw * sp * ck;
+		dfdp_coef[1][2][2] = 0;
+
+		dfdp_coef[2][0][0] = cw * sk + sw * sp * ck;
+		dfdp_coef[2][0][1] = cw * ck - sw * sp * sk;
+		dfdp_coef[2][0][2] = -sw * cp;
+		dfdp_coef[2][1][0] = -cw * cp * ck;
+		dfdp_coef[2][1][1] = cw * cp * sk;
+		dfdp_coef[2][1][2] = -cw * sp;
+		dfdp_coef[2][2][0] = sw * ck + cw * sp * sk;
+		dfdp_coef[2][2][1] = -sw * sk + cw * sp * ck;
+		dfdp_coef[2][2][2] = 0;
+
+		for (i = 0; i < vcnt; i++) {
+
+			F[0] = rmat[0][0] * vx0[i] + rmat[0][1] * vy0[i] + rmat[0][2] * vz0[i] - vx1[i];
+			F[1] = rmat[1][0] * vx0[i] + rmat[1][1] * vy0[i] + rmat[1][2] * vz0[i] - vy1[i];
+			F[2] = rmat[2][0] * vx0[i] + rmat[2][1] * vy0[i] + rmat[2][2] * vz0[i] - vz1[i];
+
+			dfdp[0][0] = dfdp_coef[0][0][0] * vx0[i] + dfdp_coef[0][0][1] * vy0[i] + dfdp_coef[0][0][2] * vz0[i];
+			dfdp[0][1] = dfdp_coef[0][1][0] * vx0[i] + dfdp_coef[0][1][1] * vy0[i] + dfdp_coef[0][1][2] * vz0[i];
+			dfdp[0][2] = dfdp_coef[0][2][0] * vx0[i] + dfdp_coef[0][2][1] * vy0[i] + dfdp_coef[0][2][2] * vz0[i];
+
+			dfdp[1][0] = dfdp_coef[1][0][0] * vx0[i] + dfdp_coef[1][0][1] * vy0[i] + dfdp_coef[1][0][2] * vz0[i];
+			dfdp[1][1] = dfdp_coef[1][1][0] * vx0[i] + dfdp_coef[1][1][1] * vy0[i] + dfdp_coef[1][1][2] * vz0[i];
+			dfdp[1][2] = dfdp_coef[1][2][0] * vx0[i] + dfdp_coef[1][2][1] * vy0[i] + dfdp_coef[1][2][2] * vz0[i];
+
+			dfdp[2][0] = dfdp_coef[2][0][0] * vx0[i] + dfdp_coef[2][0][1] * vy0[i] + dfdp_coef[2][0][2] * vz0[i];
+			dfdp[2][1] = dfdp_coef[2][1][0] * vx0[i] + dfdp_coef[2][1][1] * vy0[i] + dfdp_coef[2][1][2] * vz0[i];
+			dfdp[2][2] = dfdp_coef[2][2][0] * vx0[i] + dfdp_coef[2][2][1] * vy0[i] + dfdp_coef[2][2][2] * vz0[i];
+
+			m[0] += dfdp[0][0] * dfdp[0][0] + dfdp[1][0] * dfdp[1][0] + dfdp[2][0] * dfdp[2][0];
+			m[1] += dfdp[0][0] * dfdp[0][1] + dfdp[1][0] * dfdp[1][1] + dfdp[2][0] * dfdp[2][1];
+			m[2] += dfdp[0][0] * dfdp[0][2] + dfdp[1][0] * dfdp[1][2] + dfdp[2][0] * dfdp[2][2];
+			m[3] += dfdp[0][1] * dfdp[0][0] + dfdp[1][1] * dfdp[1][0] + dfdp[2][1] * dfdp[2][0];
+			m[4] += dfdp[0][1] * dfdp[0][1] + dfdp[1][1] * dfdp[1][1] + dfdp[2][1] * dfdp[2][1];
+			m[5] += dfdp[0][1] * dfdp[0][2] + dfdp[1][1] * dfdp[1][2] + dfdp[2][1] * dfdp[2][2];
+			m[6] += dfdp[0][2] * dfdp[0][0] + dfdp[1][2] * dfdp[1][0] + dfdp[2][2] * dfdp[2][0];
+			m[7] += dfdp[0][2] * dfdp[0][1] + dfdp[1][2] * dfdp[1][1] + dfdp[2][2] * dfdp[2][1];
+			m[8] += dfdp[0][2] * dfdp[0][2] + dfdp[1][2] * dfdp[1][2] + dfdp[2][2] * dfdp[2][2];
+
+			b0 += dfdp[0][0] * F[0] + dfdp[1][0] * F[1] + dfdp[2][0] * F[2];
+			b1 += dfdp[0][1] * F[0] + dfdp[1][1] * F[1] + dfdp[2][1] * F[2];
+			b2 += dfdp[0][2] * F[0] + dfdp[1][2] * F[1] + dfdp[2][2] * F[2];
+		}
+		inv_m33(m);
+		dw = m[0] * b0 + m[1] * b1 + m[2] * b2;
+		dp = m[3] * b0 + m[4] * b1 + m[5] * b2;
+		dk = m[6] * b0 + m[7] * b1 + m[8] * b2;
+		w = w - dw;	sw = sin(w);	cw = cos(w);
+		p = p - dp;	sp = sin(p);	cp = cos(p);
+		k = k - dk;	sk = sin(k);	ck = cos(k);
+
+		cnt++;
+	}
+	rmat[0][0] = cp * ck;
+	rmat[0][1] = -cp * sk;
+	rmat[0][2] = sp;
+	rmat[1][0] = cw * sk + sw * sp * ck;
+	rmat[1][1] = cw * ck - sw * sp * sk;
+	rmat[1][2] = -sw * cp;
+	rmat[2][0] = sw * sk - cw * sp * ck;
+	rmat[2][1] = sw * ck + cw * sp * sk;
+	rmat[2][2] = cw * cp;
+
+	unit_m44(tm0);	tm0[3] = -tv00;	tm0[7] = -tv01;	tm0[11] = -tv02;
+	unit_m44(tm1);	tm1[3] = tv10;	tm1[7] = tv11;	tm1[11] = tv12;
+	rm[0] = rmat[0][0];	rm[1] = rmat[0][1];	rm[2] = rmat[0][2];	rm[3] = 0;
+	rm[4] = rmat[1][0];	rm[5] = rmat[1][1];	rm[6] = rmat[1][2];	rm[7] = 0;
+	rm[8] = rmat[2][0];	rm[9] = rmat[2][1];	rm[10]= rmat[2][2];	rm[11] = 0;
+	rm[12] = 0;		rm[13] = 0;		rm[14] = 0;		rm[15] = 1;
+
+	memcpy(mat, tm1, sizeof(double) * 16);
+	mult_m44_n44(mat, rm, 1);	// dst=1 : n44[16] = n44[16] * m44[16] 
+	mult_m44_n44(mat, tm0, 1);
+	if (_mat) memcpy(_mat, mat, sizeof(double) * 16);
+end:
+	return ret;
+}
+
+#else // same process, different code
 int getMat(int vcnt,
 		   double *vx0, double *vy0, double *vz0,
 		   double *vx1, double *vy1, double *vz1,
@@ -809,7 +958,7 @@ int getMat(int vcnt,
 end:
 	return ret;
 }
-
+#endif
 int getMatRot(int vcnt,
 		   double *vx0, double *vy0, double *vz0,
 		   double *vx1, double *vy1, double *vz1,

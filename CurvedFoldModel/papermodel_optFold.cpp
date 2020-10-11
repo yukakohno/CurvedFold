@@ -92,6 +92,69 @@ int papermodel::loadTgt( char *fname )
 	return ret;
 }
 
+int papermodel::loadTgtMask(char* fname_tpt, char* fname_mask)
+{
+	int ret = 0;
+	FILE* fp = NULL;
+	char buf[1024];
+	int tmask[MAX_TGT_CNT]; memset(tmask, 1, sizeof(MAX_TGT_CNT));
+	int tmaskcnt = 0;
+
+	if (fname_tpt == NULL || fname_mask == NULL) {
+		ret = -1; return ret;
+	}
+	fp = fopen(fname_mask, "r");
+	if (!fp) {
+		ret = -1; return ret;
+	}
+	while (fgets(buf, 1024, fp)) {
+		char *pbuf = buf, retbuf[16];
+		int ret = 1;
+		while (ret) {
+			ret = csvread(&pbuf, retbuf, ' ', 1);
+			if (strlen(retbuf) == 0) {
+				break;
+			}
+			tmask[tmaskcnt] = atoi(retbuf);	tmaskcnt++;
+			if (tmaskcnt >= MAX_TGT_CNT) {
+				break;
+			}
+		}
+		if (tmaskcnt >= MAX_TGT_CNT) {
+			break;
+		}
+	}
+	fclose(fp);
+
+	fp = fopen(fname_tpt, "r");
+	if (!fp) {
+		ret = -1; return ret;
+	}
+
+	tgcnt = 0;
+	tmaskcnt = 0;
+	while (fgets(buf, 1024, fp)) {
+		if (buf[0] == '#') {
+			continue;
+		}
+		int ret = sscanf(buf, "%lf %lf %lf %lf %lf", &tgx[tgcnt], &tgy[tgcnt], &tgz[tgcnt], &ogx_cp[tgcnt], &ogy_cp[tgcnt]);
+		if (ret < 5) {
+			continue;
+		}
+		if (tmask[tmaskcnt++] == 0) {
+			continue;
+		}
+		printf("%d: %f, %f, %f, %f, %f\n", tgcnt, tgx[tgcnt], tgy[tgcnt], tgz[tgcnt], ogx_cp[tgcnt], ogy_cp[tgcnt]);
+		tgcnt++;
+	}
+
+	fclose(fp);
+
+	getTgt2D3D();
+
+	return ret;
+}
+
 int papermodel::getTgt2D3D()
 {
 	int ret=0, avecnt=0;
@@ -472,7 +535,7 @@ int papermodel::checkRulCross()
 {
 	double area;
 	int result = checkRulCross( area );
-	printf("ruling crossing = %f\n", area);
+	//printf("ruling crossing = %f\n", area);
 	return result;
 }
 int papermodel::checkRulCross( double &area )

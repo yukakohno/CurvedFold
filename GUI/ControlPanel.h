@@ -79,6 +79,9 @@ public:
 	Fl_Button *btn_loadtex;
 	Fl_Button *btn_loadtpt;
 	Fl_File_Chooser* fc_tpt;
+	char fname_tpt[1024];
+	Fl_Button* btn_loadtptmask;
+	Fl_File_Chooser* fc_tptmask;
 	Fl_Button *btn_loadrul;
 	Fl_File_Chooser* fc_rul;
 	Fl_Button* btn_loadall;
@@ -99,6 +102,7 @@ private:
 	static void cb_btn_loadrul( Fl_Widget *wgt, void *idx);
 	static void cb_btn_saverul( Fl_Widget *wgt, void *idx);
 	static void cb_btn_loadtpt( Fl_Widget *wgt, void *idx);
+	static void cb_btn_loadtptmask(Fl_Widget* wgt, void* idx);
 	static void cb_btn_savetpt( Fl_Widget *wgt, void *idx);
 	static void cb_btn_loadall(Fl_Widget* wgt, void* idx);
 	static void cb_btn_saveall(Fl_Widget* wgt, void* idx);
@@ -187,6 +191,7 @@ public:
 	Fl_Button *btn_start;
 	Fl_Button *btn_stop;
 	Fl_Check_Button *cb_optmat;
+	Fl_Check_Button* cb_optrul;
 
 private:
 	int fcnt;
@@ -209,14 +214,16 @@ public:
 	Fl_Button* btn_optrul;
 	Fl_Button* btn_optcp;
 	Fl_Button* btn_optrulfold;
+	Fl_Button* btn_randrul;
+	Fl_Button* btn_randrul2;
 
 private:
 	static void cb_btn_optfold(Fl_Widget* wgt, void* idx);
 	static void cb_btn_optfold2(Fl_Widget* wgt, void* idx);
 	static void cb_btn_opttr(Fl_Widget* wgt, void* idx);
-	static void cb_btn_optrul(Fl_Widget* wgt, void* idx);
-	static void cb_btn_optcp(Fl_Widget* wgt, void* idx);
 	static void cb_btn_optrulfold(Fl_Widget* wgt, void* idx);
+	static void cb_btn_randrul(Fl_Widget* wgt, void* idx);
+	static void cb_btn_randrul2(Fl_Widget* wgt, void* idx);
 
 	// ------------------------- LIST RULINGS --------------------------------------
 public:
