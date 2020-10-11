@@ -94,21 +94,11 @@ public:
 
 	int check180( char *fname );	// 頂点周りの角度
 	int checkquadplane( char *fname );	// quad の平面度
-	int checkGap( char *fname, int divnum );	// ピース間の隙間
-
-	// ------------------------- evaluate -------------------------------------------
-
-	int checkGap( double *errdata, int row, int col, int divnum );
-	int checkCollision( int *errdata, int row, int col, int divnum );
 
 	// ------------------------- procseq -------------------------------------------
 
 	int postproc();
 	int resetpostproc( int _cidx );
-
-	// ------------------------- spherepart -------------------------------------------
-
-	int setSpherePieceBoundary( int divnum, double crv, curve_type cype );
 
 	// ------------------------- curve -------------------------------------------
 
@@ -148,29 +138,6 @@ public:
 
 	int makeObj3( double thickness );	// polyベース、厚み一定（全頂点同じ方向）、後で重複頂点削除
 
-	// ------------------------- stitch -------------------------------------------
-
-	// stitch
-	int stpcnt;
-	double stx[2][MAX_STP_CNT], sty[2][MAX_STP_CNT], stz[2][MAX_STP_CNT];
-	double stx_cp[2][MAX_STP_CNT], sty_cp[2][MAX_STP_CNT];
-	double stx0[2][MAX_STP_CNT], sty0[2][MAX_STP_CNT], stz0[2][MAX_STP_CNT];
-	double stx1[2][MAX_STP_CNT], sty1[2][MAX_STP_CNT], stz1[2][MAX_STP_CNT];
-	double stxm[2][MAX_STP_CNT], stym[2][MAX_STP_CNT], stzm[2][MAX_STP_CNT];
-
-	// length at ruling end
-	int re_sidx, re_eidx;
-	double Pre[MAX_CPCNT];
-	double re_clen[MAX_SPCNT];
-	int setP_re( int Pidx ); // crlen_rulend[] -> Pre[]
-	//int interpolate_spline_RulEnd( double *_P, int _Pcnt, double *_X, int _Xcnt );
-
-	int getMat_stitch( int divnum, int maxpcnt, double *mObj );
-	int getMat_stitch1( int divnum, int maxpcnt, double *mObj );
-	int getParam_stitch( int divnum, int rulingOnly );
-	int getParam_calcRE();
-	int getParam_optimize( int divnum );
-
 	// ------------------------- optFold -------------------------------------------
 
 	int tgcnt;
@@ -191,10 +158,6 @@ public:
 	int checkRulCreaseCross();
 	int calcAvetgap();
 	int optMat( int mode );
-	int optFold();
-	int optTorsion();
-	int optRulings();
-	int optCP();
 };
 
 #endif

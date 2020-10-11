@@ -141,9 +141,6 @@ void GraphWindowCP::draw()
 	if( disp_PLY && plcnt>0 && plvcnt && plx && ply ){
 		fl_color(0, 0, 0);
 		for( int i=0; i<plcnt; i++ ){
-			if( disp_PRI && ppm->pl_cridx[i]>0 ){
-				continue;
-			}
 			if( plvcnt[i]==4 ){
 				fl_loop((int)(mt[0] * plx[i*4  ] + mt[1] * ply[i*4  ] +mt[2]),
 					//fl_polygon((int)(mt[0] * plx[i*4  ] + mt[1] * ply[i*4  ] +mt[2]),
@@ -182,35 +179,6 @@ void GraphWindowCP::draw()
 		}
 		x0=cpx0[c->Xeidx];	y0=cpy0[c->Xeidx];	x1=c->Xxe2d;	y1=c->Xye2d;
 		fl_line((int)(mtofs[0]*x0+mtofs[1]*y0+mtofs[2]), (int)(mtofs[3]*x0+mtofs[4]*y0+mtofs[5]), (int)(mtofs[0]*x1+mtofs[1]*y1+mtofs[2]), (int)(mtofs[3]*x1+mtofs[4]*y1+mtofs[5]));
-
-		if( !disp_PRI ){
-			// crease left
-			for( int j=1; j<ppm->lcrcnt; j++ ){
-				crease *c = ppm->lcrs[j];
-				double *cpx0 = c->Xx2d, *cpy0 = c->Xy2d;
-				x0=c->Xxs2d;	y0=c->Xys2d;	x1=cpx0[c->Xsidx];	y1=cpy0[c->Xsidx];
-				fl_line((int)(mt[0]*x0+mt[1]*y0+mt[2]), (int)(mt[3]*x0+mt[4]*y0+mt[5]), (int)(mt[0]*x1+mt[1]*y1+mt[2]), (int)(mt[3]*x1+mt[4]*y1+mt[5]));
-				for( int i=c->Xsidx; i<c->Xeidx; i++ ){
-					x0=cpx0[i];	y0=cpy0[i];	x1=cpx0[i+1];	y1=cpy0[i+1];
-					fl_line((int)(mt[0]*x0+mt[1]*y0+mt[2]), (int)(mt[3]*x0+mt[4]*y0+mt[5]), (int)(mt[0]*x1+mt[1]*y1+mt[2]), (int)(mt[3]*x1+mt[4]*y1+mt[5]));
-				}
-				x0=cpx0[c->Xeidx];	y0=cpy0[c->Xeidx];	x1=c->Xxe2d;	y1=c->Xye2d;
-				fl_line((int)(mt[0]*x0+mt[1]*y0+mt[2]), (int)(mt[3]*x0+mt[4]*y0+mt[5]), (int)(mt[0]*x1+mt[1]*y1+mt[2]), (int)(mt[3]*x1+mt[4]*y1+mt[5]));
-			} // j
-			// crease right
-			for( int j=1; j<ppm->rcrcnt; j++ ){
-				crease *c = ppm->rcrs[j];
-				double *cpx0 = c->Xx2d, *cpy0 = c->Xy2d;
-				x0=c->Xxs2d;	y0=c->Xys2d;	x1=cpx0[c->Xsidx];	y1=cpy0[c->Xsidx];
-				fl_line((int)(mt[0]*x0+mt[1]*y0+mt[2]), (int)(mt[3]*x0+mt[4]*y0+mt[5]), (int)(mt[0]*x1+mt[1]*y1+mt[2]), (int)(mt[3]*x1+mt[4]*y1+mt[5]));
-				for( int i=c->Xsidx; i<c->Xeidx; i++ ){
-					x0=cpx0[i];	y0=cpy0[i];	x1=cpx0[i+1];	y1=cpy0[i+1];
-					fl_line((int)(mt[0]*x0+mt[1]*y0+mt[2]), (int)(mt[3]*x0+mt[4]*y0+mt[5]), (int)(mt[0]*x1+mt[1]*y1+mt[2]), (int)(mt[3]*x1+mt[4]*y1+mt[5]));
-				}
-				x0=cpx0[c->Xeidx];	y0=cpy0[c->Xeidx];	x1=c->Xxe2d;	y1=c->Xye2d;
-				fl_line((int)(mt[0]*x0+mt[1]*y0+mt[2]), (int)(mt[3]*x0+mt[4]*y0+mt[5]), (int)(mt[0]*x1+mt[1]*y1+mt[2]), (int)(mt[3]*x1+mt[4]*y1+mt[5]));
-			} // j
-		}
 	}
 
 	fl_line_style( FL_SOLID, 1 );
@@ -218,9 +186,6 @@ void GraphWindowCP::draw()
 	// crease ruling
 	if(	disp_R ){
 		for( int j=0; j<ppm->lcrcnt; j++ ){
-			if( disp_PRI && j>0 ){
-				break;
-			}
 			crease *c = ppm->lcrs[j];
 			if( j%2==0 ){
 				//fl_color(150, 100, 230); // Lavender: B57EDC
@@ -244,9 +209,6 @@ void GraphWindowCP::draw()
 			} // i
 		} // j
 		for( int j=0; j<ppm->rcrcnt; j++ ){
-			if( disp_PRI && j>0 ){
-				break;
-			}
 			crease *c = ppm->rcrs[j];
 			if( j%2==0 ){
 				fl_color(230, 0, 100); // Raspberry: E30B5D
@@ -300,9 +262,6 @@ void GraphWindowCP::draw()
 	if(	disp_TNB ){
 		fl_color(255, 0, 0);
 		for( int j=0; j<ppm->crcnt; j++ ){
-			if( disp_PRI && j>0 ){
-				break;
-			}
 			crease *c = &(ppm->crs[j]);
 			for( int i=c->Xsidx; i<c->Xeidx+1; i++ ){
 				tmpx0 = c->Xx2d[i];
@@ -318,9 +277,6 @@ void GraphWindowCP::draw()
 
 		fl_color(0, 255, 0);
 		for( int j=0; j<ppm->crcnt; j++ ){
-			if( disp_PRI && j>0 ){
-				break;
-			}
 			crease *c = &(ppm->crs[j]);
 			for( int i=c->Xsidx; i<c->Xeidx+1; i++ ){
 				tmpx0 = c->Xx2d[i];
@@ -335,7 +291,7 @@ void GraphWindowCP::draw()
 		} // j
 	}
 
-	if( disp_CP && !disp_PRI ){
+	if (disp_CP) {
 		// control points of crease curve
 		for( int j=1; j<ppm->crcnt; j++ ){
 			crease *c = &(ppm->crs[j]);

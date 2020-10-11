@@ -108,31 +108,6 @@ void ControlPanel::cb_cb_CurveEnd(Fl_Widget *wgt, void *idx)
 	}
 }
 
-void ControlPanel::cb_cb_dispONE(Fl_Widget *wgt, void *idx)
-{
-	ControlPanel *This = (ControlPanel *)idx;
-	GraphWindow3DCF *gwin = This->gwin;
-	gwin->disp_ONE = ((Fl_Check_Button*)wgt)->value();
-	gwin->redraw();
-}
-void ControlPanel::cb_cb_dispPRI(Fl_Widget *wgt, void *idx)
-{
-	ControlPanel *This = (ControlPanel *)idx;
-	GraphWindow3DCF *gwin = This->gwin;
-	gwin->disp_PRI = ((Fl_Check_Button*)wgt)->value();
-	gwin->redraw();
-	GraphWindowCP *gwin_cp = This->gwin_cp;
-	gwin_cp->disp_PRI = ((Fl_Check_Button*)wgt)->value();
-	gwin_cp->redraw();
-}
-void ControlPanel::cb_cb_dispST(Fl_Widget *wgt, void *idx)
-{
-	ControlPanel *This = (ControlPanel *)idx;
-	GraphWindow3DCF *gwin = This->gwin;
-	gwin->disp_stitch = ((Fl_Check_Button*)wgt)->value();
-	gwin->redraw();
-}
-
 void ControlPanel::cb_cb_dispLSMT(Fl_Widget *wgt, void *idx)
 {
 	ControlPanel *This = (ControlPanel *)idx;

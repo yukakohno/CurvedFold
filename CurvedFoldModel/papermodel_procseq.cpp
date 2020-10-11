@@ -179,11 +179,6 @@ int papermodel::postproc()
 
 	calcRulingPly();	// TODO: 2D,3Dƒ|ƒŠƒSƒ“A•ÏŠ·s—ñì¬
 	getTgt2D3D();
-#if 0
-	checkCollision();
-	checkRulCross();
-	checkRulAngle();
-	checkRulCreaseCross();
-#endif
+
 	return 0;
 }

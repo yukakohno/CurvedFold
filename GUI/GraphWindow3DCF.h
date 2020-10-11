@@ -27,17 +27,11 @@ public:
 	int disp_PLY;
 	int disp_PTN;
 	int disp_CP, ppos, pprm;
-	int disp_ONE;
-	int disp_PRI;
-	int disp_stitch;
 	int disp_TGT;
 	int disp_LIN_SMOOTH;
 	int disp_POLY_OFFSET;
 
 	int flg_addcurve; // 0:-, 1:trim, 2:fold
-
-	int divtype;
-	int divnum;
 
 	papermodel *ppm;
 	int disp_maxrlen;

@@ -72,16 +72,6 @@ public:
 	double Pa[MAX_CPCNT];	// alpha
 	double Pbl[MAX_CPCNT], Pbr[MAX_CPCNT];
 
-	// foldmotion
-	double Px2d_org[MAX_CPCNT], Px_org[MAX_CPCNT], Py_org[MAX_CPCNT], Pa_org[MAX_CPCNT], m3_org[16];
-	int FM_fidx_org, FM_fidx_min, FM_fidx_max;
-	int flg_FM_Pt[MAX_FRAME], flg_FM_Pa[MAX_FRAME], flg_FM_m3[MAX_FRAME];
-	double FM_Pt[MAX_FRAME][MAX_CPCNT];	// tr
-	double FM_Pa[MAX_FRAME][MAX_CPCNT];	// alpha
-	double FM_tr[MAX_FRAME][MAX_SPCNT];	// tr
-	double FM_alpha[MAX_FRAME][MAX_SPCNT];	// alpha
-	double FM_m3[MAX_FRAME][16];
-
 	// position & rotation (3D, CP)
 	double m3[16], m2[9];
 
@@ -141,12 +131,6 @@ public:
 	int dumpm2m3( char *fname );
 	int dumpAll( char *fname );
 	int loadAll(char* fname);
-
-	int loadMotion( char *fname );	// return -1: error, 0: flg_usecp=0, 1: flg_usecp=1
-	int dumpMotion( char *fname, int flg_usecp );
-	int loadMotionFrame( int frm, char *fname );	// return -1: error, 0: flg_usecp=0, 1: flg_usecp=1
-	int dumpMotionFrame( int frm, char *fname, int flg_usecp );
-
 	int loadPb( char *fname );
 	int dumpPb( char *fname );
 
@@ -299,17 +283,6 @@ public:
 	int calcRight();
 	int calcLeftK();	// 
 	int calcRightK();	// 
-
-	// ------------------------- foldmotion -------------------------------------------
-
-	void initFM();
-	int updateFM( int flg_interpolateCP );
-
-	// ------------------------- stitch -------------------------------------------
-
-	int getSamplePoints2D( double space, double *x, double *y ); // 不使用、使う場合は要更新
-	int getSamplePoints3D( double space, double *x, double *y, double *z, double *len_sp );
-	int getVertexPoints3D( double space, double *x, double *y, double *z, double *len_sp );
 
 };
 

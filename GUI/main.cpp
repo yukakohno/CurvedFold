@@ -81,7 +81,6 @@ int main(int argc, char* argv[])
 	gwin_cp->disp_PLY = gwin->disp_PLY;
 	gwin_cp->disp_PTN = gwin->disp_PTN;
 	gwin_cp->disp_CP = gwin->disp_CP;
-	gwin_cp->disp_PRI = gwin->disp_PRI;
 	gwin_cp->ppos = gwin->ppos;
 	gwin_cp->pprm = gwin->pprm;
 	gwin_cp->disp_TGT = gwin->disp_TGT;
@@ -101,10 +100,6 @@ int main(int argc, char* argv[])
 
 	crease *c0=&(cwin->ppm.crs[0]);
 	cwin->vs_ppos->bounds( 0, c0->Pcnt-1 );
-	cwin->vs_ppos2->bounds( 0, c0->Pcnt-1 );
-	cwin->vs_fmot2->bounds( -(c0->FM_fidx_org - c0->FM_fidx_min), c0->FM_fidx_max - c0->FM_fidx_org );
-	cwin->update_bx_FM( c0, c0->FM_fidx_org );
-	cwin->vs_divnum->do_callback();
 	cwin->rb_fix[CMODE_R]->setonly();
 	cwin->rb_param[P_RULL]->setonly();
 

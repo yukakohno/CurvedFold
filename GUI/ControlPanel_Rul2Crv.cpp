@@ -16,9 +16,7 @@ void ControlPanel::cb_btn_R2TA0(Fl_Widget *wgt, void *idx)
 		crease *c = &(ppm->crs[0]);
 		double mang = This->vs_xmang0->value()/180.0*M_PI;
 
-		ppm->re_sidx = 0;
-		ppm->re_eidx = c->Xcnt;
-		int ret = c->calcR_TA( 1/*flg_interpolate*/, &ppm->rp, ppm->re_sidx, ppm->re_eidx, mang, 0 );
+		int ret = c->calcR_TA(1/*flg_interpolate*/, &ppm->rp, 0, c->Xcnt, mang, 0);
 
 		if( ret==0 ){
 			ppm->set_postproc_type( PPTYPE_PRICURVE );

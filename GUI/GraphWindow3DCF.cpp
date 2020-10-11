@@ -141,16 +141,10 @@ void GraphWindow3DCF::init()
 	disp_PLY = 1;
 	disp_PTN = 1;
 	disp_CP = 0;	ppos = 0;	pprm = 0;
-	disp_ONE = 0;
-	disp_PRI = 1;
-	disp_stitch = 0;
 	disp_TGT = 1;
 	disp_LIN_SMOOTH = 0;
 
 	flg_addcurve = 0;
-
-	divtype = 1;
-	divnum = 1;
 
 	ppm = NULL;
 
@@ -216,63 +210,10 @@ void GraphWindow3DCF::draw3DCurveFold()
 	if(disp_axis)
 		drawAxis(); 
 
-	for( int dc=0; dc<divnum; dc++ ){
-		glPushMatrix();
-		glRotated( (double)dc * (360.0/(double)divnum), 0.0, 0.0, 1.0 );
-#if 1
-		if( disp_stitch && dc==0 ){
-			for( int i=0; i<ppm->stpcnt; i++ ){
-				glColor3f( 0.32, 0.12, 0.46 ); // Dark Violet: 522076
-				glPushMatrix();
-				glTranslatef( ppm->stx0[0][i], ppm->sty0[0][i], ppm->stz0[0][i] );
-				glutWireCube( 1.0 );
-				glPopMatrix();
-				glColor3f( 0.9, 0.0, 0.4 ); // Raspberry: E30B5D
-				glPushMatrix();
-				glTranslatef( ppm->stx1[0][i], ppm->sty1[0][i], ppm->stz1[0][i] );
-				glutWireCube( 1.0 );
-				glPopMatrix();
-				glColor3f( 1.0, 1.0, 0.0 ); // YELLOW
-				glPushMatrix();
-				glTranslatef( ppm->stxm[0][i], ppm->stym[0][i], ppm->stzm[0][i] );
-				glutSolidSphere( 1.0, 8, 8 );
-				glPopMatrix();
-				glColor3f( 0.0, 0.0, 0.0 ); // BLACK
-				glBegin(GL_LINE_STRIP);
-				glVertex3f( ppm->stx0[0][i], ppm->sty0[0][i], ppm->stz0[0][i] );
-				glVertex3f( ppm->stxm[0][i], ppm->stym[0][i], ppm->stzm[0][i] );
-				glVertex3f( ppm->stx1[0][i], ppm->sty1[0][i], ppm->stz1[0][i] );
-				glEnd();
-			}
-			for( int i=0; i<ppm->stpcnt; i++ ){
-				glColor3f( 0.9, 0.0, 0.4 ); // Raspberry: E30B5D
-				glPushMatrix();
-				glTranslatef( ppm->stx0[1][i], ppm->sty0[1][i], ppm->stz0[1][i] );
-				glutWireCube( 1.0 );
-				glPopMatrix();
-				glColor3f( 0.32, 0.12, 0.46 ); // Dark Violet: 522076
-				glPushMatrix();
-				glTranslatef( ppm->stx1[1][i], ppm->sty1[1][i], ppm->stz1[1][i] );
-				glutWireCube( 1.0 );
-				glPopMatrix();
-				glColor3f( 1.0, 1.0, 0.0 ); // YELLOW
-				glPushMatrix();
-				glTranslatef( ppm->stxm[1][i], ppm->stym[1][i], ppm->stzm[1][i] );
-				glutSolidSphere( 1.0, 8, 8 );
-				glPopMatrix();
-				glColor3f( 0.0, 0.0, 0.0 ); // BLACK
-				glBegin(GL_LINE_STRIP);
-				glVertex3f( ppm->stx0[1][i], ppm->sty0[1][i], ppm->stz0[1][i] );
-				glVertex3f( ppm->stxm[1][i], ppm->stym[1][i], ppm->stzm[1][i] );
-				glVertex3f( ppm->stx1[1][i], ppm->sty1[1][i], ppm->stz1[1][i] );
-				glEnd();
-			}
-		}
-#endif
 		glPushMatrix();
 		SetRTS2();
 		
-		if( dc==0 && disp_axis2 )
+	if( disp_axis2 )
 		{
 			glPushMatrix();
 			crease *c = &(ppm->crs[0]);
@@ -282,8 +223,6 @@ void GraphWindow3DCF::draw3DCurveFold()
 			glPopMatrix();
 		}
 /*-----------------------------------------------------------------*/
-
-		if( !disp_ONE || disp_ONE && dc==0 ){
 
 	//
 	// control points
@@ -334,26 +273,6 @@ void GraphWindow3DCF::draw3DCurveFold()
 	}
 
 	//
-	// sample points for stitch
-	//
-	if( disp_stitch ){
-		glColor3f( 0.32, 0.12, 0.46 ); // Dark Violet: 522076
-		for( int i=0; i<ppm->stpcnt; i++ ){
-			glPushMatrix();
-			glTranslatef( ppm->stx[0][i], ppm->sty[0][i], ppm->stz[0][i] );
-			glutSolidSphere( 1.0, 8, 8 );
-			glPopMatrix();
-		}
-		glColor3f( 0.9, 0.0, 0.4 ); // Raspberry: E30B5D
-		for( int i=0; i<ppm->stpcnt; i++ ){
-			glPushMatrix();
-			glTranslatef( ppm->stx[1][i], ppm->sty[1][i], ppm->stz[1][i] );
-			glutSolidSphere( 1.0, 8, 8 );
-			glPopMatrix();
-		}
-	}
-
-	//
 	// curve
 	//
 	if( disp_X && ppm ){
@@ -387,9 +306,6 @@ void GraphWindow3DCF::draw3DCurveFold()
 		glBegin(GL_LINES);
 		double len=5.0;
 		for( j=0; j<ppm->crcnt; j++ ){
-			if( disp_PRI && j>0 ){
-				break;
-			}
 			crease *c = &(ppm->crs[j]);
 			for( i=c->Xsidx; i<c->Xeidx+1; i++ ){
 				glColor3f( 1.0, 0.0, 0.0 );
@@ -413,9 +329,6 @@ void GraphWindow3DCF::draw3DCurveFold()
 		glLineWidth(2.0);
 		glBegin(GL_LINES);
 		for( j=0; j<ppm->lcrcnt; j++ ){
-			if( disp_PRI && j>0 ){
-				break;
-			}
 			crease *c = ppm->lcrs[j];
 			if( j%2==0 ){
 				//glColor3f( 0.6, 0.4, 0.9 ); // Lavender: B57EDC
@@ -435,9 +348,6 @@ void GraphWindow3DCF::draw3DCurveFold()
 			}
 		}
 		for( j=0; j<ppm->rcrcnt; j++ ){
-			if( disp_PRI && j>0 ){
-				break;
-			}
 			crease *c = ppm->rcrs[j];
 			if( j%2==0 ){
 				glColor3f( 0.9, 0.0, 0.4 ); // Raspberry: E30B5D
@@ -458,19 +368,13 @@ void GraphWindow3DCF::draw3DCurveFold()
 		glEnd();
 	}
 
-		} // if( !disp_ONE || disp_ONE && dc==0 )
-
 	//
 	// Polygons
 	//
-	//if( disp_PLY && ppm ){
-	if( disp_PLY && ppm || disp_ONE && dc!=0 ){
+	if( disp_PLY && ppm ){
 		glLineWidth(1.0);
 		glColor3f( 0.0, 0.0, 0.0 );
 		for( i=0; i<ppm->plcnt; i++ ){
-			if( disp_PRI && ppm->pl_cridx[i]>0 ){
-				continue;
-			}
 			glBegin(GL_LINE_STRIP);
 			for( j=0; j<ppm->plvcnt[i]; j++ ){
 				glVertex3f(ppm->plx[i*4+j], ppm->ply[i*4+j], ppm->plz[i*4+j] );
@@ -480,14 +384,8 @@ void GraphWindow3DCF::draw3DCurveFold()
 		}
 	}
 
-	if( !disp_ONE || disp_ONE && dc==0 ){
-
 	if( disp_PTN && ppm )
 	{
-		double dangle = (double)dc*2.0*M_PI/(double)divnum -15.0/180.0*M_PI;
-		double cosd = cos(-dangle);
-		double sind = sin(-dangle);
-
 		//glEnable(GL_ALPHA_TEST);
 		glEnable(GL_NORMALIZE);
 		glEnable(GL_LIGHTING);
@@ -501,9 +399,6 @@ void GraphWindow3DCF::draw3DCurveFold()
 #if 1	// CPè„ÇÃÉ|ÉäÉSÉìÇç¿ïWïœä∑ÇµÇƒï\é¶
 		glColor3f( 1.0, 0.0, 1.0 );
 		for( i=0; i<ppm->plcnt; i++ ){
-			if( disp_PRI && ppm->pl_cridx[i]>0 ){
-				continue;
-			}
 			glPushMatrix();
 			glMultMatrixd( &(ppm->plmat[i*16]) );
 			glBegin(GL_POLYGON);
@@ -512,9 +407,7 @@ void GraphWindow3DCF::draw3DCurveFold()
 				//glTexCoord2d( (ppm->plx_cp[i*4+j]-ppm->psx)/(double)PPWIDTH, (ppm->ply_cp[i*4+j]-ppm->psy)/(double)PPHEIGHT );
 				double x0 = ppm->plx_cp[i*4+j]-ppm->psx;
 				double y0 = ppm->ply_cp[i*4+j]-ppm->psy;
-				double tx = cosd*x0+sind*y0;
-				double ty = -sind*x0+cosd*y0;
-				glTexCoord2d( tx/(double)PPWIDTH, ty/(double)PPHEIGHT );
+				glTexCoord2d( x0/(double)PPWIDTH, y0/(double)PPHEIGHT );
 				//glTexCoord2d( tx*8.0/(double)PPWIDTH, ty*8.0/(double)PPHEIGHT );
 				glVertex3f(ppm->plx_cp[i*4+j], ppm->ply_cp[i*4+j], 0.0 );
 			}
@@ -583,12 +476,7 @@ void GraphWindow3DCF::draw3DCurveFold()
 		}
 	}
 
-		} // if( !disp_ONE || disp_ONE && dc==0 )
-/*-----------------------------------------------------------------*/
-
 		glPopMatrix();
-		glPopMatrix();
-	} // dc
 
 	// pointcloud
 	glPointSize(1.0);
