@@ -26,6 +26,8 @@ void ControlPanel::cb_btn_R2TA0(Fl_Widget *wgt, void *idx)
 			ppm->set_postproc_type( PPTYPE_UNDEF );
 			if( This->cb_optmat->value() && ppm->tgcnt>3 ){
 				ppm->optMat( CMODE_R );
+			} else if (This->cb_optrot->value() && ppm->tgcnt > 3) {
+				ppm->optMatRot(CMODE_R); // fixed origin
 			}
 
 			This->gwin->redraw();
@@ -110,7 +112,13 @@ void ControlPanel::cb_btn_optmat(Fl_Widget *wgt, void *idx)
 	papermodel *ppm = &(This->ppm);
 	int mode = This->value_grpfix();	// CMODE_A, CMODE_B, CMODE_C, MODE_T, MODE_FA, MODE_TFA
 
-	int ret = ppm->optMat( mode );
+	int ret = 0;
+	if (This->cb_optmat->value() && ppm->tgcnt > 3) {
+		ret = ppm->optMat(mode);
+	}
+	else if (This->cb_optrot->value() && ppm->tgcnt > 3) {
+		ret = ppm->optMatRot(mode); // fixed origin
+	}
 
 	This->gwin->redraw();
 	This->gwin_cp->redraw();

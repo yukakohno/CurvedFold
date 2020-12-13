@@ -191,7 +191,8 @@ public:
 	Fl_Button *btn_start;
 	Fl_Button *btn_stop;
 	Fl_Check_Button *cb_optmat;
-	Fl_Check_Button* cb_optrul;
+	Fl_Check_Button *cb_optrot;
+	Fl_Check_Button *cb_optrul;
 
 private:
 	int fcnt;

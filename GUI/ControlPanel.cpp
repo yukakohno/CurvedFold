@@ -854,17 +854,21 @@ void ControlPanel::createPanel()
 		wgt_x = 10;
 		wgt_y += 25;
 
-		btn_start = new Fl_Button(wgt_x, wgt_y, 60, 20, "start");
+		btn_start = new Fl_Button(wgt_x, wgt_y, 50, 20, "start");
 		btn_start->callback(cb_btn_start, (void*)this);
 		g->add(btn_start);
 
-		btn_stop = new Fl_Button(wgt_x + 70, wgt_y, 60, 20, "stop");
+		btn_stop = new Fl_Button(wgt_x + 50, wgt_y, 50, 20, "stop");
 		btn_stop->callback(cb_btn_stop, (void*)this);
 		g->add(btn_stop);
 
-		cb_optmat = new Fl_Check_Button(wgt_x + 140, wgt_y, 20, 20, "mat");
+		cb_optmat = new Fl_Check_Button(wgt_x + 100, wgt_y, 20, 20, "mat");
 		cb_optmat->value(0);
 		g->add(cb_optmat);
+
+		cb_optrot = new Fl_Check_Button(wgt_x + 140, wgt_y, 20, 20, "rot");
+		cb_optrot->value(0);
+		g->add(cb_optrot);
 
 		wgt_y += 25;
 
