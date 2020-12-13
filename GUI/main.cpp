@@ -81,6 +81,7 @@ int main(int argc, char* argv[])
 	gwin_cp->disp_PLY = gwin->disp_PLY;
 	gwin_cp->disp_PTN = gwin->disp_PTN;
 	gwin_cp->disp_CP = gwin->disp_CP;
+	gwin_cp->disp_stitch = gwin->disp_stitch;
 	gwin_cp->disp_PRI = gwin->disp_PRI;
 	gwin_cp->ppos = gwin->ppos;
 	gwin_cp->pprm = gwin->pprm;

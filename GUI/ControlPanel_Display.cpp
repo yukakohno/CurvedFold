@@ -129,8 +129,11 @@ void ControlPanel::cb_cb_dispST(Fl_Widget *wgt, void *idx)
 {
 	ControlPanel *This = (ControlPanel *)idx;
 	GraphWindow3DCF *gwin = This->gwin;
+	GraphWindowCP* gwin_cp = This->gwin_cp;
 	gwin->disp_stitch = ((Fl_Check_Button*)wgt)->value();
+	gwin_cp->disp_stitch = ((Fl_Check_Button*)wgt)->value();
 	gwin->redraw();
+	gwin_cp->redraw();
 }
 
 void ControlPanel::cb_cb_dispLSMT(Fl_Widget *wgt, void *idx)

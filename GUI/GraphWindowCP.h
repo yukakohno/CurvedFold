@@ -35,6 +35,7 @@ public:
 	int disp_PTN;
 	int disp_CP, ppos, pprm;
 	int disp_PRI;
+	int disp_stitch;
 	int disp_TGT;
 	void *cwin;
 	papermodel *ppm;

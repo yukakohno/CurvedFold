@@ -296,6 +296,17 @@ void GraphWindowCP::draw()
 		}
 	}
 	
+	if (disp_stitch) {
+		fl_color(0, 127, 0);
+		fl_line_style(FL_SOLID, 3);
+		for (int j = 0; j < 2; j++) {
+			for (int i = 0; i < ppm->stpcnt; i++) {
+				fl_circle((int)(mt[0] * ppm->stx_cp[j][i] + mt[1] * ppm->sty_cp[j][i] + mt[2]),
+					(int)(mt[3] * ppm->stx_cp[j][i] + mt[4] * ppm->sty_cp[j][i] + mt[5]), 2);
+			}
+		}
+	}
+
 	// TN
 	if(	disp_TNB ){
 		fl_color(255, 0, 0);
