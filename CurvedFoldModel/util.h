@@ -79,3 +79,4 @@ extern int intersectionOfLine( double sx0, double sy0, double ex0, double ey0,
 					   double sx1, double sy1, double ex1, double ey1,
 					   double *ix, double *iy, double *l0, double *l1 );
 
+extern double line_point_dist_2d(double lsx, double lsy, double lex, double ley, double px, double py);

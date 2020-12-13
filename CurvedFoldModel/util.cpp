@@ -1088,3 +1088,29 @@ int intersectionOfLine( double sx0, double sy0, double ex0, double ey0,
 end:
 	return ret;
 }
+
+
+double line_point_dist_2d( double lsx, double lsy, double lex, double ley, double px, double py )
+{
+	double x0 = lex - lsx;
+	double y0 = ley - lsy;
+	double x1 = px - lsx;
+	double y1 = py - lsy;
+	double x2 = px - lex;
+	double y2 = py - ley;
+
+	double a = lex - lsx;
+	double b = ley - lsy;
+	double a2 = x0 * x0;
+	double b2 = y0 * y0;
+	double r2 = a2 + b2;
+	double ip = x0 * x1 + y0 * y1;
+
+	if (ip < 0)
+		return sqrt( x1 * x1 + y1 * y1 );
+	else if (r2 < ip)
+		return sqrt( x2 * x2 + y2 * y2 );
+	
+	double f1 = x0 * y1 - y0 * x1;
+	return sqrt((f1 * f1) / r2);
+}
