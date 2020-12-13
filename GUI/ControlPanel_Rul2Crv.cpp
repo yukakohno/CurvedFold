@@ -132,6 +132,9 @@ void ControlPanel::cb_btn_start(Fl_Widget *wgt, void *idx)
 	papermodel *ppm = &(This->ppm);
 	crease *c = &(ppm->crs[0]);
 
+	This->rb_fix[CMODE_R]->setonly();
+	This->rb_param[P_RULL]->setonly();
+
 	if( !This->flg_idle_active ){
 		This->flg_idle_active = true;
 		Fl::add_idle( ControlPanel::idle, This );

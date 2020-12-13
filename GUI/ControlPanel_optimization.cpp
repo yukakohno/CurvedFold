@@ -18,6 +18,8 @@ void ControlPanel::cb_btn_optfold(Fl_Widget* wgt, void* idx)
 	int ret = ppm->optFold();
 	if (This->cb_optmat->value() && ppm->tgcnt > 3) {
 		ppm->optMat(CMODE_B); // B: Ü‚èü‚ÆÜ‚èŠp“x‚©‚çA3D‹Èü‚ğ‹‚ß‚é
+	} else if (This->cb_optrot->value() && ppm->tgcnt > 3) {
+		ppm->optMatRot(CMODE_B);
 	}
 	crease* c = &(This->ppm.crs[0]);
 	This->push_hist(c->Pcnt, CMODE_B, c->Px2d, c->Py2d, c->Px, c->Py, c->Pz, c->Pa, c->Pbl, c->Pbr, c->m3);
@@ -35,11 +37,15 @@ void ControlPanel::cb_btn_optfold2(Fl_Widget* wgt, void* idx)
 	int mode = This->value_grpfix();	// CMODE_A, CMODE_B, CMODE_C, CMODE_R
 	int prm = This->value_grpparam();	// P_CV2D, P_CV3D, P_TRSN, P_FLDA, P_RULL, P_RULR, ...
 
+#if 1
+	This->rb_fix[CMODE_R]->setonly();
+	This->rb_param[P_RULL]->setonly();
+#else
 	if ( !(mode == CMODE_R && (prm == P_RULL || prm == P_RULR || prm == P_RULL1 || prm == P_RULR1)) )
 	{
 		return;
 	}
-
+#endif
 #if 1
 	int crcnt, lcrcnt, rcrcnt, dccnt, fccnt, tccnt;
 	dccnt = ppm->dccnt; ppm->dccnt = 0;
@@ -736,10 +742,15 @@ void ControlPanel::cb_btn_randrul2(Fl_Widget* wgt, void* idx)
 	ControlPanel* This = (ControlPanel*)idx;
 	papermodel* ppm = &(This->ppm);
 	crease* c = &(ppm->crs[0]);
+#if 1
+	This->rb_fix[CMODE_R]->setonly();
+	This->rb_param[P_RULL]->setonly();
+#else
 	int mode = This->value_grpfix();	// CMODE_A, CMODE_B, CMODE_C, CMODE_R
 	if ( mode != CMODE_R ) {
 		return;
 	}
+#endif
 	This->cb_optrul->value(true);
 	double thres_avetgap = 0.3;
 	//double avetgap = 1000;
