@@ -655,6 +655,56 @@ int papermodel::optMat( int mode )
 	return ret;
 }
 
+int papermodel::optMatRot(int mode)
+{
+	int ret = 0;
+
+	if (tgcnt == 0) {
+		std::cout << "no target point." << std::endl;
+		return -1;
+	}
+
+	double tgx0[MAX_TGT_CNT], tgy0[MAX_TGT_CNT], tgz0[MAX_TGT_CNT];
+	double ogx0[MAX_TGT_CNT], ogy0[MAX_TGT_CNT], ogz0[MAX_TGT_CNT];
+	memcpy(tgx0, tgx, sizeof(double) * tgcnt);
+	memcpy(tgy0, tgy, sizeof(double) * tgcnt);
+	memcpy(tgz0, tgz, sizeof(double) * tgcnt);
+	memcpy(ogx0, ogx, sizeof(double) * tgcnt);
+	memcpy(ogy0, ogy, sizeof(double) * tgcnt);
+	memcpy(ogz0, ogz, sizeof(double) * tgcnt);
+	for (int i = 0; i < tgcnt; i++ ) {
+		tgx0[i] -= crs[0].m3[12];
+		tgy0[i] -= crs[0].m3[13];
+		tgz0[i] -= crs[0].m3[14];
+		ogx0[i] -= crs[0].m3[12];
+		ogy0[i] -= crs[0].m3[13];
+		ogz0[i] -= crs[0].m3[14];
+	}
+
+	double mat[16], tmat0[16], tmat1[16];
+	getMatRot(tgcnt, ogx0, ogy0, ogz0, tgx0, tgy0, tgz0, mat);
+	transpose_m44(mat);
+	unit_m44(tmat0); tmat0[12] = -crs[0].m3[12]; tmat0[13] = -crs[0].m3[13]; tmat0[14] = -crs[0].m3[14];
+	unit_m44(tmat1); tmat1[12] =  crs[0].m3[12]; tmat1[13] =  crs[0].m3[13]; tmat1[14] =  crs[0].m3[14];
+	//memcpy(tmat1, tmat0, sizeof(double) * 16); inv_m44(tmat1);
+	// dst=1 : n44[16] = n44[16] * m44[16]
+	mult_m44_n44(crs[0].m3, tmat0, 1);
+	mult_m44_n44(crs[0].m3, mat, 1);
+	mult_m44_n44(crs[0].m3, tmat1, 1);
+
+	switch (mode) {
+	case 0/*CMODE_A*/:	crs[0].calcXA_CP(1/*flg_interpolate*/, &rp);	break;
+	case 1/*CMODE_B*/:	crs[0].calcCPA_X(1/*flg_interpolate*/, &rp);	break;
+	case 2/*CMODE_C*/:	crs[0].calcCPX_A(1/*flg_interpolate*/, &rp);	break;
+	case 3/*CMODE_R*/:	crs[0].calcR_TA(0/*flg_interpolate*/, &rp, -1, -1, 2 * M_PI, 0);	break;
+	}
+	set_postproc_type(PPTYPE_PRICURVE);
+	postproc();
+	set_postproc_type(PPTYPE_UNDEF);
+
+	return ret;
+}
+
 int papermodel::calcAvetgap()
 {
 	int ret = 0;
@@ -685,6 +735,65 @@ int papermodel::calcAvetgap()
 		dx = ogx0[i] - tgx[i];
 		dy = ogy0[i] - tgy[i];
 		dz = ogz0[i] - tgz[i];
+		diff = sqrt(dx * dx + dy * dy + dz * dz);
+		diff0 += diff;
+	}
+#else
+	for (int i = 0; i < tgcnt; i++) {
+		tgx0[i] = mat[0] * tgx[i] + mat[1] * tgy[i] + mat[2] * tgz[i] + mat[3];
+		tgy0[i] = mat[4] * tgx[i] + mat[5] * tgy[i] + mat[6] * tgz[i] + mat[7];
+		tgz0[i] = mat[8] * tgx[i] + mat[9] * tgy[i] + mat[10] * tgz[i] + mat[11];
+		dx = tgx0[i] - ogx[i];
+		dy = tgy0[i] - ogy[i];
+		dz = tgz0[i] - ogz[i];
+		diff = sqrt(dx * dx + dy * dy + dz * dz);
+		diff1 += diff;
+	}
+#endif
+	//std::cout << "diff0=" << diff0/(double)tgcnt << ", diff1=" << diff1/(double)tgcnt << std::endl;
+	this->avetgap = diff0 / (double)tgcnt;
+
+	return ret;
+}
+
+int papermodel::calcAvetgapRot()
+{
+	int ret = 0;
+
+	if (tgcnt == 0) {
+		std::cout << "no target point." << std::endl;
+		return -1;
+	}
+
+	double tgx0[MAX_TGT_CNT], tgy0[MAX_TGT_CNT], tgz0[MAX_TGT_CNT];
+	double ogx0[MAX_TGT_CNT], ogy0[MAX_TGT_CNT], ogz0[MAX_TGT_CNT];
+	memcpy(tgx0, tgx, sizeof(double) * tgcnt);
+	memcpy(tgy0, tgy, sizeof(double) * tgcnt);
+	memcpy(tgz0, tgz, sizeof(double) * tgcnt);
+	memcpy(ogx0, ogx, sizeof(double) * tgcnt);
+	memcpy(ogy0, ogy, sizeof(double) * tgcnt);
+	memcpy(ogz0, ogz, sizeof(double) * tgcnt);
+	for (int i = 0; i < tgcnt; i++) {
+		tgx0[i] -= crs[0].m3[12];
+		tgy0[i] -= crs[0].m3[13];
+		tgz0[i] -= crs[0].m3[14];
+		ogx0[i] -= crs[0].m3[12];
+		ogy0[i] -= crs[0].m3[13];
+		ogz0[i] -= crs[0].m3[14];
+	}
+
+	double mat[16];
+	getMatRot(tgcnt, ogx0, ogy0, ogz0, tgx0, tgy0, tgz0, mat);
+
+	double dx, dy, dz, diff, diff0 = 0.0, diff1 = 0.0, tmpx, tmpy, tmpz;
+#if 1
+	for (int i = 0; i < tgcnt; i++) {
+		tmpx = mat[0] * ogx0[i] + mat[1] * ogy0[i] + mat[2] * ogz0[i];
+		tmpy = mat[4] * ogx0[i] + mat[5] * ogy0[i] + mat[6] * ogz0[i];
+		tmpz = mat[8] * ogx0[i] + mat[9] * ogy0[i] + mat[10] * ogz0[i];
+		dx = tmpx - tgx0[i];
+		dy = tmpy - tgy0[i];
+		dz = tmpz - tgz0[i];
 		diff = sqrt(dx * dx + dy * dy + dz * dz);
 		diff0 += diff;
 	}
