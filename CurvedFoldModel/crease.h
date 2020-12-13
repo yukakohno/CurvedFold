@@ -309,6 +309,7 @@ public:
 
 	int getSamplePoints2D( double space, double *x, double *y ); // 不使用、使う場合は要更新
 	int getSamplePoints3D( double space, double *x, double *y, double *z, double *len_sp );
+	int getSamplePoints2D3D(double space, double* x, double* y, double* z, double* x2d, double* y2d, double* len_sp);
 	int getVertexPoints3D( double space, double *x, double *y, double *z, double *len_sp );
 
 };

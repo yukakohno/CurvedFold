@@ -167,6 +167,8 @@ public:
 
 	int getMat_stitch( int divnum, int maxpcnt, double *mObj );
 	int getMat_stitch1( int divnum, int maxpcnt, double *mObj );
+	int getStitch(int divnum, int maxpcnt, double* mObj);
+	int getMat_stitch2(int divnum, double* mObj);
 	int getParam_stitch( int divnum, int rulingOnly );
 	int getParam_calcRE();
 	int getParam_optimize( int divnum );
