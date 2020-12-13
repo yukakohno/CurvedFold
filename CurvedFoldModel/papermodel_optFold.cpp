@@ -23,16 +23,17 @@ int papermodel::saveTgt( char *fname )
 		ret = -1; return ret;
 	}
 
-	tgcnt = 0;
-	for( int j=20; j<ph; j+=20 ){
-		for( int i=20; i<pw; i+=20 ){
+	if (tgcnt == 0) {
+		for (int j = 20; j < ph; j += 20) {
+			for (int i = 20; i < pw; i += 20) {
 			ogx_cp[tgcnt] = i;
 			ogy_cp[tgcnt] = j;
 			tgcnt++;
 		}
 	}
-
 	getTgt2D3D();
+	}
+
 #if 1
 	for( int i=0; i<tgcnt; i++ ){
 		fprintf( fp, "%f %f %f %f %f\n", ogx[i], ogy[i], ogz[i], ogx_cp[i], ogy_cp[i] );
@@ -161,9 +162,15 @@ int papermodel::getTgt2D3D()
 	avetgap = 0.0;
 
 	for( int i=0; i<tgcnt; i++ ){
-		bool sign = true;
 		bool flg = false;
+		int minplidx = -1;
+		double minpldist = pw + ph;
 		for( int j=0; j<plcnt; j++){
+
+			if (pl_cridx[j] != 0) {
+				continue;
+			}
+
 			int left[4], right[4], lcnt=0, rcnt=0;
 			memset( left, 0, sizeof(int)*4 );
 			memset( right, 0, sizeof(int)*4 );
@@ -176,43 +183,57 @@ int papermodel::getTgt2D3D()
 				lr = vx0*vy1 - vx1*vy0;
 				if( lr >= 0.0 ){ left[k] = 1; lcnt++; }
 				if( lr <= 0.0 ){ right[k] = 1; rcnt++; }
+
+				double pldist = line_point_dist_2d(0.0, 0.0, vx0, vy0, vx1, vy1);
+				if ( minpldist > pldist ) {
+					minpldist = pldist;
+					minplidx = j;
+				}
 			}
 			if( lcnt>=plvcnt[j] || rcnt>=plvcnt[j] ){
 				double *pmat = &plmat[j*16];
 				ogx[i] = pmat[0]*ogx_cp[i] + pmat[4]*ogy_cp[i] + pmat[12];
 				ogy[i] = pmat[1]*ogx_cp[i] + pmat[5]*ogy_cp[i] + pmat[13];
 				ogz[i] = pmat[2]*ogx_cp[i] + pmat[6]*ogy_cp[i] + pmat[14];
-				flg = true;
 
 				double dx = tgx[i] - ogx[i];
 				double dy = tgy[i] - ogy[i];
 				double dz = tgz[i] - ogz[i];
-				if( dx*pmat[8] + dy*pmat[9] + dz*pmat[10] <0 ){
-					sign = false;
-				}
-
 				tgap[i] = sqrt( dx*dx + dy*dy + dz*dz );
-				if( sign==false ){
+				avetgap += tgap[i]; avecnt++;
+
+				if (dx * pmat[8] + dy * pmat[9] + dz * pmat[10] < 0) {
 					tgap[i] = -tgap[i];
 				}
-				avetgap += fabs(tgap[i]); avecnt++;
 
+				//std::cout << "target: " << i << ", ply" << j << std::endl;
+				flg = true;
 				break; // j
 			}
 		}
 		if( !flg ){
-			//printf("ogx[%d] = ogy[%d] = ogz[%d] = 0.0\n", i,i,i );
-			ogx[i] = ogy[i] = ogz[i] = 0.0;
+			if (minplidx > -1 ) {
+				// plot on the nearest plane with max margin X mm
+				double* pmat = &plmat[minplidx * 16];
+				ogx[i] = pmat[0] * ogx_cp[i] + pmat[4] * ogy_cp[i] + pmat[12];
+				ogy[i] = pmat[1] * ogx_cp[i] + pmat[5] * ogy_cp[i] + pmat[13];
+				ogz[i] = pmat[2] * ogx_cp[i] + pmat[6] * ogy_cp[i] + pmat[14];
+
+				double dx = tgx[i] - ogx[i];
+				double dy = tgy[i] - ogy[i];
+				double dz = tgz[i] - ogz[i];
+				tgap[i] = sqrt(dx * dx + dy * dy + dz * dz);
+				avetgap += tgap[i]; avecnt++;
+
+				if (dx * pmat[8] + dy * pmat[9] + dz * pmat[10] < 0) {
+					tgap[i] = -tgap[i];
+				}
+
 		} else {
-//			double dx = tgx[i] - ogx[i];
-//			double dy = tgy[i] - ogy[i];
-//			double dz = tgz[i] - ogz[i];
-//			tgap[i] = sqrt( dx*dx + dy*dy + dz*dz );
-//			if( sign==false ){
-//				tgap[i] = -tgap[i];
-//			}
-//			avetgap += fabs(tgap[i]); avecnt++;
+				ogx[i] = ogy[i] = ogz[i] = 0.0;
+			}
 		}
+		//std::cout << "tgap[" << i << "] = " << tgap[i] << std::endl;
 	}
 	if( avecnt>0 ){
 		avetgap /= (double)avecnt;
