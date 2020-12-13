@@ -545,18 +545,30 @@ void GraphWindow3DCF::draw3DCurveFold()
 		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
 
+#define DEMO_TARGET
 	//
 	// Target points
 	//
 	if( disp_TGT ){
 		for( i=0; i<ppm->tgcnt; i++ )
 		{
-			glColor3f( 0.5, 0.5, 0.5 );
 			glPushMatrix();
 			glTranslatef( ppm->tgx[i], ppm->tgy[i], ppm->tgz[i] );
-			glutSolidSphere( 0.5, 8, 8 );
+#ifdef DEMO_TARGET
+			glColor3f(0.0, 0.0, 1.0);
+			glutSolidSphere(3.0, 8, 8);
+#else
+			glColor3f( 0.5, 0.5, 0.5 );
+			glutSolidSphere( 1.5, 8, 8 );
+#endif
 			glPopMatrix();
 
+			glPushMatrix();
+			glTranslatef( ppm->ogx[i], ppm->ogy[i], ppm->ogz[i] );
+#ifdef DEMO_TARGET
+			glColor3f(1.0, 0.0, 0.0);
+			glutSolidSphere(3.0, 8, 8);
+#else
 			float r,g,b;
 			if( ppm->tgap[i] >= 0 ){
 				r = ppm->tgap[i]*0.05; r = r < 1.0 ? r : 1.0;
@@ -568,16 +580,18 @@ void GraphWindow3DCF::draw3DCurveFold()
 				r = 0.0;
 			}
 			glColor3f( r, g, b );
-			glPushMatrix();
-			glTranslatef( ppm->ogx[i], ppm->ogy[i], ppm->ogz[i] );
 			glutSolidSphere( 1.5, 8, 8 );
+#endif
 			glPopMatrix();
 
-			glLineWidth(1.0);
+			glLineWidth(2.0);
 			glBegin(GL_LINES);
-			glColor3f( 0.5, 0.5, 0.5 );
+			glColor3f( 0.0, 0.0, 0.0 );
+			//glColor3f( 0.5, 0.5, 0.5 );
 			glVertex3f( ppm->tgx[i], ppm->tgy[i], ppm->tgz[i] );
+#ifndef DEMO_TARGET
 			glColor3f( r, g, b );
+#endif
 			glVertex3f( ppm->ogx[i], ppm->ogy[i], ppm->ogz[i] );
 			glEnd();
 		}

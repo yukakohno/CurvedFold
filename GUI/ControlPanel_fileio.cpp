@@ -39,7 +39,15 @@ void ControlPanel::cb_btn_load(Fl_Widget *wgt, void *idx)
 						break;
 					}
 				}
-				sprintf( fname_m2m3, "%sm2m3.txt", This->filepath );
+
+				strcpy(fname_m2m3, fname);
+				for (int i = strlen(fname_m2m3) - 1; i > 0; i--) {
+					if (fname_m2m3[i] == '.') {
+						fname_m2m3[i] = 0;
+						break;
+					}
+				}
+				sprintf( fname_m2m3, "%s_m2m3.txt", fname_m2m3);
 
 				// load data
 				int filetype = This->ppm.crs[0].load(fname);

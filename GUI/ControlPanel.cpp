@@ -988,7 +988,7 @@ void ControlPanel::createPanel()
 		Fl_Box* bx_Hist = new Fl_Box(0, wgt_y, g->w(), 20, "--- HISTORY ---");	wgt_y += 20;
 
 		cb_history = new Fl_Check_Button(wgt_x, wgt_y, 20, 20, "history");
-		cb_history->value(1);
+		cb_history->value(0);
 		g->add(cb_history);
 
 		wgt_y += 25;
