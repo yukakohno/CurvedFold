@@ -174,11 +174,34 @@ void ControlPanel::cb_btn_R2TA2(Fl_Widget *wgt, void *idx)
 void ControlPanel::cb_btn_paramopt(Fl_Widget *wgt, void *idx)
 {
 	ControlPanel *This = (ControlPanel *)idx;
-	crease *c = &(This->ppm.crs[0]);
+	papermodel *ppm = &(This->ppm);
+	crease *c = &(ppm->crs[0]);
 	int divnum = This->gwin->divnum = This->vs_divnum->value();
 	int frm = This->vs_fmot2->value() + c->FM_fidx_org;
 
-	// TODO: optimize parameters
+	ppm->tgcnt = ppm->stpcnt * 2;
+	for (int i = 0; i < ppm->stpcnt; i++) {
+		ppm->tgx[i] = ppm->stxm[0][i];
+		ppm->tgy[i] = ppm->stym[0][i];
+		ppm->tgz[i] = ppm->stzm[0][i];
+		ppm->ogx[i] = ppm->stx0[0][i];
+		ppm->ogy[i] = ppm->sty0[0][i];
+		ppm->ogz[i] = ppm->stz0[0][i];
+		ppm->ogx_cp[i] = ppm->stx_cp[0][i];
+		ppm->ogy_cp[i] = ppm->sty_cp[0][i];
+	}
+	for (int i = 0; i < ppm->stpcnt; i++) {
+		ppm->tgx[ppm->stpcnt + i] = ppm->stxm[1][i];
+		ppm->tgy[ppm->stpcnt + i] = ppm->stym[1][i];
+		ppm->tgz[ppm->stpcnt + i] = ppm->stzm[1][i];
+		ppm->ogx[ppm->stpcnt + i] = ppm->stx0[1][i];
+		ppm->ogy[ppm->stpcnt + i] = ppm->sty0[1][i];
+		ppm->ogz[ppm->stpcnt + i] = ppm->stz0[1][i];
+		ppm->ogx_cp[ppm->stpcnt + i] = ppm->stx_cp[1][i];
+		ppm->ogy_cp[ppm->stpcnt + i] = ppm->sty_cp[1][i];
+	}
+
+	// TODO: optimize
 
 	This->gwin->redraw();
 	This->gwin_cp->redraw();
@@ -244,7 +267,12 @@ void ControlPanel::cb_btn_matopt(Fl_Widget *wgt, void *idx)
 	This->gwin->resetObjTrans();
 
 	double mobj[16];
-	int ret = This->ppm.getMat_stitch1( divnum, -1, mobj ); // Å‰10“_‚Ì‚ÝŽg‚¤
+#if 0
+	int ret = This->ppm.getMat_stitch1(divnum, -1, mobj);
+#else
+	int ret1 = This->ppm.getStitch(divnum, -1, mobj);
+	int ret2 = This->ppm.getMat_stitch2( divnum, mobj );
+#endif
 	for( int i=0; i<16; i++ ){ This->gwin->mObject[i] = mobj[i]; }
 
 	This->gwin->redraw();
