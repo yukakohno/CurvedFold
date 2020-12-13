@@ -40,17 +40,28 @@ void ControlPanel::cb_btn_optfold2(Fl_Widget* wgt, void* idx)
 		return;
 	}
 
+#if 1
+	int crcnt, lcrcnt, rcrcnt, dccnt, fccnt, tccnt;
+	dccnt = ppm->dccnt; ppm->dccnt = 0;
+	fccnt = ppm->fccnt; ppm->fccnt = 0;
+	tccnt = ppm->tccnt; ppm->tccnt = 0;
+	crcnt = ppm->crcnt; ppm->crcnt = 1;
+	lcrcnt = ppm->lcrcnt; ppm->lcrcnt = 0;
+	rcrcnt = ppm->rcrcnt; ppm->rcrcnt = 0;
+#endif
 	int minval=-180;
 	double mintgap = 10000;
 	for (int val = This->vs_xmang1->minimum(); val < This->vs_xmang1->maximum(); val++)
 	{
 		//This->vs_xmang0->value(val);
 		//This->btn_R2TA0->do_callback();
+		//std::cout << "val=" << val;
 
 		double mang = val / 180.0 * M_PI;
 		ppm->re_sidx = 0;
 		ppm->re_eidx = c->Xcnt;
 		int ret = c->calcR_TA(1/*flg_interpolate*/, &ppm->rp, ppm->re_sidx, ppm->re_eidx, mang, 0);
+		//std::cout << ", ret=" << ret;
 
 		if (ret == 0) {
 			ppm->set_postproc_type(PPTYPE_PRICURVE);
@@ -62,13 +73,23 @@ void ControlPanel::cb_btn_optfold2(Fl_Widget* wgt, void* idx)
 			} else if (This->cb_optrot->value() && ppm->tgcnt > 3) {
 				ppm->calcAvetgapRot(); // calc gap with fixed origin
 			}
-			//std::cout << "ppm->avetgap=" << ppm->avetgap << std::endl;
+			//std::cout << ", avetgap=" << ppm->avetgap;
 			if (mintgap > ppm->avetgap) {
 				minval = val;
 				mintgap = ppm->avetgap;
+				//std::cout << ", minval=" << minval << ", mintgap=" << mintgap;
 			}
 		}
+		//std::cout << std::endl;
 	}
+#if 1
+	ppm->dccnt = dccnt;
+	ppm->fccnt = fccnt;
+	ppm->tccnt = tccnt;
+	ppm->crcnt = crcnt;
+	ppm->lcrcnt = lcrcnt;
+	ppm->rcrcnt = rcrcnt;
+#endif
 	if (minval > -180) {
 		std::cout << "gap=" << mintgap << std::endl;
 		This->vs_xmang0->value(minval);
