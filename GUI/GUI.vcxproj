@@ -170,6 +170,7 @@
     <ClCompile Include="ControlPanel_history.cpp" />
     <ClCompile Include="ControlPanel_optimization.cpp" />
     <ClCompile Include="ControlPanel_Rul2Crv.cpp" />
+    <ClCompile Include="ControlPanel_TargetPoints.cpp" />
     <ClCompile Include="GraphWindow3D.cpp" />
     <ClCompile Include="GraphWindow3DCF.cpp" />
     <ClCompile Include="GraphWindowCP.cpp" />

@@ -30,11 +30,17 @@ GraphWindow3DCF::GraphWindow3DCF(int X, int Y, int W, int H)
 : GraphWindow3D(X, Y, W, H)
 {
 	init();
+	sbw = this->w();
+	sbh = this->h();
+	sbstep = sbw * 3;
+	selectbuffer = new unsigned char[sbstep * sbh];
 }
 
 GraphWindow3DCF::~GraphWindow3DCF()
 {
 	init();
+
+	delete[] selectbuffer;
 }
 
 void GraphWindow3DCF::initObject()
@@ -145,6 +151,7 @@ void GraphWindow3DCF::init()
 	disp_PRI = 1;
 	disp_stitch = 0;
 	disp_TGT = 1;
+	disp_modTGT = -2;
 	disp_LIN_SMOOTH = 0;
 
 	flg_addcurve = 0;
@@ -161,6 +168,7 @@ void GraphWindow3DCF::init()
 	vcnt = 0;
 	vx = vy = vz = NULL;
 
+	selectidx = -1;
 	resetRotation(-1);
 }
 
@@ -556,6 +564,9 @@ void GraphWindow3DCF::draw3DCurveFold()
 			glTranslatef( ppm->tgx[i], ppm->tgy[i], ppm->tgz[i] );
 #ifdef DEMO_TARGET
 			glColor3f(0.0, 0.0, 1.0);
+			if (i == disp_modTGT) {
+				glColor3f(1.0, 0.5, 0.0);
+			}
 			glutSolidSphere(3.0, 8, 8);
 #else
 			glColor3f( 0.5, 0.5, 0.5 );
@@ -567,6 +578,9 @@ void GraphWindow3DCF::draw3DCurveFold()
 			glTranslatef( ppm->ogx[i], ppm->ogy[i], ppm->ogz[i] );
 #ifdef DEMO_TARGET
 			glColor3f(1.0, 0.0, 0.0);
+			if (i == disp_modTGT) {
+				glColor3f(1.0, 1.0, 0.0);
+			}
 			glutSolidSphere(3.0, 8, 8);
 #else
 			float r,g,b;
@@ -588,14 +602,59 @@ void GraphWindow3DCF::draw3DCurveFold()
 			glBegin(GL_LINES);
 			glColor3f( 0.0, 0.0, 0.0 );
 			//glColor3f( 0.5, 0.5, 0.5 );
+			if (i == disp_modTGT) {
+				glColor3f(1.0, 0.5, 0.0);
+			}
 			glVertex3f( ppm->tgx[i], ppm->tgy[i], ppm->tgz[i] );
 #ifndef DEMO_TARGET
 			glColor3f( r, g, b );
 #endif
+			if (i == disp_modTGT) {
+				glColor3f(1.0, 1.0, 0.0);
+			}
 			glVertex3f( ppm->ogx[i], ppm->ogy[i], ppm->ogz[i] );
 			glEnd();
 		}
 	}
+
+#if 1
+	//
+	// Select target points
+	//
+	if (disp_TGT && -1 < disp_modTGT && disp_modTGT < ppm->tgcnt && push_x2 > -1 && push_y2 > -1 && ppm)
+	{
+		glDrawBuffer(GL_FRONT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//glClearColor(1.f, 1.f, 1.f, 1.f);
+
+		for (i = 0; i < ppm->tgcnt; i++)
+		{
+			glPushMatrix();
+			glTranslatef(ppm->tgx[i], ppm->tgy[i], ppm->tgz[i]);
+			glColor3ub((GLubyte)i, (GLubyte)i, (GLubyte)i);
+			glutSolidSphere(3.0, 8, 8);
+			glPopMatrix();
+		}
+
+		glReadBuffer(GL_FRONT);
+		glReadPixels(0, 0, sbw, sbh, GL_RGB, GL_UNSIGNED_BYTE, selectbuffer);
+
+		//int selectidx = selectbuffer[(sbh - 1 - push_y2) * sbstep + push_x2 * 3];
+		//std::cout << "selectidx = " << selectidx << ", push_x2 = " << push_x2 << ", push_y2 = " << push_y2 << std::endl;
+#if 0
+		cv::Mat image(cv::Size(sbw, sbh), CV_8UC3);
+		for (int j = 0; j < sbh; j++) {
+			for (int i = 0; i < sbw; i++) {
+				image.at<cv::Vec3b>(j, i)[0] = selectbuffer[(sbh - 1 - j) * sbstep + i * 3 + 2];
+				image.at<cv::Vec3b>(j, i)[1] = selectbuffer[(sbh - 1 - j) * sbstep + i * 3 + 1];
+				image.at<cv::Vec3b>(j, i)[2] = selectbuffer[(sbh - 1 - j) * sbstep + i * 3];
+			}
+		}
+		imwrite("buffer.bmp", image);
+#endif
+		glDrawBuffer(GL_BACK);
+	}
+#endif
 
 		} // if( !disp_ONE || disp_ONE && dc==0 )
 /*-----------------------------------------------------------------*/
@@ -717,6 +776,20 @@ int GraphWindow3DCF::handle(int event)
 		printf("sts_sft:%d, sts_alt:%d, sts_ctrl:%d, (%d,%d)\n",
 			sts_sft, sts_alt, sts_ctrl, push_x, push_y);
 #endif
+		if (push_button2 == FL_LEFT_MOUSE && -1 < disp_modTGT && disp_modTGT < ppm->tgcnt) {
+			redraw();
+			selectidx = selectbuffer[(sbh - 1 - push_y2) * sbstep + push_x2 * 3];
+			std::cout << "selectidx = " << selectidx << ", push_x2 = " << push_x2 << ", push_y2 = " << push_y2 << std::endl;
+			if (selectidx != 255) {
+				disp_modTGT = ((ControlPanel*)cwin)->gwin_cp->disp_modTGT = selectidx;
+				prevtrans2[0] = ppm->tgx[selectidx];
+				prevtrans2[1] = ppm->tgy[selectidx];
+				prevtrans2[2] = ppm->tgz[selectidx];
+				redraw();
+				((ControlPanel*)cwin)->gwin_cp->redraw();
+				return 1; // ドラッグイベントを有効にする
+			}
+		}
 		if(push_button2 == FL_RIGHT_MOUSE && (sts_sft2 || sts_alt2 || sts_ctrl2)){
 			return 1; // ドラッグイベントを有効にする
 		}else{
@@ -729,6 +802,32 @@ int GraphWindow3DCF::handle(int event)
 		printf("FL_DRAG\n");
 		printf("mouse dragged: (%d,%d)\n", Fl::event_x(), Fl::event_y());
 #endif
+		if (push_button2 == FL_LEFT_MOUSE
+			&& -1 < disp_modTGT && disp_modTGT < ppm->tgcnt
+			&& -1 < selectidx && selectidx < 255) {
+
+			// マウス移動量 -> カメラ座標での物体移動量
+			currtrans2[0] = Fl::event_x() - push_x2;
+			currtrans2[1] = -(Fl::event_y() - push_y2);
+			currtrans2[2] = 0;
+
+			// 回転に応じて移動方向を修正
+			mult_m44_v4(mCamera, currtrans2);
+
+			// スケールに応じて移動量修正
+			currtrans2[0] /= dispscale;
+			currtrans2[1] /= dispscale;
+			currtrans2[2] /= dispscale;
+
+			// 前の移動量に加算
+			disptrans2[0] = prevtrans2[0] + currtrans2[0];
+			disptrans2[1] = prevtrans2[1] + currtrans2[1];
+			disptrans2[2] = prevtrans2[2] + currtrans2[2];
+			ppm->tgx[selectidx] = disptrans2[0];
+			ppm->tgy[selectidx] = disptrans2[1];
+			ppm->tgz[selectidx] = disptrans2[2];
+			redraw();
+		}
 		if( push_button2 == FL_RIGHT_MOUSE ){
 			if(sts_sft2){	// rotation
 				// ドラッグした量をcurrquatに保存
@@ -783,6 +882,11 @@ int GraphWindow3DCF::handle(int event)
 		printf("FL_RELEASE\n");
 		printf("mouse released: (%d,%d)\n", Fl::event_x(), Fl::event_y());
 #endif
+		if (push_button2 == FL_LEFT_MOUSE && -1 < disp_modTGT && disp_modTGT < ppm->tgcnt) {
+			selectidx = -1;
+			for (i = 0; i < 3; i++) prevtrans2[i] = 0;
+			redraw();
+		}
 		if( push_button2 == FL_RIGHT_MOUSE && (sts_sft2 || sts_alt2 || sts_ctrl2) )
 		{
 			if(sts_sft2){

@@ -42,6 +42,8 @@ ControlPanel::ControlPanel(int X, int Y, int W, int H, const char *L, GraphWindo
 
 	hist_head = hist_size = 0;
 
+	mode_modtgt = false;
+
 	sprintf( filepath, "./input/" );
 
 	createPanel();
@@ -870,11 +872,67 @@ void ControlPanel::createPanel()
 		cb_optrot->value(0);
 		g->add(cb_optrot);
 
+		wgt_x = 10;
+		wgt_y += 25;
+
+		// ------------------------- TARGET POINTS -------------------------------------------
+		Fl_Box* bx_Target = new Fl_Box(0, wgt_y, g->w(), 20, "--- TARGET POINTS ---");	wgt_y += 20;
+
+		wgt_x = 40;
+
+		btn_addTgt = new Fl_Button(wgt_x, wgt_y, 150, 20, "add / modify / delete");
+		btn_addTgt->callback(cb_btn_addTgt, (void*)this);
+		g->add(btn_addTgt);
+
+		wgt_y += 25;
+
+		vs_tgtidx = new Fl_Value_Slider(wgt_x, wgt_y, 150, 20, "idx");
+		vs_tgtidx->bounds(0, 100);	vs_tgtidx->step(1);	vs_tgtidx->value(0);
+		vs_tgtidx->align(FL_ALIGN_LEFT);
+		vs_tgtidx->type(FL_HORIZONTAL);
+		vs_tgtidx->callback(cb_vs_tgtidx, (void*)this);
+		g->add(vs_tgtidx);
+#if 0
+		wgt_y += 25;
+
+		vs_tgtx = new Fl_Value_Slider(wgt_x, wgt_y, 150, 20, "x");
+		vs_tgtx->bounds(-100, 100);	vs_tgtx->step(1);	vs_tgtx->value(0);
+		vs_tgtx->align(FL_ALIGN_LEFT);
+		vs_tgtx->type(FL_HORIZONTAL);
+		vs_tgtx->callback(cb_vs_tgtxyz, (void*)this);
+		g->add(vs_tgtx);
+
+		wgt_y += 25;
+
+		vs_tgty = new Fl_Value_Slider(wgt_x, wgt_y, 150, 20, "y");
+		vs_tgty->bounds(-100, 100);	vs_tgty->step(1);	vs_tgty->value(0);
+		vs_tgty->align(FL_ALIGN_LEFT);
+		vs_tgty->type(FL_HORIZONTAL);
+		vs_tgty->callback(cb_vs_tgtxyz, (void*)this);
+		g->add(vs_tgty);
+
+		wgt_y += 25;
+
+		vs_tgtz = new Fl_Value_Slider(wgt_x, wgt_y, 150, 20, "z");
+		vs_tgtz->bounds(-100, 100);	vs_tgtz->step(1);	vs_tgtz->value(0);
+		vs_tgtz->align(FL_ALIGN_LEFT);
+		vs_tgtz->type(FL_HORIZONTAL);
+		vs_tgtz->callback(cb_vs_tgtxyz, (void*)this);
+		g->add(vs_tgtz);
+
+		wgt_y += 25;
+
+		vs_tgtn = new Fl_Value_Slider(wgt_x, wgt_y, 150, 20, "n");
+		vs_tgtn->bounds(-100, 100);	vs_tgtn->step(1);	vs_tgtn->value(0);
+		vs_tgtn->align(FL_ALIGN_LEFT);
+		vs_tgtn->type(FL_HORIZONTAL);
+		vs_tgtn->callback(cb_vs_tgtn, (void*)this);
+		g->add(vs_tgtn);
+#endif
+		wgt_x = 10;
 		wgt_y += 25;
 
 		// ------------------------- OPTIMIZATION -------------------------------------------
-		wgt_x = 10;
-
 		Fl_Box* bx_Opt = new Fl_Box(0, wgt_y, g->w(), 20, "--- OPTIMIZATION ---");	wgt_y += 20;
 
 		btn_optfold2 = new Fl_Button(wgt_x, wgt_y, 180, 20, "Angle with Fixed Rulings");	wgt_x += 100;
@@ -898,17 +956,19 @@ void ControlPanel::createPanel()
 		btn_randrul2 = new Fl_Button(wgt_x, wgt_y, 180, 20, "Rulings and Angles");	wgt_x += 100;
 		btn_randrul2->callback(cb_btn_randrul2, (void*)this);
 		g->add(btn_randrul2);
-
+#if 0
 		wgt_x = 10;
 		wgt_y += 25;
 
 		btn_optfold = new Fl_Button(wgt_x, wgt_y, 60, 20, "Angle");	wgt_x += 60;
 		btn_optfold->callback(cb_btn_optfold, (void*)this);
+		btn_optfold->deactivate();
 		g->add(btn_optfold);
 
 
 		btn_optrulfold = new Fl_Button(wgt_x, wgt_y, 100, 20, "Rul + Angle");	wgt_x += 100;
 		btn_optrulfold->callback(cb_btn_optrulfold, (void*)this);
+		btn_optrulfold->deactivate();
 		g->add(btn_optrulfold);
 
 		wgt_x = 10;
@@ -979,7 +1039,7 @@ void ControlPanel::createPanel()
 		btn_listtgt = new Fl_Button(wgt_x, wgt_y, 40, 20, "list");
 		btn_listtgt->callback(cb_btn_listtgt, (void*)this);
 		g->add(btn_listtgt);
-
+#endif
 		wgt_x = 10;
 		wgt_y += 25;
 

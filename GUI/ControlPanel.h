@@ -228,6 +228,21 @@ private:
 	static void cb_btn_randrul(Fl_Widget* wgt, void* idx);
 	static void cb_btn_randrul2(Fl_Widget* wgt, void* idx);
 
+	// ------------------------- TARGET POINTS --------------------------------------
+
+	bool mode_modtgt;
+	Fl_Button* btn_addTgt;
+	Fl_Value_Slider* vs_tgtidx;
+	//Fl_Value_Slider* vs_tgtx;
+	//Fl_Value_Slider* vs_tgty;
+	//Fl_Value_Slider* vs_tgtz;
+	//Fl_Value_Slider* vs_tgtn;
+
+	static void cb_btn_addTgt(Fl_Widget* wgt, void* idx);
+	static void cb_vs_tgtidx(Fl_Widget* wgt, void* idx);
+	//static void cb_vs_tgtxyz(Fl_Widget* wgt, void* idx);
+	//static void cb_vs_tgtn(Fl_Widget* wgt, void* idx);
+
 	// ------------------------- LIST RULINGS --------------------------------------
 public:
 	Fl_Button* btn_makelist;

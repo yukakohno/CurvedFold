@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
 	cwin->gwin = gwin;
 	cwin->gwin_cp = gwin_cp;
 	cwin->gwin_gr = gwin_gr;
-	gwin_cp->cwin = (void*)cwin;
+	gwin->cwin = gwin_cp->cwin = (void*)cwin;
 
 	int ret = cwin->ppm.crs[0].load("input/P1.txt");
 	ret = cwin->ppm.crs[0].loadm2m3("input/P1_m2m3.txt");

@@ -38,6 +38,8 @@ void GraphWindowCP::init()
 
 	if( jpg ){ delete jpg; }
 	jpg = new Fl_JPEG_Image( TEXFNAME );
+
+	disp_modTGT = -2;
 }
 
 void GraphWindowCP::draw()
@@ -277,7 +279,9 @@ void GraphWindowCP::draw()
 		for( int i=0; i<ppm->tgcnt; i++ )
 		{
 			int r,g,b;
-			if( ppm->tgap[i] >= 0 ){
+			if ( i == disp_modTGT ) {
+				r = 255; g = 255; b = 0;
+			} else if( ppm->tgap[i] >= 0 ){
 				r = (int)(ppm->tgap[i]*0.05*256); r = r < 255 ? r : 255;
 				g = 255 - r;
 				b = 0;
@@ -481,24 +485,82 @@ int GraphWindowCP::handle(int event)
 		}
 		break;
 	case FL_KEYUP:
+		key = Fl::event_key();
+#if 1		// delete target point
+		if (key == 'd' && disp_modTGT > -1) {
+			if (disp_modTGT < ppm->tgcnt - 1) {
+				int size = ppm->tgcnt - disp_modTGT;
+				memcpy(&(ppm->ogx_cp[disp_modTGT]), &(ppm->ogx_cp[disp_modTGT + 1]), sizeof(double) * size);
+				memcpy(&(ppm->ogy_cp[disp_modTGT]), &(ppm->ogy_cp[disp_modTGT + 1]), sizeof(double) * size);
+				memcpy(&(ppm->ogx[disp_modTGT]), &(ppm->ogx[disp_modTGT + 1]), sizeof(double) * size);
+				memcpy(&(ppm->ogy[disp_modTGT]), &(ppm->ogy[disp_modTGT + 1]), sizeof(double) * size);
+				memcpy(&(ppm->ogz[disp_modTGT]), &(ppm->ogz[disp_modTGT + 1]), sizeof(double) * size);
+				memcpy(&(ppm->tgx[disp_modTGT]), &(ppm->tgx[disp_modTGT + 1]), sizeof(double) * size);
+				memcpy(&(ppm->tgy[disp_modTGT]), &(ppm->tgy[disp_modTGT + 1]), sizeof(double) * size);
+				memcpy(&(ppm->tgz[disp_modTGT]), &(ppm->tgz[disp_modTGT + 1]), sizeof(double) * size);
+			}
+			ppm->tgcnt--;
+			if (disp_modTGT+1 > ppm->tgcnt) {
+				disp_modTGT = ppm->tgcnt - 1;
+			}
+			redraw();
+			((ControlPanel*)cwin)->gwin->redraw();
+		}
+#endif
 		break;
 	case FL_PUSH:
 		if( Fl::event_button() == FL_RIGHT_MOUSE || Fl::event_button() == FL_LEFT_MOUSE ){
 			push_x = Fl::event_x();
 			push_y = Fl::event_y();
 			if( Fl::event_button() == FL_LEFT_MOUSE ){
-				int thres=8;
-				if( abs( (int)(ox+psx*wscl) - push_x ) < thres ){
+				if (ppm!=NULL && -2 < disp_modTGT && disp_modTGT < ppm->tgcnt ) {
+					// choose nearest target point
+					int thres = 8;
+					int minidx = -1;
+					double mindist = 100000;
+					for (int ii = 0; ii < ppm->tgcnt; ii++ ) {
+						double dx = ox + ppm->ogx_cp[ii] * wscl - (double)push_x;
+						double dy = oy + ppm->ogy_cp[ii] * hscl - (double)push_y;
+						double dist2 = dx * dx + dy * dy;
+						if (dist2 < mindist) {
+							minidx = ii;
+							mindist = dist2;
+						}
+					}
+					if (minidx > -1 && mindist < thres*thres) {
+						((ControlPanel*)cwin)->gwin->disp_modTGT = disp_modTGT = minidx;
+						flg_psize = 10;
+					} // add new target point
+					else if(ppm->tgcnt+1 < MAX_TGT_CNT){
+						((ControlPanel*)cwin)->gwin->disp_modTGT = disp_modTGT = ppm->tgcnt;
+						ppm->ogx_cp[disp_modTGT] = ((double)push_x - ox) / wscl;
+						ppm->ogy_cp[disp_modTGT] = ((double)push_y - oy) / hscl;
+						ppm->tgcnt++;
+						ppm->getTgt2D3D();
+						ppm->tgx[disp_modTGT] = ppm->ogx[disp_modTGT];
+						ppm->tgy[disp_modTGT] = ppm->ogy[disp_modTGT];
+						ppm->tgz[disp_modTGT] = ppm->ogz[disp_modTGT];
+						flg_psize = 10;
+					}
+				}
+				else {
+					int thres = 8;
+					if (abs((int)(ox + psx * wscl) - push_x) < thres) {
 					flg_psize = 1;
-				} else if( abs( (int)(ox+pex*wscl) - push_x ) < thres ){
+					}
+					else if (abs((int)(ox + pex * wscl) - push_x) < thres) {
 					flg_psize = 2;
-				} else if( abs( (int)(oy+psy*hscl) - push_y ) < thres ){
+					}
+					else if (abs((int)(oy + psy * hscl) - push_y) < thres) {
 					flg_psize = 3;
-				} else if( abs( (int)(oy+pey*hscl) - push_y ) < thres ){
+					}
+					else if (abs((int)(oy + pey * hscl) - push_y) < thres) {
 					flg_psize = 4;
-				} else {
+					}
+					else {
 					flg_psize = 0;
 				}
+			}
 			}
 			//printf( "FL_PUSH: x: %d, y: %d, flg:%d\n", push_x, push_y, flg_psize );
 			return 1; // ドラッグイベントを有効にする
@@ -524,6 +586,12 @@ int GraphWindowCP::handle(int event)
 		break;
 	case 4:
 		ofs_pey = Fl::event_y() - push_y;
+		break;
+	case 10:
+		if ( -1 < disp_modTGT && disp_modTGT < ppm->tgcnt ) {
+			ppm->ogx_cp[disp_modTGT] = ((double)Fl::event_x() - ox) / wscl;
+			ppm->ogy_cp[disp_modTGT] = ((double)Fl::event_y() - oy) / hscl;
+		}
 		break;
 	default:
 		ofs_a = (Fl::event_y() - push_y) * M_PI/this->h();
@@ -611,6 +679,13 @@ int GraphWindowCP::handle(int event)
 		}
 		//printf( "FL_RELEASE: pey: %d\n", ofs_pey );
 		ofs_pey = 0;
+		break;
+	case 10:
+		if (-1 < disp_modTGT && disp_modTGT < ppm->tgcnt) {
+			ppm->ogx_cp[disp_modTGT] = ((double)Fl::event_x() - ox) / wscl;
+			ppm->ogy_cp[disp_modTGT] = ((double)Fl::event_y() - oy) / hscl;
+			ppm->getTgt2D3D();
+		}
 		break;
 	default:
 		ofs_a = (Fl::event_y() - push_y) * M_PI/this->h();

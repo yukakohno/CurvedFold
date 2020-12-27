@@ -31,6 +31,7 @@ public:
 	int disp_PRI;
 	int disp_stitch;
 	int disp_TGT;
+	int disp_modTGT;
 	int disp_LIN_SMOOTH;
 	int disp_POLY_OFFSET;
 
@@ -39,6 +40,7 @@ public:
 	int divtype;
 	int divnum;
 
+	void* cwin;
 	papermodel *ppm;
 	int disp_maxrlen;
 	int sts_alt2, sts_sft2, sts_ctrl2;
@@ -52,6 +54,10 @@ public:
 
 	int vcnt;
 	double *vx,*vy,*vz;
+
+	int sbw, sbh, sbstep;
+	unsigned char* selectbuffer;
+	int selectidx;
 
 	GraphWindow3DCF(int X, int Y, int W, int H, const char *L);
 	GraphWindow3DCF(int X, int Y, int W, int H);
