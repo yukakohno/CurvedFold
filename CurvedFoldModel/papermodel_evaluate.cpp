@@ -45,7 +45,7 @@ double min_d2( double x0, double y0, double z0, double x1, double y1, double z1,
 int papermodel::checkGap( double *errdata, int row, int col, int divnum )
 {
 	int ret=0, spcnt, p3cnt0, p3cnt1;
-	double space = 1, p3len0[MAX_STP_CNT], p3len1[MAX_STP_CNT];
+	double space = 10, p3len0[MAX_STP_CNT], p3len1[MAX_STP_CNT];
 	double stx0[MAX_STP_CNT], sty0[MAX_STP_CNT], stz0[MAX_STP_CNT];
 	double stx1[MAX_STP_CNT], sty1[MAX_STP_CNT], stz1[MAX_STP_CNT];
 	double stx1_[MAX_STP_CNT], sty1_[MAX_STP_CNT], stz1_[MAX_STP_CNT];
