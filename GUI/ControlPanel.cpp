@@ -957,7 +957,7 @@ void ControlPanel::createPanel()
 		wgt_y += 25;
 
 		btn_randrul2 = new Fl_Button(wgt_x, wgt_y, 180, 20, "Rulings and Angles");	wgt_x += 100;
-		btn_randrul2->callback(cb_btn_randrul2, (void*)this);
+		btn_randrul2->callback(cb_btn_randrul3, (void*)this);
 		g->add(btn_randrul2);
 #if 0
 		wgt_x = 10;

@@ -804,5 +804,219 @@ void ControlPanel::cb_btn_randrul2(Fl_Widget* wgt, void* idx)
 #endif
 	This->optlog_itr = -1;
 }
+
+void ControlPanel::cb_btn_randrul3(Fl_Widget* wgt, void* idx)
+{
+	ControlPanel* This = (ControlPanel*)idx;
+	papermodel* ppm = &(This->ppm);
+	crease* c = &(ppm->crs[0]);
+
+	This->rb_fix[CMODE_R]->setonly();
+	This->rb_param[P_RULL]->setonly();
+
+	double thres_avetgap = 0.3;
+	//double avetgap = 1000;
+	int minminval=-180;
+
+	int dPb_size = 10;
+	double dPb[MAX_DB_SIZE][MAX_CPCNT];
+	dPb_size = set_dPb(dPb, c->Pcnt);
+#if 0
+	for (int i = 0; i < dPb_size; i++) {
+		for (int j = 0; j < c->Pcnt; j++) {
+			std::cout << dPb[i][j] << ", ";
+		}
+		std::cout << std::endl;
+	}
+#endif
+	This->optlog_itr = 0;
+	This->optlog_itrmax = 100;
+	clock_t start_clock, end_clock;
+	start_clock = clock();
+
+	for (int i = 0; i < 100; i++)
+	{
+		if (ppm->avetgap < thres_avetgap) {
+			break;
+		}
+#if 0
+		This->btn_randrul->do_callback();
+#else
+		double prevPx2d[MAX_CPCNT], prevPa[MAX_CPCNT], prevPbr[MAX_CPCNT], prevPbl[MAX_CPCNT], avetgap_prev;
+		memcpy(prevPx2d, c->Px2d, sizeof(double) * c->Pcnt);
+		memcpy(prevPa, c->Pa, sizeof(double) * c->Pcnt);
+		memcpy(prevPbl, c->Pbl, sizeof(double) * c->Pcnt);
+		memcpy(prevPbr, c->Pbr, sizeof(double) * c->Pcnt);
+		avetgap_prev = ppm->avetgap;
+
+		bool flg_rulOK = false;
+		for (int j = 0; j < 100; j++)
+		{
+			// control point of the rulings
+			int i0 = rand() % dPb_size;
+			int i1 = rand() % dPb_size;
+			for (int k = 0; k <= c->Pcnt; k++) {
+				c->Pbl[k] = prevPbl[k] + dPb[i0][k];
+			}
+			for (int k = 0; k <= c->Pcnt; k++) {
+				c->Pbr[k] = prevPbr[k] + dPb[i1][k];
+			}
+
+			// make new ruling
+			crease::interpolate_spline_RulAngle(c->Pbl, c->Pcnt, c->betal, c->Xcnt, c->cotbl, c->cosbl, c->sinbl);
+			for (int k = c->Xsidx; k <= c->Xeidx; k++) {
+				c->rlx_cp[k] = c->cosbl[k] * c->Tx2d[k] - c->sinbl[k] * c->Ty2d[k];
+				c->rly_cp[k] = c->sinbl[k] * c->Tx2d[k] + c->cosbl[k] * c->Ty2d[k];
+				normalize_v2(&(c->rlx_cp[k]), &(c->rly_cp[k]));
+				c->rllen[k] = ppm->pw * ppm->ph;
+			}
+			crease::interpolate_spline_RulAngle(c->Pbr, c->Pcnt, c->betar, c->Xcnt, c->cotbr, c->cosbr, c->sinbr);
+			for (int k = c->Xsidx; k <= c->Xeidx; k++) {
+				c->rrx_cp[k] = c->cosbr[k] * c->Tx2d[k] + c->sinbr[k] * c->Ty2d[k];
+				c->rry_cp[k] = -c->sinbr[k] * c->Tx2d[k] + c->cosbr[k] * c->Ty2d[k];
+				normalize_v2(&(c->rrx_cp[k]), &(c->rry_cp[k]));
+				c->rrlen[k] = ppm->pw * ppm->ph;
+			}
+			c->calcRLenP(ppm->psx, ppm->psy, ppm->pex, ppm->pey);
+
+			// check crossing
+			int result = ppm->checkRulCross();
+			if (result) { continue; }
+			result = ppm->checkRulAngle();
+			if (result) { continue; }
+			result = ppm->checkRulCreaseCross();
+			if (result) { continue; }
+
+			flg_rulOK = true;
+			This->optlog_trial_til_validrul[This->optlog_itr] = j;
+			break;
+		}
+
+		// if no valid ruling
+		if (!flg_rulOK)
+		{
+			std::cout << "! flg_rulOK" << std::endl;
+			memcpy(c->Px2d, prevPx2d, sizeof(double) * c->Pcnt);
+			memcpy(c->Pa, prevPa, sizeof(double) * c->Pcnt);
+			memcpy(c->Pbl, prevPbl, sizeof(double) * c->Pcnt);
+			memcpy(c->Pbr, prevPbr, sizeof(double) * c->Pcnt);
+			//int ret = This->access_hist(1, &(c->Pcnt), &mode, c->Px2d, c->Py2d, c->Px, c->Py, c->Pz, c->Pa, c->Pbl, c->Pbr, c->m3);
+			This->btn_R2TA0->do_callback();
+			This->optlog_trial_til_validrul[This->optlog_itr] = 100;
+			This->optlog_err[This->optlog_itr] = -1.0;
+			This->optlog_minerr[This->optlog_itr] = -1.0;
+			break; // i
+		}
+
+		// try & evaluate
+#if 0
+		This->btn_optfold2->do_callback();
+#else
+		int crcnt, lcrcnt, rcrcnt, dccnt, fccnt, tccnt;
+		dccnt = ppm->dccnt; ppm->dccnt = 0;
+		fccnt = ppm->fccnt; ppm->fccnt = 0;
+		tccnt = ppm->tccnt; ppm->tccnt = 0;
+		crcnt = ppm->crcnt; ppm->crcnt = 1;
+		lcrcnt = ppm->lcrcnt; ppm->lcrcnt = 0;
+		rcrcnt = ppm->rcrcnt; ppm->rcrcnt = 0;
+
+		int minval = -180;
+		double mintgap = 10000;
+		for (int val = This->vs_xmang1->minimum(); val < This->vs_xmang1->maximum(); val++)
+		{
+			double mang = val / 180.0 * M_PI;
+			ppm->re_sidx = 0;
+			ppm->re_eidx = c->Xcnt;
+			int ret = c->calcR_TA(1/*flg_interpolate*/, &ppm->rp, ppm->re_sidx, ppm->re_eidx, mang, 0);
+			//std::cout << ", ret=" << ret;
+
+			if (ret == 0) {
+				ppm->set_postproc_type(PPTYPE_PRICURVE);
+				ppm->postproc();
+				ppm->set_postproc_type(PPTYPE_UNDEF);
+				// recalculate average gap
+				if (This->cb_optmat->value() && ppm->tgcnt > 3) {
+					ppm->calcAvetgap();
+				}
+				else if (This->cb_optrot->value() && ppm->tgcnt > 3) {
+					ppm->calcAvetgapRot(); // calc gap with fixed origin
+				}
+				//std::cout << ", avetgap=" << ppm->avetgap;
+				if (mintgap > ppm->avetgap) {
+					minval = val;
+					mintgap = ppm->avetgap;
+					//std::cout << ", minval=" << minval << ", mintgap=" << mintgap;
+				}
+			}
+			//std::cout << std::endl;
+		}
+		ppm->dccnt = dccnt;
+		ppm->fccnt = fccnt;
+		ppm->tccnt = tccnt;
+		ppm->crcnt = crcnt;
+		ppm->lcrcnt = lcrcnt;
+		ppm->rcrcnt = rcrcnt;
+#endif
+		//This->optlog_err[This->optlog_itr] = ppm->avetgap;
+		This->optlog_err[This->optlog_itr] = mintgap;
+
+		//if ( ppm->avetgap > avetgap_prev) {
+		if (mintgap > avetgap_prev) {
+			memcpy(c->Px2d, prevPx2d, sizeof(double) * c->Pcnt);
+			memcpy(c->Pa, prevPa, sizeof(double) * c->Pcnt);
+			memcpy(c->Pbl, prevPbl, sizeof(double) * c->Pcnt);
+			memcpy(c->Pbr, prevPbr, sizeof(double) * c->Pcnt);
+			ppm->avetgap = avetgap_prev;
+		} else {
+			ppm->avetgap = mintgap;
+			minminval = minval;
+		}
+		This->optlog_minerr[This->optlog_itr] = ppm->avetgap;
+#endif
+
+		//avetgap = ppm->avetgap;
+		//std::cout << "i = " << i << ", avetgap = " << ppm->avetgap << std::endl;
+		std::cout << "iter = " << This->optlog_itr
+			<< ", err = " << This->optlog_err[This->optlog_itr]
+			<< ", angle = " << minval
+			<< ", minerr = " << This->optlog_minerr[This->optlog_itr]
+			<< ", minangle = " << minminval
+			<< std::endl;
+		This->optlog_itr++;
+	} // i
+
+#if 1
+	This->btn_optfold2->do_callback();
+#else
+	if (minminval > -180) {
+		//std::cout << "gap=" << mintgap << std::endl;
+		This->vs_xmang0->value(minminval);
+		This->vs_xmang1->value(minminval);
+		This->btn_R2TA0->do_callback(); // includes This->push_hist()
+		This->btn_optmat->do_callback();
+		std::cout << "err = " << ppm->avetgap << std::endl;
+	}
+#endif
+	end_clock = clock();
+	std::cout << (double)(end_clock - start_clock) / CLOCKS_PER_SEC << std::endl;
+#if 1
+	{
+		std::ofstream ofs("./output/time0.csv", std::ios_base::app);
+		ofs << "clock," << (double)(end_clock - start_clock) / CLOCKS_PER_SEC << std::endl;
+		ofs.close();
+	}
+	{
+	std::ofstream ofs("./output/err_seq0_target.csv");
+	ofs << "iter,trial_validrul,err,minerr" << std::endl;
+	for (int i = 0; i < This->optlog_itr; i++)
+	{
+		ofs << i << "," << This->optlog_trial_til_validrul[i] << ","
+			<< This->optlog_err[i] << "," << This->optlog_minerr[i] << std::endl;
+	}
+	ofs.close();
+	}
+#endif
+	This->optlog_itr = -1;
+}
 	}
 }
