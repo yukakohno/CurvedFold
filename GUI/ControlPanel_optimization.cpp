@@ -708,6 +708,7 @@ void ControlPanel::cb_btn_randrul(Fl_Widget* wgt, void* idx)
 		if (result) { continue; }
 
 		flg_rulOK = true;
+		This->optlog_trial_til_validrul[This->optlog_itr] = i;
 		break;
 	}
 
@@ -720,6 +721,9 @@ void ControlPanel::cb_btn_randrul(Fl_Widget* wgt, void* idx)
 		memcpy(c->Pbr, Pbr, sizeof(double) * c->Pcnt);
 		//int ret = This->access_hist(1, &(c->Pcnt), &mode, c->Px2d, c->Py2d, c->Px, c->Py, c->Pz, c->Pa, c->Pbl, c->Pbr, c->m3);
 		This->btn_R2TA0->do_callback();
+		This->optlog_trial_til_validrul[This->optlog_itr] = 100;
+		This->optlog_err[This->optlog_itr] = -1.0;
+		This->optlog_minerr[This->optlog_itr] = -1.0;
 		return;
 	}
 
@@ -727,14 +731,21 @@ void ControlPanel::cb_btn_randrul(Fl_Widget* wgt, void* idx)
 	This->btn_optfold2->do_callback();
 	This->push_hist(c->Pcnt, mode, c->Px2d, c->Py2d, c->Px, c->Py, c->Pz, c->Pa, c->Pbl, c->Pbr, c->m3);
 
+
+	This->optlog_err[This->optlog_itr] = ppm->avetgap;
+
 	if ( flg_optimize && ppm->avetgap > avetgap_prev ) {
 		memcpy(c->Px2d, Px2d, sizeof(double) * c->Pcnt);
 		memcpy(c->Pa, Pa, sizeof(double) * c->Pcnt);
 		memcpy(c->Pbl, Pbl, sizeof(double) * c->Pcnt);
 		memcpy(c->Pbr, Pbr, sizeof(double) * c->Pcnt);
 		//int ret = This->access_hist(1, &(c->Pcnt), &mode, c->Px2d, c->Py2d, c->Px, c->Py, c->Pz, c->Pa, c->Pbl, c->Pbr, c->m3);
-		This->btn_R2TA0->do_callback();
+		ppm->avetgap = avetgap_prev;
+		if (This->optlog_itr < 0 || This->optlog_itr == This->optlog_itrmax) {
+			This->btn_R2TA0->do_callback();
+		}
 	}
+	This->optlog_minerr[This->optlog_itr] = ppm->avetgap;
 }
 
 void ControlPanel::cb_btn_randrul2(Fl_Widget* wgt, void* idx)
@@ -755,6 +766,10 @@ void ControlPanel::cb_btn_randrul2(Fl_Widget* wgt, void* idx)
 	double thres_avetgap = 0.3;
 	//double avetgap = 1000;
 
+	This->optlog_itr = 0;
+	This->optlog_itrmax = 100;
+	clock_t start_clock, end_clock;
+	start_clock = clock();
 	for (int i = 0; i < 100; i++)
 	{
 		if (ppm->avetgap < thres_avetgap) {
@@ -762,6 +777,32 @@ void ControlPanel::cb_btn_randrul2(Fl_Widget* wgt, void* idx)
 		}
 		This->btn_randrul->do_callback();
 		//avetgap = ppm->avetgap;
-		std::cout << "i = " << i << ", avetgap = " << ppm->avetgap << std::endl;
+		//std::cout << "i = " << i << ", avetgap = " << ppm->avetgap << std::endl;
+		std::cout << "iter = " << This->optlog_itr
+			<< ", err = " << This->optlog_err[This->optlog_itr]
+			<< ", minerr = " << This->optlog_minerr[This->optlog_itr] << std::endl;
+		This->optlog_itr++;
+	}
+	end_clock = clock();
+	std::cout << (double)(end_clock - start_clock) / CLOCKS_PER_SEC << std::endl;
+#if 1
+	{
+		std::ofstream ofs("./output/time0.csv", std::ios_base::app);
+		ofs << "clock," << (double)(end_clock - start_clock) / CLOCKS_PER_SEC << std::endl;
+		ofs.close();
+	}
+	{
+		std::ofstream ofs("./output/err_seq0_target.csv");
+		ofs << "iter,trial_validrul,err,minerr" << std::endl;
+		for (int i = 0; i < This->optlog_itr; i++)
+		{
+			ofs << i << "," << This->optlog_trial_til_validrul[i] << ","
+				<< This->optlog_err[i] << "," << This->optlog_minerr[i] << std::endl;
+		}
+		ofs.close();
+	}
+#endif
+	This->optlog_itr = -1;
+}
 	}
 }

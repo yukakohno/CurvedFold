@@ -219,6 +219,13 @@ public:
 	Fl_Button* btn_randrul2;
 
 private:
+#define MAX_OPT_ITR 2000
+	int optlog_itrmax;
+	int optlog_itr;
+	int optlog_trial_til_validrul[MAX_OPT_ITR];
+	double optlog_err[MAX_OPT_ITR];
+	double optlog_minerr[MAX_OPT_ITR];
+
 	static void cb_btn_optfold(Fl_Widget* wgt, void* idx);
 	static void cb_btn_optfold2(Fl_Widget* wgt, void* idx);
 	static void cb_btn_opttr(Fl_Widget* wgt, void* idx);

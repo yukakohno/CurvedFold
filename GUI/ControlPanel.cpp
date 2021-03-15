@@ -44,6 +44,9 @@ ControlPanel::ControlPanel(int X, int Y, int W, int H, const char *L, GraphWindo
 
 	mode_modtgt = false;
 
+	optlog_itrmax = MAX_OPT_ITR;
+	optlog_itr = -1;
+
 	sprintf( filepath, "./input/" );
 
 	createPanel();
