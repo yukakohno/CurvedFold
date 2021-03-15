@@ -152,6 +152,103 @@ int papermodel::checkGap( double *errdata, int row, int col, int divnum )
 	return spcnt;
 }
 
+int papermodel::checkGap_rev(double* errdata, int row, int col, int divnum)
+{
+	int ret = 0, spcnt, p3cnt0, p3cnt1;
+	double space = 10, p3len0[MAX_STP_CNT], p3len1[MAX_STP_CNT];
+	double stx0[MAX_STP_CNT], sty0[MAX_STP_CNT], stz0[MAX_STP_CNT];
+	double stx1[MAX_STP_CNT], sty1[MAX_STP_CNT], stz1[MAX_STP_CNT];
+	double stx_cp0[MAX_STP_CNT], sty_cp0[MAX_STP_CNT];
+	double stx_cp1[MAX_STP_CNT], sty_cp1[MAX_STP_CNT];
+	double stx1_[MAX_STP_CNT], sty1_[MAX_STP_CNT], stz1_[MAX_STP_CNT];
+	double dif[MAX_STP_CNT];
+
+	if (lcrcnt <= 1 && rcrcnt <= 1) {
+		return -1;
+	}
+
+	p3cnt0 = lcrs[1]->getSamplePoints2D3D(space, stx0, sty0, stz0, stx_cp0, sty_cp0, p3len0);
+	p3cnt1 = rcrs[1]->getSamplePoints2D3D(space, stx1, sty1, stz1, stx_cp1, sty_cp1, p3len1);
+
+	//spcnt = p3cnt0 < p3cnt1 ? p3cnt0 : p3cnt1;
+	printf("p3cnt0 = %d, p3cnt1 = %d, p3len0 = %f, p3len1 = %f\n",
+		p3cnt0, p3cnt1, p3len0[p3cnt0 - 1], p3len1[p3cnt1 - 1]);
+
+	// rotation & mid points
+	double axis[3] = { 0.0,0.0,1.0 }, quat[4], rmat[16];
+	axis_ang_quat(axis, 2.0 * M_PI / (double)divnum, quat);
+	quat_mat(quat, rmat);
+
+	for (int i = 0; i < p3cnt1; i++)
+	{
+		double tmpx, tmpy, tmpz;
+		tmpx = rmat[0] * stx1[i] + rmat[4] * sty1[i] + rmat[8] * stz1[i] + rmat[12];
+		tmpy = rmat[1] * stx1[i] + rmat[5] * sty1[i] + rmat[9] * stz1[i] + rmat[13];
+		tmpz = rmat[2] * stx1[i] + rmat[6] * sty1[i] + rmat[10] * stz1[i] + rmat[14];
+		stx1[i] = tmpx;
+		sty1[i] = tmpy;
+		stz1[i] = tmpz;
+	}
+#if 1
+	spcnt = p3cnt0;
+	double d0 = 0.0;
+	for (int i = 0; i < p3cnt0; i++)
+	{
+		dif[i] = 10000;	// max
+		if (p3len0[i] > p3len1[p3cnt1 - 1]) {
+			spcnt = i;
+			break;
+		}
+		int minj = -1;
+		for (int j = 0; j < p3cnt1 - 1; j++)
+		{
+			double diff, minx1, miny1, minz1;
+			diff = min_d2(stx0[i], sty0[i], stz0[i], stx1[j], sty1[j], stz1[j],
+				stx1[j + 1], sty1[j + 1], stz1[j + 1], &minx1, &miny1, &minz1);
+			//dif[i] = dif[i] < diff ? dif[i] : diff;	// MIN( dif[i], diff )
+			if (diff > 0 && dif[i] > diff) {
+				dif[i] = diff;
+				minj = j;
+				stx1_[i] = minx1;
+				sty1_[i] = miny1;
+				stz1_[i] = minz1;
+			}
+}
+		if (dif[i] == 10000) {
+			errdata[i * col + 0] = dif[i] = -1;
+			//spcnt = i;
+			//break;
+		}
+		else {
+			errdata[i * col + 0] = sqrt(dif[i]);
+		}
+		errdata[i * col + 1] = stx0[i];
+		errdata[i * col + 2] = sty0[i];
+		errdata[i * col + 3] = stz0[i];
+		errdata[i * col + 4] = stx1_[i];
+		errdata[i * col + 5] = sty1_[i];
+		errdata[i * col + 6] = stz1_[i];
+	}
+#else
+	spcnt = p3cnt0 < p3cnt1 ? p3cnt0 : p3cnt1;
+	double d0 = 0.0;
+	for (int i = 0; i < spcnt; i++)
+	{
+		double dx = stx0[i] - stx1[i];
+		double dy = sty0[i] - sty1[i];
+		double dz = stz0[i] - stz1[i];
+		errdata[i * col + 0] = sqrt(dx*dx+dy*dy+dz*dz);
+		errdata[i * col + 1] = stx0[i];
+		errdata[i * col + 2] = sty0[i];
+		errdata[i * col + 3] = stz0[i];
+		errdata[i * col + 4] = stx1[i];
+		errdata[i * col + 5] = sty1[i];
+		errdata[i * col + 6] = stz1[i];
+	}
+#endif
+	return spcnt;
+}
+
 /* http://marupeke296.com/COL_3D_No21_TriTri.html */
 int collisiontest( double x00, double y00, double z00, double x01, double y01, double z01,
 				  double x02, double y02, double z02, double nx0, double ny0, double nz0,

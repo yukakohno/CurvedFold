@@ -485,7 +485,7 @@ int papermodel::checkGap( char *fname, int divnum )
 	}
 #if 1
 	double errdata[ MAX_STP_CNT*7 ];	memset( errdata, 0, sizeof(double)*MAX_STP_CNT*7 );
-	spcnt = checkGap( errdata, MAX_STP_CNT, 7, divnum );
+	spcnt = checkGap_rev( errdata, MAX_STP_CNT, 7, divnum );
 
 	FILE *fp = fopen( fname, "w" );
 	if( fp ){

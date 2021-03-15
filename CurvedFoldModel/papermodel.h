@@ -99,6 +99,7 @@ public:
 	// ------------------------- evaluate -------------------------------------------
 
 	int checkGap( double *errdata, int row, int col, int divnum );
+	int checkGap_rev(double* errdata, int row, int col, int divnum);
 	int checkCollision( int *errdata, int row, int col, int divnum );
 
 	// ------------------------- procseq -------------------------------------------
