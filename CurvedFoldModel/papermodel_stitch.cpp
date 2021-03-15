@@ -288,7 +288,7 @@ int papermodel::getStitch(int divnum, int maxpcnt, double* mObj)
 {
 	int ret = 0;
 	int p2cnt0, p2cnt1, p3cnt0, p3cnt1;
-	double space = 10;
+	double space = 10, p3len0[MAX_STP_CNT], p3len1[MAX_STP_CNT];
 
 	if (lcrcnt <= 1 && rcrcnt <= 1) {
 		return -1;
@@ -298,8 +298,8 @@ int papermodel::getStitch(int divnum, int maxpcnt, double* mObj)
 	//p2cnt1 = rcrs[1]->getSamplePoints2D( space, stx_cp[1], sty_cp[1] );
 	//p3cnt0 = lcrs[1]->getSamplePoints3D(space, stx[0], sty[0], stz[0], NULL);
 	//p3cnt1 = rcrs[1]->getSamplePoints3D(space, stx[1], sty[1], stz[1], NULL);
-	p2cnt0 = p3cnt0 = lcrs[1]->getSamplePoints2D3D(space, stx[0], sty[0], stz[0], stx_cp[0], sty_cp[0], NULL);
-	p2cnt1 = p3cnt1 = rcrs[1]->getSamplePoints2D3D(space, stx[1], sty[1], stz[1], stx_cp[1], sty_cp[1], NULL);
+	p2cnt0 = p3cnt0 = lcrs[1]->getSamplePoints2D3D(space, stx[0], sty[0], stz[0], stx_cp[0], sty_cp[0], p3len0);
+	p2cnt1 = p3cnt1 = rcrs[1]->getSamplePoints2D3D(space, stx[1], sty[1], stz[1], stx_cp[1], sty_cp[1], p3len1);
 	stpcnt = p3cnt0 < p3cnt1 ? p3cnt0 : p3cnt1;
 	if (maxpcnt > 0) {
 		stpcnt = stpcnt < maxpcnt ? stpcnt : maxpcnt;
