@@ -2,6 +2,7 @@
 #define CREASE
 
 #include <stdio.h>
+#include <omp.h>
 
 #define MAX_FRAME 41
 #define MAX_CPCNT 10	// MAX # of control points on the crese

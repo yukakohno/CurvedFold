@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <time.h>
+#include <omp.h>
 #include "ControlPanel.h"
 #include "../CurvedFoldModel/util.h"
 
