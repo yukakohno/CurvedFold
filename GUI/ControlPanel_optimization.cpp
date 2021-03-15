@@ -649,6 +649,40 @@ int set_dPb(double (&dPb)[MAX_DB_SIZE][MAX_CPCNT], int cpcnt)
 	return size;
 }
 
+int set_dPa(double(&dPa)[MAX_DB_SIZE][MAX_CPCNT], int cpcnt)
+{
+	int size = 0;
+	double astep = 0.25*M_PI/180.0;
+	for (int i = 0; i < cpcnt; i++) { dPa[size][i] = astep; }	size++;
+	for (int i = 0; i < cpcnt; i++) { dPa[size][i] = -astep; }	size++;
+	for (int i = 0; i < cpcnt; i++) { dPa[size][i] = astep*2.0 * (double)i / (double)cpcnt; }	size++;
+	for (int i = 0; i < cpcnt; i++) { dPa[size][i] = -astep*2.0 * (double)i / (double)cpcnt; }	size++;
+	for (int i = 0; i < cpcnt; i++) { dPa[size][i] = astep*2.0 * (double)(cpcnt - i) / (double)cpcnt; }	size++;
+	for (int i = 0; i < cpcnt; i++) { dPa[size][i] = -astep*2.0 * (double)(cpcnt - i) / (double)cpcnt; }	size++;
+	for (int j = 0; j < cpcnt; j++) {
+		for (int i = 0; i < cpcnt; i++) { dPa[size][i] = 0.0; }	dPa[size][j] = astep;	size++;
+		for (int i = 0; i < cpcnt; i++) { dPa[size][i] = 0.0; }	dPa[size][j] = -astep;	size++;
+	}
+	return size;
+}
+
+int set_dPy(double(&dPy)[MAX_DB_SIZE][MAX_CPCNT], int cpcnt)
+{
+	int size = 0;
+	double tstep = 0.0005;
+	for (int i = 0; i < cpcnt; i++) { dPy[size][i] = tstep; }	size++;
+	for (int i = 0; i < cpcnt; i++) { dPy[size][i] = -tstep; }	size++;
+	for (int i = 0; i < cpcnt; i++) { dPy[size][i] = tstep*2.0 * (double)i / (double)cpcnt; }	size++;
+	for (int i = 0; i < cpcnt; i++) { dPy[size][i] = -tstep*2.0 * (double)i / (double)cpcnt; }	size++;
+	for (int i = 0; i < cpcnt; i++) { dPy[size][i] = tstep*2.0 * (double)(cpcnt - i) / (double)cpcnt; }	size++;
+	for (int i = 0; i < cpcnt; i++) { dPy[size][i] = -tstep*2.0 * (double)(cpcnt - i) / (double)cpcnt; }	size++;
+	for (int j = 0; j < cpcnt; j++) {
+		for (int i = 0; i < cpcnt; i++) { dPy[size][i] = 0.0; }	dPy[size][j] = tstep;	size++;
+		for (int i = 0; i < cpcnt; i++) { dPy[size][i] = 0.0; }	dPy[size][j] = -tstep;	size++;
+	}
+	return size;
+}
+
 void ControlPanel::cb_btn_randrul(Fl_Widget* wgt, void* idx)
 {
 	ControlPanel* This = (ControlPanel*)idx;
@@ -1018,5 +1052,145 @@ void ControlPanel::cb_btn_randrul3(Fl_Widget* wgt, void* idx)
 #endif
 	This->optlog_itr = -1;
 }
+
+void ControlPanel::cb_btn_opttrfold(Fl_Widget* wgt, void* idx)
+{
+	ControlPanel* This = (ControlPanel*)idx;
+	papermodel* ppm = &(This->ppm);
+	crease* c = &(ppm->crs[0]);
+
+	This->rb_fix[CMODE_B]->setonly();
+	This->rb_param[P_TRSN]->setonly();
+	This->cb_optmat->value(1);
+
+	int dPa_size = 10, dPy_size = 10;
+	double dPa[MAX_DB_SIZE][MAX_CPCNT];
+	double dPy[MAX_DB_SIZE][MAX_CPCNT];
+	dPa_size = set_dPa(dPa, c->Pcnt);
+	dPy_size = set_dPy(dPy, c->Pcnt);
+
+	double Px2d[MAX_CPCNT], Py[MAX_CPCNT], Pa[MAX_CPCNT];
+	memcpy(Px2d, c->Px2d, sizeof(double) * c->Pcnt);
+	memcpy(Pa, c->Pa, sizeof(double) * c->Pcnt);
+	memcpy(Py, c->Py, sizeof(double) * c->Pcnt);
+
+	This->optlog_itrmax = 1800;
+	This->optlog_itr = -1;
+	double thres_avetgap = 0.3;
+	int miniter = -1;
+	double mingap = 100000;
+	clock_t start_clock, end_clock;
+	start_clock = clock();
+	for (int i = 0; i < 18000; i++)
+	{
+		This->optlog_itr = i;
+		This->optlog_err[This->optlog_itr] = -1;
+		This->optlog_minerr[This->optlog_itr] = mingap;
+
+		if (ppm->avetgap < thres_avetgap) {
+			break;
+		}
+
+		double prevPx2d[MAX_CPCNT], prevPy[MAX_CPCNT], prevPa[MAX_CPCNT];
+		memcpy(prevPx2d, c->Px2d, sizeof(double) * c->Pcnt);
+		memcpy(prevPa, c->Pa, sizeof(double) * c->Pcnt);
+		memcpy(prevPy, c->Py, sizeof(double) * c->Pcnt);
+		double avetgap_prev = ppm->avetgap;
+
+		// control point of the rulings
+		int i0 = rand() % dPa_size;
+		int i1 = rand() % dPy_size;
+		for (int j = 0; j <= c->Pcnt; j++) {
+			c->Pa[j] = prevPa[j] + dPa[i0][j];
+		}
+		for (int j = 0; j <= c->Pcnt; j++) {
+			c->Py[j] = prevPy[j] + dPy[i1][j];
+		}
+
+		// make new ruling
+		c->calcCPA_X(1/*ppm->flg_interpolate*/, &ppm->rp);
+		ppm->set_postproc_type(PPTYPE_PRICURVE);
+		ppm->postproc();
+		ppm->set_postproc_type(PPTYPE_UNDEF);
+
+		// check crossing
+		int result = ppm->checkRulCross();
+		if (result) { /*std::cout << "i = " << i << ", ppm->checkRulCross() NG" << std::endl;*/ continue; }
+		result = ppm->checkRulAngle();
+		if (result) { /*std::cout << "i = " << i << ", ppm->checkRulAngle() NG" << std::endl;*/ continue; }
+		result = ppm->checkRulCreaseCross();
+		if (result) { /*std::cout << "i = " << i << ", ppm->checkRulCreaseCross() NG" << std::endl;*/ continue; }
+
+		This->btn_optmat->do_callback();
+		This->optlog_err[This->optlog_itr] = ppm->avetgap;
+
+		//This->optlog_minerr[This->optlog_itr];
+		if (ppm->avetgap > avetgap_prev) {
+			memcpy(c->Px2d, prevPx2d, sizeof(double) * c->Pcnt);
+			memcpy(c->Pa, prevPa, sizeof(double) * c->Pcnt);
+			memcpy(c->Py, prevPy, sizeof(double) * c->Pcnt);
+#if 0
+			c->calcCPA_X(1/*ppm->flg_interpolate*/, &ppm->rp);
+			ppm->set_postproc_type(PPTYPE_PRICURVE);
+			ppm->postproc();
+			ppm->set_postproc_type(PPTYPE_UNDEF);
+#endif
+			std::cout << "iter = " << i << ", err = " << ppm->avetgap << ", minerr = " << mingap << std::endl;
+			continue;
+		}
+#if 0
+		if (i > 0) {
+			std::cout << "iter = " << i << ", err = " << ppm->avetgap << ", break " << std::endl;
+			break;
+		}
+#endif
+		if (mingap > ppm->avetgap) {
+			miniter = i;
+			mingap = ppm->avetgap;
+			memcpy(Px2d, c->Px2d, sizeof(double) * c->Pcnt);
+			memcpy(Pa, c->Pa, sizeof(double) * c->Pcnt);
+			memcpy(Py, c->Py, sizeof(double) * c->Pcnt);
+		}
+		This->optlog_minerr[This->optlog_itr] = mingap;
+		std::cout << "iter = " << i	<< ", err = " << ppm->avetgap << ", minerr = " << mingap << std::endl;
 	}
+	end_clock = clock();
+	std::cout << "clock," << (double)(end_clock - start_clock) / CLOCKS_PER_SEC << std::endl;
+	{
+		std::ofstream ofs("./output/time0.csv", std::ios_base::app);
+		ofs << (double)(end_clock - start_clock) / CLOCKS_PER_SEC << std::endl;
+		ofs.close();
+	}
+
+	//if (mingap == 100000)
+	{
+		std::cout << "iter_adopted = " << miniter << std::endl;
+		memcpy(c->Px2d, Px2d, sizeof(double) * c->Pcnt);
+		memcpy(c->Pa, Pa, sizeof(double) * c->Pcnt);
+		memcpy(c->Py, Py, sizeof(double) * c->Pcnt);
+		c->calcCPA_X(1/*ppm->flg_interpolate*/, &ppm->rp);
+		ppm->set_postproc_type(PPTYPE_PRICURVE);
+		ppm->postproc();
+		ppm->set_postproc_type(PPTYPE_UNDEF);
+		This->btn_optmat->do_callback();
+	}
+#if 1
+	{
+	std::ofstream ofs("./output/err_seq1_target.csv");
+	ofs << "iter,,err,minerr" << std::endl;
+	for (int i = 0; i < This->optlog_itr; i++)
+	{
+		if (This->optlog_err[i] > 0.0) {
+			ofs << i << ",," << This->optlog_err[i] << "," << This->optlog_minerr[i] << std::endl;
+			}
+			else {
+			ofs << i << ",,," << This->optlog_minerr[i] << std::endl;
+		}
+	}
+	ofs.close();
+	}
+#endif
+	This->optlog_itr = -1;
+	This->gwin->redraw();
+	This->gwin_cp->redraw();
 }
