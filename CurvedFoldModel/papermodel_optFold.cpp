@@ -26,12 +26,12 @@ int papermodel::saveTgt( char *fname )
 	if (tgcnt == 0) {
 		for (int j = 20; j < ph; j += 20) {
 			for (int i = 20; i < pw; i += 20) {
-			ogx_cp[tgcnt] = i;
-			ogy_cp[tgcnt] = j;
-			tgcnt++;
+				ogx_cp[tgcnt] = i;
+				ogy_cp[tgcnt] = j;
+				tgcnt++;
+			}
 		}
-	}
-	getTgt2D3D();
+		getTgt2D3D();
 	}
 
 #if 1
@@ -229,7 +229,7 @@ int papermodel::getTgt2D3D()
 					tgap[i] = -tgap[i];
 				}
 
-		} else {
+			} else {
 				ogx[i] = ogy[i] = ogz[i] = 0.0;
 			}
 		}

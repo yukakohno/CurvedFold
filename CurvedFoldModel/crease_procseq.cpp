@@ -106,18 +106,18 @@ int crease::calcR_TA( int flg_interpolate, rectify_params *rp, int mini, int max
 	ret = calcRul2TA( retry_mode, mini, maxi );	// Br, Bl -> tr,
 	if (ret == 0) {
 		if (rp->flg_rectifyA) { rectifyAlphaBezier(&rp->rectA); }
-	calcAK2D_K();				// alpha, k2d -> kv
+		calcAK2D_K();				// alpha, k2d -> kv
 		if (rp->flg_rectifyT) { rectifyTauBezier2(&rp->rectT); }
 		calcXTNB(m3);				// kv,tr -> X -> calcTNB();
-	calcDA();
+		calcDA();
 		calcRuling(rp->flg_rectifyR, rp->rectifyR_kvthres);
 
-	setP_k(-1);
-	setP_t(-1);
-	//setP_k2(-1);
-	setP_a(-1);
-	//setP_Bl(-1);
-	//setP_Br(-1);
+		setP_k(-1);
+		setP_t(-1);
+		//setP_k2(-1);
+		setP_a(-1);
+		//setP_Bl(-1);
+		//setP_Br(-1);
 	}
 	return ret;
 }

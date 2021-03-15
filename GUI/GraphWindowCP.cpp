@@ -299,7 +299,7 @@ void GraphWindowCP::draw()
 			//glutSolidSphere( 1.5, 8, 8 );
 		}
 	}
-	
+
 	if (disp_stitch) {
 		fl_color(0, 127, 0);
 		fl_line_style(FL_SOLID, 3);
@@ -546,21 +546,21 @@ int GraphWindowCP::handle(int event)
 				else {
 					int thres = 8;
 					if (abs((int)(ox + psx * wscl) - push_x) < thres) {
-					flg_psize = 1;
+						flg_psize = 1;
 					}
 					else if (abs((int)(ox + pex * wscl) - push_x) < thres) {
-					flg_psize = 2;
+						flg_psize = 2;
 					}
 					else if (abs((int)(oy + psy * hscl) - push_y) < thres) {
-					flg_psize = 3;
+						flg_psize = 3;
 					}
 					else if (abs((int)(oy + pey * hscl) - push_y) < thres) {
-					flg_psize = 4;
+						flg_psize = 4;
 					}
 					else {
-					flg_psize = 0;
+						flg_psize = 0;
+					}
 				}
-			}
 			}
 			//printf( "FL_PUSH: x: %d, y: %d, flg:%d\n", push_x, push_y, flg_psize );
 			return 1; // ドラッグイベントを有効にする
