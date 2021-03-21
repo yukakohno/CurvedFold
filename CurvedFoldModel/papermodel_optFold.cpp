@@ -82,7 +82,7 @@ int papermodel::loadTgt( char *fname )
 		if(ret<5){
 			continue;
 		}
-		printf( "%d: %f, %f, %f, %f, %f\n", tgcnt, tgx[tgcnt], tgy[tgcnt], tgz[tgcnt], ogx_cp[tgcnt], ogy_cp[tgcnt] );
+		//printf( "%d: %f, %f, %f, %f, %f\n", tgcnt, tgx[tgcnt], tgy[tgcnt], tgz[tgcnt], ogx_cp[tgcnt], ogy_cp[tgcnt] );
 		tgcnt++;
 	}
 
@@ -145,7 +145,7 @@ int papermodel::loadTgtMask(char* fname_tpt, char* fname_mask)
 		if (tmask[tmaskcnt++] == 0) {
 			continue;
 		}
-		printf("%d: %f, %f, %f, %f, %f\n", tgcnt, tgx[tgcnt], tgy[tgcnt], tgz[tgcnt], ogx_cp[tgcnt], ogy_cp[tgcnt]);
+		//printf("%d: %f, %f, %f, %f, %f\n", tgcnt, tgx[tgcnt], tgy[tgcnt], tgz[tgcnt], ogx_cp[tgcnt], ogy_cp[tgcnt]);
 		tgcnt++;
 	}
 

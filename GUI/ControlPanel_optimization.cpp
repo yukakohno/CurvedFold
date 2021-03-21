@@ -457,7 +457,7 @@ void ControlPanel::cb_btn_randrul3(Fl_Widget* wgt, void* idx)
 	clock_t start_clock, end_clock;
 	start_clock = clock();
 
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 200; i++)
 	{
 		if (ppm->avetgap < thres_avetgap) {
 			break;
@@ -598,6 +598,7 @@ void ControlPanel::cb_btn_randrul3(Fl_Widget* wgt, void* idx)
 #endif
 
 		//avetgap = ppm->avetgap;
+#if 0
 		//std::cout << "i = " << i << ", avetgap = " << ppm->avetgap << std::endl;
 		std::cout << "iter = " << This->optlog_itr
 			<< ", err = " << This->optlog_err[This->optlog_itr]
@@ -605,6 +606,7 @@ void ControlPanel::cb_btn_randrul3(Fl_Widget* wgt, void* idx)
 			<< ", minerr = " << This->optlog_minerr[This->optlog_itr]
 			<< ", minangle = " << minminval
 			<< std::endl;
+#endif
 		This->optlog_itr++;
 	} // i
 
@@ -621,8 +623,8 @@ void ControlPanel::cb_btn_randrul3(Fl_Widget* wgt, void* idx)
 	}
 #endif
 	end_clock = clock();
-	std::cout << (double)(end_clock - start_clock) / CLOCKS_PER_SEC << std::endl;
-#if 1
+	std::cout << "process time: " << (double)(end_clock - start_clock) / CLOCKS_PER_SEC << std::endl;
+#if 0
 	{
 		std::ofstream ofs("./output/time0.csv", std::ios_base::app);
 		ofs << "clock," << (double)(end_clock - start_clock) / CLOCKS_PER_SEC << std::endl;
@@ -638,8 +640,8 @@ void ControlPanel::cb_btn_randrul3(Fl_Widget* wgt, void* idx)
 	}
 	ofs.close();
 	}
-#endif
 	This->optlog_itr = -1;
+#endif
 }
 
 void ControlPanel::cb_btn_opttrfold(Fl_Widget* wgt, void* idx)

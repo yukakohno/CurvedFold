@@ -162,6 +162,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ControlPanel.cpp" />
+    <ClCompile Include="ControlPanel_BatchProc.cpp" />
     <ClCompile Include="ControlPanel_Design.cpp" />
     <ClCompile Include="ControlPanel_Display.cpp" />
     <ClCompile Include="ControlPanel_Eval.cpp" />

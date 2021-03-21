@@ -307,10 +307,18 @@ private:
 
 	// ------------------------- BATCH PROC --------------------------------------
 public:
+	Fl_Int_Input* in_input_no;
+	Fl_Int_Input* in_target_no;
+	Fl_Int_Input* in_mask_no;
 	Fl_Button* btn_batchproc;
+	Fl_Button* btn_batchstop;
 
 private:
+	int cnt_batchproc;
+	int phase_batchproc;
 	static void cb_btn_batchproc(Fl_Widget* wgt, void* idx);
+	static void cb_btn_batchstop(Fl_Widget* wgt, void* idx);
+	static void idle_batchproc(void* idx);
 
 #if 0
 	// ------------------------- RULINGS LIST --------------------------------------

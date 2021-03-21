@@ -1,6 +1,7 @@
 #include <time.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <sstream>
 #include <Windows.h>
 #include "ControlPanel.h"
 
@@ -816,7 +817,7 @@ void ControlPanel::createPanel()
 	}
 	{
 		Fl_Group* g = new Fl_Group(0, 20, this->w(), this->h() - 20, "D4");
-		g->show();
+		g->hide();
 		{
 			wgt_x = 10;	wgt_y = 20;
 			int y_space = 25, grp_num = 0;
@@ -1025,7 +1026,7 @@ void ControlPanel::createPanel()
 	}
 	{
 		Fl_Group* g = new Fl_Group(0, 20, this->w(), this->h() - 20, "D5");
-		g->hide();
+		g->show();
 		{
 			wgt_x = 10;	wgt_y = 20;
 			int y_space = 25;
@@ -1095,9 +1096,20 @@ void ControlPanel::createPanel()
 
 			Fl_Box* bx_BatchProc = new Fl_Box(0, wgt_y, g->w(), 20, "--- BATCH PROC ---");	wgt_y += 20;
 
-			btn_batchproc = new Fl_Button(wgt_x, wgt_y, 90, 20, "batch proc");	wgt_x += 90;
+			in_input_no = new Fl_Int_Input(wgt_x + 30, wgt_y, 30, 20, "input");	in_input_no->value(std::to_string(0).c_str());	wgt_x += 50;
+			in_target_no = new Fl_Int_Input(wgt_x + 30, wgt_y, 30, 20, "tgt");	in_target_no->value(std::to_string(0).c_str());	wgt_x += 70;
+			in_mask_no = new Fl_Int_Input(wgt_x + 30, wgt_y, 30, 20, "mask");	in_mask_no->value(std::to_string(0).c_str());
+
+			wgt_x = 10;
+			wgt_y += 25;
+
+			btn_batchproc = new Fl_Button(wgt_x, wgt_y, 100, 20, "batch proc");	wgt_x += 100;
 			btn_batchproc->callback(cb_btn_batchproc, (void*)this);
 			g->add(btn_batchproc);
+
+			btn_batchstop = new Fl_Button(wgt_x, wgt_y, 50, 20, "stop");
+			btn_batchstop->callback(cb_btn_batchstop, (void*)this);
+			g->add(btn_batchstop);
 
 #if 0			// ------------------------- LIST RULINGS -------------------------------------------
 
