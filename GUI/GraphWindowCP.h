@@ -25,6 +25,8 @@ protected:
 public:
 	GraphWindowCP(int X, int Y, int W, int H, const char *L);
 	GraphWindowCP(int X, int Y, int W, int H);
+	void exportImage(char* filename);
+	void exportCroppedImage(char* filename);
 
 	Fl_JPEG_Image *jpg;
 	int disp_axis;
@@ -51,6 +53,8 @@ public:
 	int cx[MAXDCX], cy[MAXDCX];
 
 	double mt[9];
+
+	unsigned char* imgbuf;
 };
 
 #endif // GRAPHWINDOWCP

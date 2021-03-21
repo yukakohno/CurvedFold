@@ -170,6 +170,8 @@ void ControlPanel::cb_btn_savelog( Fl_Widget *wgt, void *idx)
 		sprintf(fname, "%sgap_%02d.csv", dirname, frm );	ppm->checkGap( fname, divnum );	// ƒs[ƒXŠÔ‚ÌŒ„ŠÔ
 
 		sprintf(fname, "%smodel.bmp", dirname );	This->gwin->exportImage( fname );
+		sprintf(fname, "%screase.bmp", dirname);	This->gwin_cp->exportImage( fname );
+		sprintf(fname, "%screasecrop.bmp", dirname);	This->gwin_cp->exportCroppedImage(fname);
 	}
 	//This->gwin_gr->redraw();
 }
@@ -185,6 +187,10 @@ void ControlPanel::cb_btn_savescreen( Fl_Widget *wgt, void *idx)
 
 	sprintf(fname, "output/model_%02d%02d%02d_f%02d.bmp", t1->tm_hour, t1->tm_min, t1->tm_sec, frm );
 	This->gwin->exportImage( fname );
+	sprintf(fname, "output/crease_%02d%02d%02d_f%02d.bmp", t1->tm_hour, t1->tm_min, t1->tm_sec, frm);
+	This->gwin_cp->exportImage( fname );
+	sprintf(fname, "output/creasecrop_%02d%02d%02d_f%02d.bmp", t1->tm_hour, t1->tm_min, t1->tm_sec, frm);
+	This->gwin_cp->exportCroppedImage(fname);
 }
 
 void ControlPanel::cb_btn_saveerr( Fl_Widget *wgt, void *idx)

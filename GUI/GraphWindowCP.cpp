@@ -1,6 +1,8 @@
 #include <FL/fl_draw.H>
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <opencv2/opencv.hpp>
+
 #include "GraphWindowCP.h"
 #include "ControlPanel.h"
 #include "../CurvedFoldModel/util.h"
@@ -8,6 +10,7 @@
 GraphWindowCP::GraphWindowCP(int X, int Y, int W, int H, const char *L) : Fl_Double_Window(X, Y, W, H, L)
 {
 	box(FL_FLAT_BOX);
+	imgbuf = new unsigned char[w() * h() * 3];
 	jpg = NULL;
 	init();
 	draw();
@@ -16,6 +19,7 @@ GraphWindowCP::GraphWindowCP(int X, int Y, int W, int H, const char *L) : Fl_Dou
 GraphWindowCP::GraphWindowCP(int X, int Y, int W, int H) : Fl_Double_Window(X, Y, W, H)
 {
 	box(FL_FLAT_BOX);
+	imgbuf = new unsigned char[w() * h() * 3];
 	jpg = NULL;
 	init();
 	draw();
@@ -427,6 +431,8 @@ void GraphWindowCP::draw()
 		fl_color(255, 0, 0);	fl_line( ox, oy, ox+100*wscl, oy);
 		fl_color(0, 255, 0);	fl_line( ox, oy, ox, oy+100*hscl);
 	}
+
+	imgbuf = fl_read_image(imgbuf, 0, 0, w(), h());
 }
 
 int GraphWindowCP::handle(int event)
@@ -736,4 +742,20 @@ int GraphWindowCP::handle(int event)
 		break;
 	}
 	return Fl_Double_Window::handle(event);
+}
+
+void GraphWindowCP::exportImage(char* filename)
+{
+	cv::Mat img = cv::Mat(h(), w(), CV_8UC3, imgbuf, w() * 3);
+	cv::imwrite(filename, img);
+}
+
+void GraphWindowCP::exportCroppedImage(char* filename)
+{
+	cv::Mat img = cv::Mat(h(), w(), CV_8UC3, imgbuf, w() * 3);
+	int pw = (int)(ppm->pw * wscl), ph = (int)(ppm->ph * hscl);
+	int psx = (int)(ppm->psx * wscl), psy = (int)(ppm->psy * hscl), pex = (int)(ppm->pex * wscl), pey = (int)(ppm->pey * hscl);
+	cv::Rect roi(cv::Point((int)(ox + psx + ofs_psx), (int)(oy + psy + ofs_psy)), cv::Size((int)(pw + ofs_pex - ofs_psx), (int)(ph + ofs_pey - ofs_psy)));
+	cv::Mat crpimg = img(roi);
+	cv::imwrite(filename, crpimg);
 }
