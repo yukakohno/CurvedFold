@@ -244,18 +244,18 @@ void ControlPanel::setorg()
 
 void ControlPanel::createPanel()
 {
-	int wgt_x=0, wgt_y=0;
+	int wgt_x = 0, wgt_y = 0;
 
 	Fl_Tabs* tab = new Fl_Tabs(0, 0, this->w(), this->h());
 	{
-		Fl_Group* g = new Fl_Group(0, 20, this->w(), this->h()-20, "D0");
+		Fl_Group* g = new Fl_Group(0, 20, this->w(), this->h() - 20, "D0");
 		g->hide();
-		{ 
+		{
 			wgt_x = 10;
 			wgt_y = 20;
 
 			// ------------------------- fILE_IO -------------------------------------------
-			Fl_Box *bx_FILE_I = new Fl_Box(0, wgt_y, g->w(), 20, "--- LOAD ---");
+			Fl_Box* bx_FILE_I = new Fl_Box(0, wgt_y, g->w(), 20, "--- LOAD ---");
 
 			wgt_y += 20;
 
@@ -264,21 +264,21 @@ void ControlPanel::createPanel()
 			fc = new Fl_File_Chooser(RECDIR, "(*.{txt})", Fl_File_Chooser::SINGLE, "Fl_File_Chooser");
 			g->add(btn_load);
 
-			btn_loadtex = new Fl_Button(wgt_x+45, wgt_y, 45, 20, "texture");
+			btn_loadtex = new Fl_Button(wgt_x + 45, wgt_y, 45, 20, "texture");
 			btn_loadtex->deactivate();
 			//btn_loadtex->callback(cb_btn_loadtex, (void*)this);
 			g->add(btn_loadtex);
 
-			btn_loadtpt = new Fl_Button(wgt_x+90, wgt_y, 45, 20, "tgt_pt");
+			btn_loadtpt = new Fl_Button(wgt_x + 90, wgt_y, 45, 20, "tgt_pt");
 			btn_loadtpt->callback(cb_btn_loadtpt, (void*)this);
 			fc_tpt = new Fl_File_Chooser(RECDIR, "({target}*.{txt})", Fl_File_Chooser::SINGLE, "Fl_File_Chooser");
 			g->add(btn_loadtpt);
 
-			btn_loadrul = new Fl_Button(wgt_x+135, wgt_y, 45, 20, "rulings");
+			btn_loadrul = new Fl_Button(wgt_x + 135, wgt_y, 45, 20, "rulings");
 			btn_loadrul->callback(cb_btn_loadrul, (void*)this);
 			fc_rul = new Fl_File_Chooser(RECDIR, "([rulings]*.{txt})", Fl_File_Chooser::SINGLE, "Fl_File_Chooser");
 			g->add(btn_loadrul);
-			
+
 			wgt_x = 10;
 			wgt_y += 20;
 
@@ -295,7 +295,7 @@ void ControlPanel::createPanel()
 			wgt_x = 10;
 			wgt_y += 20;
 
-			Fl_Box *bx_FILE_O = new Fl_Box(0, wgt_y, g->w(), 20, "--- SAVE ---");
+			Fl_Box* bx_FILE_O = new Fl_Box(0, wgt_y, g->w(), 20, "--- SAVE ---");
 
 			wgt_y += 20;
 
@@ -303,19 +303,19 @@ void ControlPanel::createPanel()
 			btn_savelog->callback(cb_btn_savelog, (void*)this);
 			g->add(btn_savelog);
 
-			btn_savescreen = new Fl_Button(wgt_x+45, wgt_y, 45, 20, "scshot");
+			btn_savescreen = new Fl_Button(wgt_x + 45, wgt_y, 45, 20, "scshot");
 			btn_savescreen->callback(cb_btn_savescreen, (void*)this);
 			g->add(btn_savescreen);
 
-			btn_savetpt = new Fl_Button(wgt_x+90, wgt_y, 45, 20, "tgt_pt");
+			btn_savetpt = new Fl_Button(wgt_x + 90, wgt_y, 45, 20, "tgt_pt");
 			btn_savetpt->callback(cb_btn_savetpt, (void*)this);
 			g->add(btn_savetpt);
 #if 0
-			btn_saveerr = new Fl_Button(wgt_x+90, wgt_y, 45, 20, "err");
+			btn_saveerr = new Fl_Button(wgt_x + 90, wgt_y, 45, 20, "err");
 			btn_saveerr->callback(cb_btn_saveerr, (void*)this);
 			g->add(btn_saveerr);
 #endif
-			btn_saverul = new Fl_Button(wgt_x+135, wgt_y, 45, 20, "rulings");
+			btn_saverul = new Fl_Button(wgt_x + 135, wgt_y, 45, 20, "rulings");
 			btn_saverul->callback(cb_btn_saverul, (void*)this);
 			g->add(btn_saverul);
 
@@ -330,36 +330,36 @@ void ControlPanel::createPanel()
 			wgt_y += 25;
 
 			// ------------------------- EVALUATE -------------------------------------------
-			Fl_Box *bx_EVAL= new Fl_Box(0, wgt_y, g->w(), 20, "--- EVALUATE ---");
+			Fl_Box* bx_EVAL = new Fl_Box(0, wgt_y, g->w(), 20, "--- EVALUATE ---");
 			wgt_y += 20;
 
 			btn_eval_gap = new Fl_Button(wgt_x, wgt_y, 60, 20, "GAP");
 			btn_eval_gap->callback(cb_btn_eval_gap, (void*)this);
 
-			btn_eval_collision = new Fl_Button(wgt_x+60, wgt_y, 60, 20, "COLLIS");
+			btn_eval_collision = new Fl_Button(wgt_x + 60, wgt_y, 60, 20, "COLLIS");
 			btn_eval_collision->callback(cb_btn_eval_collision, (void*)this);
 
-			btn_eval_rulingcross = new Fl_Button(wgt_x+120, wgt_y, 60, 20, "RULING");
+			btn_eval_rulingcross = new Fl_Button(wgt_x + 120, wgt_y, 60, 20, "RULING");
 			btn_eval_rulingcross->callback(cb_btn_eval_rulingcross, (void*)this);
 
 			wgt_x = 10;
 			wgt_y += 25;
 
 			// ------------------------- DISPLAY -------------------------------------------
-			Fl_Box *bx_DISPLAY= new Fl_Box(0, wgt_y, g->w(), 20, "--- DISPLAY ---");
+			Fl_Box* bx_DISPLAY = new Fl_Box(0, wgt_y, g->w(), 20, "--- DISPLAY ---");
 			wgt_y += 20;
 
 			btn_resetRot = new Fl_Button(wgt_x, wgt_y, 45, 20, "Y-DN");
 			btn_resetRot->callback(cb_rb_gwin, (void*)this);
-			btn_resetScale = new Fl_Button(wgt_x+45, wgt_y, 45, 20, "SCL");
+			btn_resetScale = new Fl_Button(wgt_x + 45, wgt_y, 45, 20, "SCL");
 			btn_resetScale->callback(cb_rb_gwin, (void*)this);
-			btn_resetTrans = new Fl_Button(wgt_x+90, wgt_y, 45, 20, "TRNS");
+			btn_resetTrans = new Fl_Button(wgt_x + 90, wgt_y, 45, 20, "TRNS");
 			btn_resetTrans->callback(cb_rb_gwin, (void*)this);
 			g->add(btn_resetRot);
 			g->add(btn_resetScale);
 			g->add(btn_resetTrans);
 
-			cb_dispaxis = new Fl_Check_Button(wgt_x+135, wgt_y, 45, 20, "W_AX");
+			cb_dispaxis = new Fl_Check_Button(wgt_x + 135, wgt_y, 45, 20, "W_AX");
 			cb_dispaxis->value(this->gwin->disp_axis);
 			cb_dispaxis->callback(cb_cb_dispaxis, (void*)this);
 			g->add(cb_dispaxis);
@@ -450,9 +450,10 @@ void ControlPanel::createPanel()
 			wgt_y += 25;
 
 			cb_CurveEnd = new Fl_Check_Button(wgt_x, wgt_y, 45, 20, "CE");
-			if( ppm.flg_postproc_type == PPTYPE_X ){
+			if (ppm.flg_postproc_type == PPTYPE_X) {
 				cb_CurveEnd->value(0);
-			} else {
+			}
+			else {
 				cb_CurveEnd->value(1);
 			}
 			cb_CurveEnd->callback(cb_cb_CurveEnd, (void*)this);
@@ -476,105 +477,105 @@ void ControlPanel::createPanel()
 			wgt_y += 25;
 
 			// ------------------------- CONFIGURATION -------------------------------------------
-			Fl_Box *bx_RulRes= new Fl_Box(0, wgt_y, g->w(), 20, "--- RULING RESOLUTION ---");	wgt_y += 20;
+			Fl_Box* bx_RulRes = new Fl_Box(0, wgt_y, g->w(), 20, "--- RULING RESOLUTION ---");	wgt_y += 20;
 			vs_rulres = new Fl_Value_Slider(wgt_x, wgt_y, 180, 20);
-			vs_rulres->bounds( 10, 100 );	vs_rulres->step(10);	vs_rulres->value(XCNT_DEF);
+			vs_rulres->bounds(10, 100);	vs_rulres->step(10);	vs_rulres->value(XCNT_DEF);
 			vs_rulres->align(FL_ALIGN_LEFT);
 			vs_rulres->type(FL_HORIZONTAL);
 			vs_rulres->callback(cb_vs_rulres, (void*)this);
-			g->add( vs_rulres );
+			g->add(vs_rulres);
 
 		}
 		g->end();
 	}
 	{
-		Fl_Group* g = new Fl_Group(0, 20, this->w(), this->h()-20, "D1");
+		Fl_Group* g = new Fl_Group(0, 20, this->w(), this->h() - 20, "D1");
 		g->hide();
-		{ 
+		{
 			// ------------------------- DESIGN -------------------------------------------
 
 			wgt_x = 10;	wgt_y = 20;
-			int y_space = 25, grp_num=0;
+			int y_space = 25, grp_num = 0;
 
-			Fl_Box *bx_MODE= new Fl_Box(0, wgt_y, g->w(), 20, "--- CONTROL MODE ---");	wgt_y+=20;
+			Fl_Box* bx_MODE = new Fl_Box(0, wgt_y, g->w(), 20, "--- CONTROL MODE ---");	wgt_y += 20;
 
-			grp_fix = new Fl_Group(0, wgt_y, g->w(), 4*y_space);	grp_num = 0;
-			rb_fix[CMODE_A] = new Fl_Round_Button(wgt_x, wgt_y, 60, 20, "3D + ANGLE -> 2D");	wgt_y+=y_space; grp_num++;
-			rb_fix[CMODE_B] = new Fl_Round_Button(wgt_x, wgt_y, 60, 20, "2D + ANGLE -> 3D");	wgt_y+=y_space; grp_num++;
-			rb_fix[CMODE_C] = new Fl_Round_Button(wgt_x, wgt_y, 60, 20, "2D + 3D -> ANGLE");	wgt_y+=y_space; grp_num++;
-			rb_fix[CMODE_R] = new Fl_Round_Button(wgt_x, wgt_y, 60, 20, "Ruling Angle");	wgt_y+=y_space; grp_num++;
-			for( int i=0; i<grp_num; i++ ){
+			grp_fix = new Fl_Group(0, wgt_y, g->w(), 4 * y_space);	grp_num = 0;
+			rb_fix[CMODE_A] = new Fl_Round_Button(wgt_x, wgt_y, 60, 20, "3D + ANGLE -> 2D");	wgt_y += y_space; grp_num++;
+			rb_fix[CMODE_B] = new Fl_Round_Button(wgt_x, wgt_y, 60, 20, "2D + ANGLE -> 3D");	wgt_y += y_space; grp_num++;
+			rb_fix[CMODE_C] = new Fl_Round_Button(wgt_x, wgt_y, 60, 20, "2D + 3D -> ANGLE");	wgt_y += y_space; grp_num++;
+			rb_fix[CMODE_R] = new Fl_Round_Button(wgt_x, wgt_y, 60, 20, "Ruling Angle");	wgt_y += y_space; grp_num++;
+			for (int i = 0; i < grp_num; i++) {
 				rb_fix[i]->type(FL_RADIO_BUTTON);
-				rb_fix[i]->callback( cb_rb_fix0, (void*)this );
+				rb_fix[i]->callback(cb_rb_fix0, (void*)this);
 				grp_fix->add(rb_fix[i]);
 			}
 			grp_fix->end();
 			rb_fix[CMODE_A]->setonly();
 			g->add(grp_fix);
 
-			Fl_Box *bx_PARAMETER= new Fl_Box(0, wgt_y, g->w(), 20, "--- PARAMETER ---");	wgt_y+=20;
+			Fl_Box* bx_PARAMETER = new Fl_Box(0, wgt_y, g->w(), 20, "--- PARAMETER ---");	wgt_y += 20;
 
-			grp_param0 = new Fl_Group(0, wgt_y, g->w(), 6*y_space);	grp_num=0;
-			rb_param[P_CV2D] = new Fl_Round_Button(wgt_x, wgt_y, 150, 20, "CURVATURE (2D)");	wgt_y+=y_space; grp_num++;
-			rb_param[P_CV3D] = new Fl_Round_Button(wgt_x, wgt_y, 150, 20, "CURVATURE (3D)");	wgt_y+=y_space; grp_num++;
-			rb_param[P_TRSN] = new Fl_Round_Button(wgt_x, wgt_y, 150, 20, "TORSION");		wgt_y+=y_space; grp_num++;
-			rb_param[P_FLDA] = new Fl_Round_Button(wgt_x, wgt_y, 150, 20, "FOLDING ANGLE");	wgt_y+=y_space; grp_num++;
+			grp_param0 = new Fl_Group(0, wgt_y, g->w(), 6 * y_space);	grp_num = 0;
+			rb_param[P_CV2D] = new Fl_Round_Button(wgt_x, wgt_y, 150, 20, "CURVATURE (2D)");	wgt_y += y_space; grp_num++;
+			rb_param[P_CV3D] = new Fl_Round_Button(wgt_x, wgt_y, 150, 20, "CURVATURE (3D)");	wgt_y += y_space; grp_num++;
+			rb_param[P_TRSN] = new Fl_Round_Button(wgt_x, wgt_y, 150, 20, "TORSION");		wgt_y += y_space; grp_num++;
+			rb_param[P_FLDA] = new Fl_Round_Button(wgt_x, wgt_y, 150, 20, "FOLDING ANGLE");	wgt_y += y_space; grp_num++;
 			rb_param[P_RULL] = new Fl_Round_Button(wgt_x, wgt_y, 110, 20, "RULING LEFT");	grp_num++;
-			rb_param[P_RULR] = new Fl_Round_Button(wgt_x+120, wgt_y, 60, 20, "RIGHT");		wgt_y+=y_space; grp_num++;
+			rb_param[P_RULR] = new Fl_Round_Button(wgt_x + 120, wgt_y, 60, 20, "RIGHT");		wgt_y += y_space; grp_num++;
 
-			for( int i=0; i<grp_num; i++ ){
+			for (int i = 0; i < grp_num; i++) {
 				rb_param[i]->type(FL_RADIO_BUTTON);
-				rb_param[i]->callback( cb_rb_param0, (void*)this );
+				rb_param[i]->callback(cb_rb_param0, (void*)this);
 				grp_param0->add(rb_param[i]);
 			}
 			grp_param0->end();
 			rb_param[P_CV3D]->setonly();
 			g->add(grp_param0);
 
-			Fl_Box *bx_CPINDEX= new Fl_Box(0, wgt_y, g->w(), 20, "--- CONTROL POINT INDEX ---");	wgt_y+=20;
+			Fl_Box* bx_CPINDEX = new Fl_Box(0, wgt_y, g->w(), 20, "--- CONTROL POINT INDEX ---");	wgt_y += 20;
 
 			vs_ppos = new Fl_Value_Slider(wgt_x, wgt_y, 180, 20);
-			vs_ppos->bounds(0,1);	vs_ppos->step(1);	vs_ppos->value(gwin->ppos);
+			vs_ppos->bounds(0, 1);	vs_ppos->step(1);	vs_ppos->value(gwin->ppos);
 			vs_ppos->align(FL_ALIGN_LEFT);
 			vs_ppos->type(FL_HORIZONTAL);
 			vs_ppos->callback(cb_vs_ppos, (void*)this);
-			g->add( vs_ppos );
+			g->add(vs_ppos);
 
-			wgt_y+=y_space;
+			wgt_y += y_space;
 
-			Fl_Box *bx_PARAMVAL= new Fl_Box(0, wgt_y, g->w(), 20, "--- PARAMETER VALUE ---");	wgt_y+=20;
+			Fl_Box* bx_PARAMVAL = new Fl_Box(0, wgt_y, g->w(), 20, "--- PARAMETER VALUE ---");	wgt_y += 20;
 
 			vs_pval = new Fl_Value_Slider(wgt_x, wgt_y, 180, 20);
-			vs_pval->bounds(0,1);	vs_pval->step(0.01);	vs_pval->value(gwin->pprm);
+			vs_pval->bounds(0, 1);	vs_pval->step(0.01);	vs_pval->value(gwin->pprm);
 			vs_pval->align(FL_ALIGN_LEFT);
 			vs_pval->type(FL_HORIZONTAL);
 			vs_pval->callback(cb_vs_pval, (void*)this);
-			g->add( vs_pval );
+			g->add(vs_pval);
 
-			wgt_y+=y_space;
+			wgt_y += y_space;
 
-			btn_RPar = new Fl_Button(wgt_x,  wgt_y, 150, 20, "Set Ruling Horizontal");
+			btn_RPar = new Fl_Button(wgt_x, wgt_y, 150, 20, "Set Ruling Horizontal");
 			btn_RPar->callback(cb_btn_RPar, (void*)this);
 			g->add(btn_RPar);
 
-			wgt_y+=y_space;
+			wgt_y += y_space;
 
-			btn_R2TA = new Fl_Button(wgt_x,  wgt_y, 150, 20, "Apply Ruling Angle");
+			btn_R2TA = new Fl_Button(wgt_x, wgt_y, 150, 20, "Apply Ruling Angle");
 			btn_R2TA->callback(cb_btn_R2TA, (void*)this);
 			g->add(btn_R2TA);
 
-			wgt_y+=y_space;
+			wgt_y += y_space;
 
 			// ------------------------- FOLD_MOTION -------------------------------------------
-			Fl_Box *bx_FMOTION= new Fl_Box(0, wgt_y, g->w(), 20, "--- FOLDING_MOTION ---");	wgt_y+=20;
+			Fl_Box* bx_FMOTION = new Fl_Box(0, wgt_y, g->w(), 20, "--- FOLDING_MOTION ---");	wgt_y += 20;
 			vs_fmot = new Fl_Value_Slider(wgt_x, wgt_y, 140, 20);
-			vs_fmot->bounds(-an_fcnt,an_fcnt*2);	vs_fmot->step(1);	vs_fmot->value(0);
+			vs_fmot->bounds(-an_fcnt, an_fcnt * 2);	vs_fmot->step(1);	vs_fmot->value(0);
 			vs_fmot->align(FL_ALIGN_LEFT);
 			vs_fmot->type(FL_HORIZONTAL);
 			vs_fmot->callback(cb_vs_fmot, (void*)this);
-			g->add( vs_fmot );
+			g->add(vs_fmot);
 
-			btn_apply = new Fl_Button(wgt_x+140,  wgt_y, 40, 20, "Apply");
+			btn_apply = new Fl_Button(wgt_x + 140, wgt_y, 40, 20, "Apply");
 			btn_apply->callback(cb_btn_apply, (void*)this);
 			g->add(btn_apply);
 
@@ -582,39 +583,39 @@ void ControlPanel::createPanel()
 		g->end();
 	}
 	{
-		Fl_Group* g = new Fl_Group(0, 20, this->w(), this->h()-20, "D2");
+		Fl_Group* g = new Fl_Group(0, 20, this->w(), this->h() - 20, "D2");
 		g->hide();
-		{ 
+		{
 			// ------------------------- RECTIFY ------------------------------------
 
 			wgt_x = 10;	wgt_y = 20;
-			int y_space = 25, grp_num=0;
+			int y_space = 25, grp_num = 0;
 
-			Fl_Box *bx_RECTIFY= new Fl_Box(0, wgt_y, g->w(), 20, "--- RECTIFY ---");	wgt_y+=20;
+			Fl_Box* bx_RECTIFY = new Fl_Box(0, wgt_y, g->w(), 20, "--- RECTIFY ---");	wgt_y += 20;
 
-			cb_rectifyA = new Fl_Check_Button(wgt_x, wgt_y, 45, 20, "FOLDING ANGLE");	wgt_y+=y_space;
-			cb_rectifyA->value( this->ppm.rp.flg_rectifyA );
-			cb_rectifyA->callback(cb_cb_rectifyA, (void*)this );
-			cb_rectifyT = new Fl_Check_Button(wgt_x, wgt_y, 45, 20, "TORSION");	wgt_y+=y_space;
-			cb_rectifyT->value( this->ppm.rp.flg_rectifyT );
-			cb_rectifyT->callback(cb_cb_rectifyT, (void*)this );
-			cb_rectifyR = new Fl_Check_Button(wgt_x, wgt_y, 45, 20, "Eliminate RULINGS");	wgt_y+=y_space;
-			cb_rectifyR->value( this->ppm.rp.flg_rectifyR );
-			cb_rectifyR->callback(cb_cb_rectifyR, (void*)this );
+			cb_rectifyA = new Fl_Check_Button(wgt_x, wgt_y, 45, 20, "FOLDING ANGLE");	wgt_y += y_space;
+			cb_rectifyA->value(this->ppm.rp.flg_rectifyA);
+			cb_rectifyA->callback(cb_cb_rectifyA, (void*)this);
+			cb_rectifyT = new Fl_Check_Button(wgt_x, wgt_y, 45, 20, "TORSION");	wgt_y += y_space;
+			cb_rectifyT->value(this->ppm.rp.flg_rectifyT);
+			cb_rectifyT->callback(cb_cb_rectifyT, (void*)this);
+			cb_rectifyR = new Fl_Check_Button(wgt_x, wgt_y, 45, 20, "Eliminate RULINGS");	wgt_y += y_space;
+			cb_rectifyR->value(this->ppm.rp.flg_rectifyR);
+			cb_rectifyR->callback(cb_cb_rectifyR, (void*)this);
 			g->add(cb_rectifyA);
 			g->add(cb_rectifyT);
 			g->add(cb_rectifyR);
 
 			// ------------------------- FOLD_MOTION -------------------------------------------
-			Fl_Box *bx_FMOTION= new Fl_Box(0, wgt_y, g->w(), 20, "--- FOLDING_MOTION ---");	wgt_y+=20;
+			Fl_Box* bx_FMOTION = new Fl_Box(0, wgt_y, g->w(), 20, "--- FOLDING_MOTION ---");	wgt_y += 20;
 			vs_fmot = new Fl_Value_Slider(wgt_x, wgt_y, 140, 20);
-			vs_fmot->bounds(-an_fcnt,an_fcnt);	vs_fmot->step(1);	vs_fmot->value(0);
+			vs_fmot->bounds(-an_fcnt, an_fcnt);	vs_fmot->step(1);	vs_fmot->value(0);
 			vs_fmot->align(FL_ALIGN_LEFT);
 			vs_fmot->type(FL_HORIZONTAL);
 			vs_fmot->callback(cb_vs_fmot, (void*)this);
-			g->add( vs_fmot );
+			g->add(vs_fmot);
 
-			btn_apply = new Fl_Button(wgt_x+140,  wgt_y, 40, 20, "Apply");
+			btn_apply = new Fl_Button(wgt_x + 140, wgt_y, 40, 20, "Apply");
 			btn_apply->callback(cb_btn_apply, (void*)this);
 			g->add(btn_apply);
 
@@ -622,48 +623,48 @@ void ControlPanel::createPanel()
 		g->end();
 	}
 	{
-		Fl_Group* g = new Fl_Group(0, 20, this->w(), this->h()-20, "D3");
+		Fl_Group* g = new Fl_Group(0, 20, this->w(), this->h() - 20, "D3");
 		g->hide();
-		{ 
+		{
 			// ------------------------- FOLDING ANGLE ------------------------------------
 
 			wgt_x = 10;	wgt_y = 20;
-			int y_space = 25, y_size = 20, grp_num=0;
+			int y_space = 25, y_size = 20, grp_num = 0;
 
-			crease *c = &(this->ppm.crs[0]);
+			crease* c = &(this->ppm.crs[0]);
 
-			Fl_Box *bx_DIVNUM= new Fl_Box(0, wgt_y, g->w(), y_size, "--- DIVISION NUMBER ---");	wgt_y+=y_size;
+			Fl_Box* bx_DIVNUM = new Fl_Box(0, wgt_y, g->w(), y_size, "--- DIVISION NUMBER ---");	wgt_y += y_size;
 			vs_divnum = new Fl_Value_Slider(wgt_x, wgt_y, 180, y_size);
-			vs_divnum->bounds(1,10);	vs_divnum->step(1);	vs_divnum->value( gwin->divnum );
+			vs_divnum->bounds(1, 10);	vs_divnum->step(1);	vs_divnum->value(gwin->divnum);
 			vs_divnum->align(FL_ALIGN_LEFT);
 			vs_divnum->type(FL_HORIZONTAL);
 			vs_divnum->callback(cb_vs_divnum, (void*)this);
-			g->add( vs_divnum );
+			g->add(vs_divnum);
 
-			wgt_y+=y_space;
+			wgt_y += y_space;
 
 #if 1
-			Fl_Box *bx_DIVCRV= new Fl_Box(0, wgt_y, g->w(), y_size, "--- DIVISION CURVE ---");	wgt_y+=y_size;
+			Fl_Box* bx_DIVCRV = new Fl_Box(0, wgt_y, g->w(), y_size, "--- DIVISION CURVE ---");	wgt_y += y_size;
 			vs_divcrv = new Fl_Value_Slider(wgt_x, wgt_y, 180, y_size);
-			vs_divcrv->bounds( kmin, kmax );	vs_divcrv->step( kstep );	vs_divcrv->value( 0 );
+			vs_divcrv->bounds(kmin, kmax);	vs_divcrv->step(kstep);	vs_divcrv->value(0);
 			vs_divcrv->align(FL_ALIGN_LEFT);
 			vs_divcrv->type(FL_HORIZONTAL);
 			//vs_divcrv->callback(cb_vs_divcrv, (void*)this);
 			vs_divcrv->callback(cb_vs_divnum, (void*)this);
-			g->add( vs_divcrv );
+			g->add(vs_divcrv);
 #else
-			Fl_Box *bx_DIVTYPE= new Fl_Box(0, wgt_y, g->w(), 20, "--- DIVISION TYPE---");	wgt_y+=y_size;
+			Fl_Box* bx_DIVTYPE = new Fl_Box(0, wgt_y, g->w(), 20, "--- DIVISION TYPE---");	wgt_y += y_size;
 
-			grp_divtype = new Fl_Group(0, wgt_y, g->w(), 2*y_space);	grp_num=0;
+			grp_divtype = new Fl_Group(0, wgt_y, g->w(), 2 * y_space);	grp_num = 0;
 
 			rb_divtype[0] = new Fl_Round_Button(wgt_x, wgt_y, 45, 20, "cylinder");
-			rb_divtype[0]->callback( cb_rb_divtype, (void*)this );
+			rb_divtype[0]->callback(cb_rb_divtype, (void*)this);
 			rb_divtype[0]->type(FL_RADIO_BUTTON);
 			rb_divtype[0]->deactivate();
 			grp_divtype->add(rb_divtype[0]);
 
-			rb_divtype[1] = new Fl_Round_Button(wgt_x+100, wgt_y, 45, 20, "disk");
-			rb_divtype[1]->callback( cb_rb_divtype, (void*)this );
+			rb_divtype[1] = new Fl_Round_Button(wgt_x + 100, wgt_y, 45, 20, "disk");
+			rb_divtype[1]->callback(cb_rb_divtype, (void*)this);
 			rb_divtype[1]->type(FL_RADIO_BUTTON);
 			rb_divtype[1]->setonly();
 			grp_divtype->add(rb_divtype[1]);
@@ -671,11 +672,11 @@ void ControlPanel::createPanel()
 			grp_divtype->end();
 			g->add(grp_divtype);
 #endif
-			wgt_y+=y_space;
+			wgt_y += y_space;
 
 			grp_foldtrim = new Fl_Group(0, wgt_y, g->w(), y_space);
-			rb_fold = new Fl_Round_Button(wgt_x,wgt_y,50,y_space,"fold");
-			rb_trim = new Fl_Round_Button(wgt_x+50,wgt_y,50,y_space,"trim");
+			rb_fold = new Fl_Round_Button(wgt_x, wgt_y, 50, y_space, "fold");
+			rb_trim = new Fl_Round_Button(wgt_x + 50, wgt_y, 50, y_space, "trim");
 			rb_fold->type(FL_RADIO_BUTTON);
 			rb_trim->type(FL_RADIO_BUTTON);
 			rb_fold->callback(cb_vs_divnum, (void*)this);
@@ -686,322 +687,322 @@ void ControlPanel::createPanel()
 			grp_foldtrim->end();
 			g->add(grp_foldtrim);
 
-			cb_usecp = new Fl_Check_Button(wgt_x+100, wgt_y, 45, 20, "CTRL PT");
+			cb_usecp = new Fl_Check_Button(wgt_x + 100, wgt_y, 45, 20, "CTRL PT");
 			cb_usecp->value(1);
 			g->add(cb_usecp);
 
-			wgt_y+=y_space;
+			wgt_y += y_space;
 
-			Fl_Box *bx_FMOTION= new Fl_Box(0, wgt_y, g->w(), y_size, "--- FOLDING_MOTION ---");	wgt_y+=y_size;
+			Fl_Box* bx_FMOTION = new Fl_Box(0, wgt_y, g->w(), y_size, "--- FOLDING_MOTION ---");	wgt_y += y_size;
 			vs_fmot2 = new Fl_Value_Slider(0, wgt_y, g->w(), y_size);
-			vs_fmot2->bounds(0,1);	vs_fmot2->step(1);	vs_fmot2->value(0);
+			vs_fmot2->bounds(0, 1);	vs_fmot2->step(1);	vs_fmot2->value(0);
 			vs_fmot2->align(FL_ALIGN_LEFT);
 			vs_fmot2->type(FL_HORIZONTAL);
 			vs_fmot2->callback(cb_vs_fmot2, (void*)this);
-			g->add( vs_fmot2 );
+			g->add(vs_fmot2);
 
-			wgt_y+=y_size;
+			wgt_y += y_size;
 #if 1
 			//vs_fmot2->bounds(-19,19);
-			vs_fmot2->bounds(-20,20);
+			vs_fmot2->bounds(-20, 20);
 			int min = (int)vs_fmot2->minimum();
 			int max = (int)vs_fmot2->maximum();
-			int size = max-min+1;
-			int dx = (int)( (float)(vs_fmot2->w() -30) / (float)size + 0.5);
-			for( int j=min, x=36; j<=max; j++, x+=dx ){
+			int size = max - min + 1;
+			int dx = (int)((float)(vs_fmot2->w() - 30) / (float)size + 0.5);
+			for (int j = min, x = 36; j <= max; j++, x += dx) {
 				//int frm = This->vs_fmot2->value() + c->FM_fidx_org;
-				int i = j + MAX_FRAME/2; //c->FM_fidx_org;
-				bx_FM_Pt[i]= new Fl_Box(x, wgt_y,    dx, 15, "");
-				bx_FM_Pt[i]->box(FL_FLAT_BOX); bx_FM_Pt[i]->color(FL_WHITE); g->add( bx_FM_Pt[i] );
-				bx_FM_Pa[i]= new Fl_Box(x, wgt_y+15, dx, 15, "");
-				bx_FM_Pa[i]->box(FL_FLAT_BOX); bx_FM_Pa[i]->color(FL_WHITE); g->add( bx_FM_Pa[i] );
-				bx_FM_m3[i]= new Fl_Box(x, wgt_y+30, dx, 15, "");
-				bx_FM_m3[i]->box(FL_FLAT_BOX); bx_FM_m3[i]->color(FL_WHITE); g->add( bx_FM_m3[i] );
+				int i = j + MAX_FRAME / 2; //c->FM_fidx_org;
+				bx_FM_Pt[i] = new Fl_Box(x, wgt_y, dx, 15, "");
+				bx_FM_Pt[i]->box(FL_FLAT_BOX); bx_FM_Pt[i]->color(FL_WHITE); g->add(bx_FM_Pt[i]);
+				bx_FM_Pa[i] = new Fl_Box(x, wgt_y + 15, dx, 15, "");
+				bx_FM_Pa[i]->box(FL_FLAT_BOX); bx_FM_Pa[i]->color(FL_WHITE); g->add(bx_FM_Pa[i]);
+				bx_FM_m3[i] = new Fl_Box(x, wgt_y + 30, dx, 15, "");
+				bx_FM_m3[i]->box(FL_FLAT_BOX); bx_FM_m3[i]->color(FL_WHITE); g->add(bx_FM_m3[i]);
 			}
-			wgt_y+=15*3;
+			wgt_y += 15 * 3;
 #endif
 
-			Fl_Box *bx_PARAMETER= new Fl_Box(0, wgt_y, g->w(), y_size, "--- PARAMETER ---");	wgt_y+=y_size;
+			Fl_Box* bx_PARAMETER = new Fl_Box(0, wgt_y, g->w(), y_size, "--- PARAMETER ---");	wgt_y += y_size;
 
-			grp_param2 = new Fl_Group(0, wgt_y, g->w(), y_space*3);	grp_num=0;
+			grp_param2 = new Fl_Group(0, wgt_y, g->w(), y_space * 3);	grp_num = 0;
 
 			rb_param[P_FLDA1] = new Fl_Round_Button(wgt_x, wgt_y, 100, y_size, "Fold Angle");
-			rb_param[P_FLDA1]->callback( cb_rb_param2, (void*)this );
+			rb_param[P_FLDA1]->callback(cb_rb_param2, (void*)this);
 			rb_param[P_FLDA1]->type(FL_RADIO_BUTTON);
 			grp_param2->add(rb_param[P_FLDA1]);
 
-			rb_param[P_TRSN1] = new Fl_Round_Button(wgt_x+100, wgt_y, 90, y_size, "Torsion");
-			rb_param[P_TRSN1]->callback( cb_rb_param2, (void*)this );
+			rb_param[P_TRSN1] = new Fl_Round_Button(wgt_x + 100, wgt_y, 90, y_size, "Torsion");
+			rb_param[P_TRSN1]->callback(cb_rb_param2, (void*)this);
 			rb_param[P_TRSN1]->type(FL_RADIO_BUTTON);
 			grp_param2->add(rb_param[P_TRSN1]);
 
-			wgt_y+=y_space;
+			wgt_y += y_space;
 
-			btn_R2TA2 = new Fl_Button(wgt_x,  wgt_y, 60, 20, "Ruling");
+			btn_R2TA2 = new Fl_Button(wgt_x, wgt_y, 60, 20, "Ruling");
 			btn_R2TA2->callback(cb_btn_R2TA2, (void*)this);
 			g->add(btn_R2TA2);
 
-			rb_param[P_RULL1] = new Fl_Round_Button(wgt_x+70, wgt_y, 40, y_size, "L");
-			rb_param[P_RULL1]->callback( cb_rb_param2, (void*)this );
+			rb_param[P_RULL1] = new Fl_Round_Button(wgt_x + 70, wgt_y, 40, y_size, "L");
+			rb_param[P_RULL1]->callback(cb_rb_param2, (void*)this);
 			rb_param[P_RULL1]->type(FL_RADIO_BUTTON);
 			grp_param2->add(rb_param[P_RULL1]);
 
-			rb_param[P_RULR1] = new Fl_Round_Button(wgt_x+110, wgt_y, 40, y_size, "R");
-			rb_param[P_RULR1]->callback( cb_rb_param2, (void*)this );
+			rb_param[P_RULR1] = new Fl_Round_Button(wgt_x + 110, wgt_y, 40, y_size, "R");
+			rb_param[P_RULR1]->callback(cb_rb_param2, (void*)this);
 			rb_param[P_RULR1]->type(FL_RADIO_BUTTON);
 			grp_param2->add(rb_param[P_RULR1]);
 
 			grp_param2->end();
 			g->add(grp_param2);
 
-			wgt_y+=y_space;
+			wgt_y += y_space;
 
-			Fl_Box *bx_CPINDEX= new Fl_Box(0, wgt_y, g->w(), y_size, "--- CONTROL POINT INDEX ---");	wgt_y+=y_size;
+			Fl_Box* bx_CPINDEX = new Fl_Box(0, wgt_y, g->w(), y_size, "--- CONTROL POINT INDEX ---");	wgt_y += y_size;
 			vs_ppos2 = new Fl_Value_Slider(wgt_x, wgt_y, 180, y_size);
-			vs_ppos2->bounds(0,1);	vs_ppos2->step(1);	vs_ppos2->value(gwin->ppos);
+			vs_ppos2->bounds(0, 1);	vs_ppos2->step(1);	vs_ppos2->value(gwin->ppos);
 			vs_ppos2->align(FL_ALIGN_LEFT);
 			vs_ppos2->type(FL_HORIZONTAL);
 			vs_ppos2->callback(cb_vs_ppos2, (void*)this);
-			g->add( vs_ppos2 );
+			g->add(vs_ppos2);
 
-			wgt_y+=y_space;
+			wgt_y += y_space;
 
-			Fl_Box *bx_MODE= new Fl_Box(0, wgt_y, g->w(), y_size, "--- PARAMETER VALUE ---");	wgt_y+=y_size;
+			Fl_Box* bx_MODE = new Fl_Box(0, wgt_y, g->w(), y_size, "--- PARAMETER VALUE ---");	wgt_y += y_size;
 			vs_pval2 = new Fl_Value_Slider(wgt_x, wgt_y, 180, y_size);
-			vs_pval2->bounds(0,1);	vs_pval2->step(0.01);	vs_pval2->value(gwin->pprm);
+			vs_pval2->bounds(0, 1);	vs_pval2->step(0.01);	vs_pval2->value(gwin->pprm);
 			vs_pval2->align(FL_ALIGN_LEFT);
 			vs_pval2->type(FL_HORIZONTAL);
 			vs_pval2->callback(cb_vs_pval2, (void*)this);
-			g->add( vs_pval2 );
+			g->add(vs_pval2);
 
-			wgt_y+=y_space;
+			wgt_y += y_space;
 
-			Fl_Box *bx_PAR= new Fl_Box(wgt_x, wgt_y, 60, y_size, "param");
-			btn_paramopt = new Fl_Button(wgt_x+60, wgt_y, 40, y_size, "opt");
+			Fl_Box* bx_PAR = new Fl_Box(wgt_x, wgt_y, 60, y_size, "param");
+			btn_paramopt = new Fl_Button(wgt_x + 60, wgt_y, 40, y_size, "opt");
 			btn_paramopt->callback(cb_btn_paramopt, (void*)this);
-			btn_paramset = new Fl_Button(wgt_x+100, wgt_y, 40, y_size, "set");
+			btn_paramset = new Fl_Button(wgt_x + 100, wgt_y, 40, y_size, "set");
 			btn_paramset->callback(cb_btn_paramset, (void*)this);
-			btn_paramreset = new Fl_Button(wgt_x+140, wgt_y, 40, y_size, "reset");
+			btn_paramreset = new Fl_Button(wgt_x + 140, wgt_y, 40, y_size, "reset");
 			btn_paramreset->callback(cb_btn_paramreset, (void*)this);
 
-			wgt_y+=y_size;
+			wgt_y += y_size;
 
-			Fl_Box *bx_MAT= new Fl_Box(wgt_x, wgt_y, 60, y_size, "matrix");
-			btn_matopt = new Fl_Button(wgt_x+60, wgt_y, 40, y_size, "opt");
+			Fl_Box* bx_MAT = new Fl_Box(wgt_x, wgt_y, 60, y_size, "matrix");
+			btn_matopt = new Fl_Button(wgt_x + 60, wgt_y, 40, y_size, "opt");
 			btn_matopt->callback(cb_btn_matopt, (void*)this);
-			btn_matset = new Fl_Button(wgt_x+100, wgt_y, 40, y_size, "set");
+			btn_matset = new Fl_Button(wgt_x + 100, wgt_y, 40, y_size, "set");
 			btn_matset->callback(cb_btn_matset, (void*)this);
-			btn_matreset = new Fl_Button(wgt_x+140, wgt_y, 40, y_size, "reset");
+			btn_matreset = new Fl_Button(wgt_x + 140, wgt_y, 40, y_size, "reset");
 			btn_matreset->callback(cb_btn_matreset, (void*)this);
 
-			wgt_y+=y_size;
+			wgt_y += y_size;
 
-			Fl_Box *bx_MOT= new Fl_Box(wgt_x, wgt_y, 60, y_size, "motion");
-			btn_savemotion = new Fl_Button(wgt_x+60, wgt_y, 60, y_size, "save");
+			Fl_Box* bx_MOT = new Fl_Box(wgt_x, wgt_y, 60, y_size, "motion");
+			btn_savemotion = new Fl_Button(wgt_x + 60, wgt_y, 60, y_size, "save");
 			btn_savemotion->callback(cb_btn_savemotion, (void*)this);
-			btn_loadmotion = new Fl_Button(wgt_x+120, wgt_y, 60, y_size, "load");
+			btn_loadmotion = new Fl_Button(wgt_x + 120, wgt_y, 60, y_size, "load");
 			btn_loadmotion->callback(cb_btn_loadmotion, (void*)this);
 
-			wgt_y+=y_size;
+			wgt_y += y_size;
 
-			Fl_Box *bx_FRA= new Fl_Box(wgt_x, wgt_y, 60, y_size, "frame");
-			btn_saveframe = new Fl_Button(wgt_x+60, wgt_y, 60, y_size, "save");
+			Fl_Box* bx_FRA = new Fl_Box(wgt_x, wgt_y, 60, y_size, "frame");
+			btn_saveframe = new Fl_Button(wgt_x + 60, wgt_y, 60, y_size, "save");
 			btn_saveframe->callback(cb_btn_saveframe, (void*)this);
-			btn_loadframe = new Fl_Button(wgt_x+120, wgt_y, 60, y_size, "load");
+			btn_loadframe = new Fl_Button(wgt_x + 120, wgt_y, 60, y_size, "load");
 			btn_loadframe->callback(cb_btn_loadframe, (void*)this);
 
 		}
 		g->end();
 	}
 	{
-	Fl_Group* g = new Fl_Group(0, 20, this->w(), this->h() - 20, "D4");
-	g->show();
-	{
-		wgt_x = 10;	wgt_y = 20;
-		int y_space = 25, grp_num = 0;
+		Fl_Group* g = new Fl_Group(0, 20, this->w(), this->h() - 20, "D4");
+		g->show();
+		{
+			wgt_x = 10;	wgt_y = 20;
+			int y_space = 25, grp_num = 0;
 
-		// ------------------------- RULING 2 CURVE -------------------------------------------
-		Fl_Box* bx_RulCrv = new Fl_Box(0, wgt_y, g->w(), 20, "--- RULING 2 CURVE ---");	wgt_y += 20;
+			// ------------------------- RULING 2 CURVE -------------------------------------------
+			Fl_Box* bx_RulCrv = new Fl_Box(0, wgt_y, g->w(), 20, "--- RULING 2 CURVE ---");	wgt_y += 20;
 
-		vs_xmang1 = new Fl_Value_Slider(wgt_x, wgt_y, 180, 20);
-		vs_xmang1->bounds(-90, 90);	vs_xmang1->step(2);	vs_xmang1->value(40);
-		vs_xmang1->align(FL_ALIGN_LEFT);
-		vs_xmang1->type(FL_HORIZONTAL);
-		vs_xmang1->callback(cb_vs_xmang, (void*)this);
-		g->add(vs_xmang1);
+			vs_xmang1 = new Fl_Value_Slider(wgt_x, wgt_y, 180, 20);
+			vs_xmang1->bounds(-90, 90);	vs_xmang1->step(2);	vs_xmang1->value(40);
+			vs_xmang1->align(FL_ALIGN_LEFT);
+			vs_xmang1->type(FL_HORIZONTAL);
+			vs_xmang1->callback(cb_vs_xmang, (void*)this);
+			g->add(vs_xmang1);
 
-		wgt_y += 25;
+			wgt_y += 25;
 
-		vs_xmang0 = new Fl_Value_Slider(wgt_x, wgt_y, 180, 20);
-		vs_xmang0->bounds(-90, 90);	vs_xmang0->step(1);	vs_xmang0->value(45);
-		vs_xmang0->align(FL_ALIGN_LEFT);
-		vs_xmang0->type(FL_HORIZONTAL);
-		g->add(vs_xmang0);
+			vs_xmang0 = new Fl_Value_Slider(wgt_x, wgt_y, 180, 20);
+			vs_xmang0->bounds(-90, 90);	vs_xmang0->step(1);	vs_xmang0->value(45);
+			vs_xmang0->align(FL_ALIGN_LEFT);
+			vs_xmang0->type(FL_HORIZONTAL);
+			g->add(vs_xmang0);
 
-		wgt_y += 25;
+			wgt_y += 25;
 
-		btn_switchRuling = new Fl_Button(wgt_x, wgt_y, 60, 20, "switch");
-		btn_switchRuling->callback(cb_btn_switchRuling, (void*)this);
-		g->add(btn_switchRuling);
+			btn_switchRuling = new Fl_Button(wgt_x, wgt_y, 60, 20, "switch");
+			btn_switchRuling->callback(cb_btn_switchRuling, (void*)this);
+			g->add(btn_switchRuling);
 
-		wgt_x += 60;
+			wgt_x += 60;
 
-		btn_R2TA0 = new Fl_Button(wgt_x, wgt_y, 60, 20, "Rul->TA");
-		btn_R2TA0->callback(cb_btn_R2TA0, (void*)this);
-		g->add(btn_R2TA0);
+			btn_R2TA0 = new Fl_Button(wgt_x, wgt_y, 60, 20, "Rul->TA");
+			btn_R2TA0->callback(cb_btn_R2TA0, (void*)this);
+			g->add(btn_R2TA0);
 
-		wgt_x += 60;
+			wgt_x += 60;
 
-		btn_optmat = new Fl_Button(wgt_x, wgt_y, 60, 20, "Opt Mat");
-		btn_optmat->callback(cb_btn_optmat, (void*)this);
-		g->add(btn_optmat);
+			btn_optmat = new Fl_Button(wgt_x, wgt_y, 60, 20, "Opt Mat");
+			btn_optmat->callback(cb_btn_optmat, (void*)this);
+			g->add(btn_optmat);
 
-		wgt_x = 10;
-		wgt_y += 25;
+			wgt_x = 10;
+			wgt_y += 25;
 
-		btn_start = new Fl_Button(wgt_x, wgt_y, 50, 20, "start");
-		btn_start->callback(cb_btn_start, (void*)this);
-		g->add(btn_start);
+			btn_start = new Fl_Button(wgt_x, wgt_y, 50, 20, "start");
+			btn_start->callback(cb_btn_start, (void*)this);
+			g->add(btn_start);
 
-		btn_stop = new Fl_Button(wgt_x + 50, wgt_y, 50, 20, "stop");
-		btn_stop->callback(cb_btn_stop, (void*)this);
-		g->add(btn_stop);
+			btn_stop = new Fl_Button(wgt_x + 50, wgt_y, 50, 20, "stop");
+			btn_stop->callback(cb_btn_stop, (void*)this);
+			g->add(btn_stop);
 
-		cb_optmat = new Fl_Check_Button(wgt_x + 100, wgt_y, 20, 20, "mat");
-		cb_optmat->value(0);
-		g->add(cb_optmat);
+			cb_optmat = new Fl_Check_Button(wgt_x + 100, wgt_y, 20, 20, "mat");
+			cb_optmat->value(0);
+			g->add(cb_optmat);
 
-		cb_optrot = new Fl_Check_Button(wgt_x + 140, wgt_y, 20, 20, "rot");
-		cb_optrot->value(0);
-		g->add(cb_optrot);
+			cb_optrot = new Fl_Check_Button(wgt_x + 140, wgt_y, 20, 20, "rot");
+			cb_optrot->value(0);
+			g->add(cb_optrot);
 
-		wgt_x = 10;
-		wgt_y += 25;
+			wgt_x = 10;
+			wgt_y += 25;
 
-		// ------------------------- TARGET POINTS -------------------------------------------
-		Fl_Box* bx_Target = new Fl_Box(0, wgt_y, g->w(), 20, "--- TARGET POINTS ---");	wgt_y += 20;
+			// ------------------------- TARGET POINTS -------------------------------------------
+			Fl_Box* bx_Target = new Fl_Box(0, wgt_y, g->w(), 20, "--- TARGET POINTS ---");	wgt_y += 20;
 
-		wgt_x = 40;
+			wgt_x = 40;
 
-		btn_addTgt = new Fl_Button(wgt_x, wgt_y, 150, 20, "add / modify / delete");
-		btn_addTgt->callback(cb_btn_addTgt, (void*)this);
-		g->add(btn_addTgt);
+			btn_addTgt = new Fl_Button(wgt_x, wgt_y, 150, 20, "add / modify / delete");
+			btn_addTgt->callback(cb_btn_addTgt, (void*)this);
+			g->add(btn_addTgt);
 
-		wgt_y += 25;
+			wgt_y += 25;
 
-		vs_tgtidx = new Fl_Value_Slider(wgt_x, wgt_y, 150, 20, "idx");
-		vs_tgtidx->bounds(0, 100);	vs_tgtidx->step(1);	vs_tgtidx->value(0);
-		vs_tgtidx->align(FL_ALIGN_LEFT);
-		vs_tgtidx->type(FL_HORIZONTAL);
-		vs_tgtidx->callback(cb_vs_tgtidx, (void*)this);
-		g->add(vs_tgtidx);
+			vs_tgtidx = new Fl_Value_Slider(wgt_x, wgt_y, 150, 20, "idx");
+			vs_tgtidx->bounds(0, 100);	vs_tgtidx->step(1);	vs_tgtidx->value(0);
+			vs_tgtidx->align(FL_ALIGN_LEFT);
+			vs_tgtidx->type(FL_HORIZONTAL);
+			vs_tgtidx->callback(cb_vs_tgtidx, (void*)this);
+			g->add(vs_tgtidx);
 #if 0
-		wgt_y += 25;
+			wgt_y += 25;
 
-		vs_tgtx = new Fl_Value_Slider(wgt_x, wgt_y, 150, 20, "x");
-		vs_tgtx->bounds(-100, 100);	vs_tgtx->step(1);	vs_tgtx->value(0);
-		vs_tgtx->align(FL_ALIGN_LEFT);
-		vs_tgtx->type(FL_HORIZONTAL);
-		vs_tgtx->callback(cb_vs_tgtxyz, (void*)this);
-		g->add(vs_tgtx);
+			vs_tgtx = new Fl_Value_Slider(wgt_x, wgt_y, 150, 20, "x");
+			vs_tgtx->bounds(-100, 100);	vs_tgtx->step(1);	vs_tgtx->value(0);
+			vs_tgtx->align(FL_ALIGN_LEFT);
+			vs_tgtx->type(FL_HORIZONTAL);
+			vs_tgtx->callback(cb_vs_tgtxyz, (void*)this);
+			g->add(vs_tgtx);
 
-		wgt_y += 25;
+			wgt_y += 25;
 
-		vs_tgty = new Fl_Value_Slider(wgt_x, wgt_y, 150, 20, "y");
-		vs_tgty->bounds(-100, 100);	vs_tgty->step(1);	vs_tgty->value(0);
-		vs_tgty->align(FL_ALIGN_LEFT);
-		vs_tgty->type(FL_HORIZONTAL);
-		vs_tgty->callback(cb_vs_tgtxyz, (void*)this);
-		g->add(vs_tgty);
+			vs_tgty = new Fl_Value_Slider(wgt_x, wgt_y, 150, 20, "y");
+			vs_tgty->bounds(-100, 100);	vs_tgty->step(1);	vs_tgty->value(0);
+			vs_tgty->align(FL_ALIGN_LEFT);
+			vs_tgty->type(FL_HORIZONTAL);
+			vs_tgty->callback(cb_vs_tgtxyz, (void*)this);
+			g->add(vs_tgty);
 
-		wgt_y += 25;
+			wgt_y += 25;
 
-		vs_tgtz = new Fl_Value_Slider(wgt_x, wgt_y, 150, 20, "z");
-		vs_tgtz->bounds(-100, 100);	vs_tgtz->step(1);	vs_tgtz->value(0);
-		vs_tgtz->align(FL_ALIGN_LEFT);
-		vs_tgtz->type(FL_HORIZONTAL);
-		vs_tgtz->callback(cb_vs_tgtxyz, (void*)this);
-		g->add(vs_tgtz);
+			vs_tgtz = new Fl_Value_Slider(wgt_x, wgt_y, 150, 20, "z");
+			vs_tgtz->bounds(-100, 100);	vs_tgtz->step(1);	vs_tgtz->value(0);
+			vs_tgtz->align(FL_ALIGN_LEFT);
+			vs_tgtz->type(FL_HORIZONTAL);
+			vs_tgtz->callback(cb_vs_tgtxyz, (void*)this);
+			g->add(vs_tgtz);
 
-		wgt_y += 25;
+			wgt_y += 25;
 
-		vs_tgtn = new Fl_Value_Slider(wgt_x, wgt_y, 150, 20, "n");
-		vs_tgtn->bounds(-100, 100);	vs_tgtn->step(1);	vs_tgtn->value(0);
-		vs_tgtn->align(FL_ALIGN_LEFT);
-		vs_tgtn->type(FL_HORIZONTAL);
-		vs_tgtn->callback(cb_vs_tgtn, (void*)this);
-		g->add(vs_tgtn);
+			vs_tgtn = new Fl_Value_Slider(wgt_x, wgt_y, 150, 20, "n");
+			vs_tgtn->bounds(-100, 100);	vs_tgtn->step(1);	vs_tgtn->value(0);
+			vs_tgtn->align(FL_ALIGN_LEFT);
+			vs_tgtn->type(FL_HORIZONTAL);
+			vs_tgtn->callback(cb_vs_tgtn, (void*)this);
+			g->add(vs_tgtn);
 #endif
-		wgt_x = 10;
-		wgt_y += 25;
+			wgt_x = 10;
+			wgt_y += 25;
 
-		// ------------------------- OPTIMIZATION -------------------------------------------
-		Fl_Box* bx_Opt = new Fl_Box(0, wgt_y, g->w(), 20, "--- OPTIMIZATION ---");	wgt_y += 20;
+			// ------------------------- OPTIMIZATION -------------------------------------------
+			Fl_Box* bx_Opt = new Fl_Box(0, wgt_y, g->w(), 20, "--- OPTIMIZATION ---");	wgt_y += 20;
 
-		btn_optfold2 = new Fl_Button(wgt_x, wgt_y, 180, 20, "Angle with Fixed Rulings");	wgt_x += 100;
-		btn_optfold2->callback(cb_btn_optfold2, (void*)this);
-		g->add(btn_optfold2);
+			btn_optfold2 = new Fl_Button(wgt_x, wgt_y, 180, 20, "Angle with Fixed Rulings");	wgt_x += 100;
+			btn_optfold2->callback(cb_btn_optfold2, (void*)this);
+			g->add(btn_optfold2);
 
-		wgt_x = 10;
-		wgt_y += 25;
+			wgt_x = 10;
+			wgt_y += 25;
 
-		btn_randrul = new Fl_Button(wgt_x, wgt_y, 120, 20, "Random Rulings");	wgt_x += 120;
-		btn_randrul->callback(cb_btn_randrul, (void*)this);
-		g->add(btn_randrul);
+			btn_randrul = new Fl_Button(wgt_x, wgt_y, 120, 20, "Random Rulings");	wgt_x += 120;
+			btn_randrul->callback(cb_btn_randrul, (void*)this);
+			g->add(btn_randrul);
 
-		cb_optrul = new Fl_Check_Button(wgt_x+5, wgt_y, 20, 20, "optimize");
-		cb_optrul->value(0);
-		g->add(cb_optrul);
+			cb_optrul = new Fl_Check_Button(wgt_x + 5, wgt_y, 20, 20, "optimize");
+			cb_optrul->value(0);
+			g->add(cb_optrul);
 
-		wgt_x = 10;
-		wgt_y += 25;
+			wgt_x = 10;
+			wgt_y += 25;
 
-		btn_randrul2 = new Fl_Button(wgt_x, wgt_y, 180, 20, "Rulings and Angles");
-		btn_randrul2->callback(cb_btn_randrul3, (void*)this);
-		g->add(btn_randrul2);
+			btn_randrul2 = new Fl_Button(wgt_x, wgt_y, 180, 20, "Rulings and Angles");
+			btn_randrul2->callback(cb_btn_randrul3, (void*)this);
+			g->add(btn_randrul2);
 
-		wgt_x = 10;
-		wgt_y += 25;
+			wgt_x = 10;
+			wgt_y += 25;
 
-		btn_opttrfold = new Fl_Button(wgt_x, wgt_y, 180, 20, "Torsion and Angles");
-		btn_opttrfold->callback(cb_btn_opttrfold, (void*)this);
-		g->add(btn_opttrfold);
+			btn_opttrfold = new Fl_Button(wgt_x, wgt_y, 180, 20, "Torsion and Angles");
+			btn_opttrfold->callback(cb_btn_opttrfold, (void*)this);
+			g->add(btn_opttrfold);
 
 #if 0
-		wgt_x = 10;
-		wgt_y += 25;
+			wgt_x = 10;
+			wgt_y += 25;
 
-		btn_optfold = new Fl_Button(wgt_x, wgt_y, 60, 20, "Angle");	wgt_x += 60;
-		btn_optfold->callback(cb_btn_optfold, (void*)this);
-		btn_optfold->deactivate();
-		g->add(btn_optfold);
+			btn_optfold = new Fl_Button(wgt_x, wgt_y, 60, 20, "Angle");	wgt_x += 60;
+			btn_optfold->callback(cb_btn_optfold, (void*)this);
+			btn_optfold->deactivate();
+			g->add(btn_optfold);
 
 
-		btn_optrulfold = new Fl_Button(wgt_x, wgt_y, 100, 20, "Rul + Angle");	wgt_x += 100;
-		btn_optrulfold->callback(cb_btn_optrulfold, (void*)this);
-		btn_optrulfold->deactivate();
-		g->add(btn_optrulfold);
+			btn_optrulfold = new Fl_Button(wgt_x, wgt_y, 100, 20, "Rul + Angle");	wgt_x += 100;
+			btn_optrulfold->callback(cb_btn_optrulfold, (void*)this);
+			btn_optrulfold->deactivate();
+			g->add(btn_optrulfold);
 
-		wgt_x = 10;
-		wgt_y += 25;
+			wgt_x = 10;
+			wgt_y += 25;
 
-		btn_opttr = new Fl_Button(wgt_x, wgt_y, 60, 20, "Trsn");	wgt_x += 60;
-		btn_opttr->callback(cb_btn_opttr, (void*)this);
-		btn_opttr->deactivate();
-		g->add(btn_opttr);
+			btn_opttr = new Fl_Button(wgt_x, wgt_y, 60, 20, "Trsn");	wgt_x += 60;
+			btn_opttr->callback(cb_btn_opttr, (void*)this);
+			btn_opttr->deactivate();
+			g->add(btn_opttr);
 
-		btn_optrul = new Fl_Button(wgt_x, wgt_y, 60, 20, "Rul");	wgt_x += 60;
-		btn_optrul->callback(cb_btn_optrul, (void*)this);
-		btn_optrul->deactivate();
-		g->add(btn_optrul);
+			btn_optrul = new Fl_Button(wgt_x, wgt_y, 60, 20, "Rul");	wgt_x += 60;
+			btn_optrul->callback(cb_btn_optrul, (void*)this);
+			btn_optrul->deactivate();
+			g->add(btn_optrul);
 
-		btn_optcp = new Fl_Button(wgt_x, wgt_y, 60, 20, "CP");	wgt_x += 60;
-		btn_optcp->callback(cb_btn_optcp, (void*)this);
-		btn_optcp->deactivate();
-		g->add(btn_optcp);
+			btn_optcp = new Fl_Button(wgt_x, wgt_y, 60, 20, "CP");	wgt_x += 60;
+			btn_optcp->callback(cb_btn_optcp, (void*)this);
+			btn_optcp->deactivate();
+			g->add(btn_optcp);
 #endif
-		wgt_x = 10;
-		wgt_y += 25;
+			wgt_x = 10;
+			wgt_y += 25;
 
 			// ------------------------- HISTORY -------------------------------------------
 
@@ -1037,15 +1038,15 @@ void ControlPanel::createPanel()
 			btn_makePrmList->callback(cb_btn_makePrmList, (void*)this);
 			g->add(btn_makePrmList);
 
-		wgt_x = 10;
-		wgt_y += 25;
+			wgt_x = 10;
+			wgt_y += 25;
 
 			btn_listtgt = new Fl_Button(wgt_x, wgt_y, 180, 20, "target list (torsion/angle)");
 			btn_listtgt->callback(cb_btn_listtgt, (void*)this);
 			g->add(btn_listtgt);
 
 			wgt_x = 10;
-		wgt_y += 25;
+			wgt_y += 25;
 
 			btn_startprm = new Fl_Button(wgt_x, wgt_y, 50, 20, "start"); wgt_x += 50;
 			btn_startprm->callback(cb_btn_startprm, (void*)this);
@@ -1062,8 +1063,8 @@ void ControlPanel::createPanel()
 			btn_makePrmList2->callback(cb_btn_makePrmList2, (void*)this);
 			g->add(btn_makePrmList2);
 
-		wgt_x = 10;
-		wgt_y += 25;
+			wgt_x = 10;
+			wgt_y += 25;
 
 			btn_listtgt2 = new Fl_Button(wgt_x, wgt_y, 180, 20, "target list (rulings)");
 			btn_listtgt2->callback(cb_btn_listtgt2, (void*)this);
@@ -1081,7 +1082,7 @@ void ControlPanel::createPanel()
 			g->add(btn_stopprm2);
 
 			wgt_x = 10;
-		wgt_y += 25;
+			wgt_y += 25;
 
 			// ------------------------- BATCH PROC --------------------------------------
 
@@ -1127,10 +1128,10 @@ void ControlPanel::createPanel()
 			grp_list->end();
 			g->add(grp_list);
 #endif
-		wgt_y += 25;
+			wgt_y += 25;
 
-	}
-	g->end();
+		}
+		g->end();
 	}
 }
 
