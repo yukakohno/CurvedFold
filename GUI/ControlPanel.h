@@ -292,6 +292,7 @@ private:
 public:
 	Fl_Button* btn_listtgt;
 	Fl_Button* btn_listtgt2;
+	Fl_Button* btn_listtgtmasks;
 
 private:
 #define MAX_TGTLST 100
@@ -302,6 +303,7 @@ private:
 
 	static void cb_btn_listtgt(Fl_Widget* wgt, void* idx);
 	static void cb_btn_listtgt2(Fl_Widget* wgt, void* idx);
+	static void cb_btn_listtgtmasks(Fl_Widget* wgt, void* idx);
 
 	// ------------------------- BATCH PROC --------------------------------------
 public:

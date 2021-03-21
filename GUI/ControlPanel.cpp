@@ -1084,6 +1084,13 @@ void ControlPanel::createPanel()
 			wgt_x = 10;
 			wgt_y += 25;
 
+			btn_listtgtmasks = new Fl_Button(wgt_x, wgt_y, 180, 20, "target masks");
+			btn_listtgtmasks->callback(cb_btn_listtgtmasks, (void*)this);
+			g->add(btn_listtgtmasks);
+
+			wgt_x = 10;
+			wgt_y += 25;
+
 			// ------------------------- BATCH PROC --------------------------------------
 
 			Fl_Box* bx_BatchProc = new Fl_Box(0, wgt_y, g->w(), 20, "--- BATCH PROC ---");	wgt_y += 20;

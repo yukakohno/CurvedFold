@@ -566,6 +566,38 @@ void ControlPanel::cb_btn_listtgt2(Fl_Widget* wgt, void* idx)
 	ppm->set_postproc_type(PPTYPE_UNDEF);
 }
 
+void ControlPanel::cb_btn_listtgtmasks(Fl_Widget* wgt, void* idx)
+{
+#define TGTSIZE 9
+	int tgtnum = 0;
+	int tgt[TGTSIZE * TGTSIZE] = { 0 };
+
+	std::cout << "input number of target points" << std::endl;
+	std::cin >> tgtnum;
+
+	int tgtcnt = 0;
+	while (tgtcnt < tgtnum) {
+		int idx = rand() % (TGTSIZE * TGTSIZE);
+		if (tgt[idx] == 0) {
+			tgt[idx] = 1;
+			tgtcnt++;
+		}
+	}
+
+	std::stringstream ss; ss << "./output/tmask" << std::setw(2) << std::setfill('0') << tgtnum << ".txt";
+	std::cout << "export " << ss.str() << std::endl;
+	std::ofstream ofs(ss.str());
+	if(ofs){
+		for (int j = 0; j < TGTSIZE; j++) {
+			for (int i = 0; i < TGTSIZE; i++) {
+				ofs << tgt[i + j * TGTSIZE] << " ";
+			}
+			ofs << std::endl;
+		}
+		ofs.close();
+	}
+}
+
 #if 0
 // ------------------------- RULINGS LIST --------------------------------------
 
