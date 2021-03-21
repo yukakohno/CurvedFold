@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <iomanip>
 #include "ControlPanel.h"
 #include "../CurvedFoldModel/util.h"
 
@@ -55,9 +56,12 @@ std::string fname_tmask[10] = { "./input/tmasks/tmask81.txt",
 #define TARGET_DATA_SIZE 15
 #define TMASK_DATA_SIZE 10
 #define TRIAL_SIZE (INPUT_DATA_SIZE*TARGET_DATA_SIZE*TMASK_DATA_SIZE)
-std::vector<double> err[TRIAL_SIZE], minerr[TRIAL_SIZE];
-double proc_time[TRIAL_SIZE];
+double proc_time;
 int batch_i = -1, batch_j = -1, batch_k = -1, batch_phase = -1;
+
+#define FILENAME_RESULT "./output/result.csv"
+#define FILENAME_PROCESS "./output/process.csv"
+#define FILENAME_PARAM "./output/param.csv"
 
 void ControlPanel::idle_batchproc(void* idx)
 {
@@ -65,7 +69,7 @@ void ControlPanel::idle_batchproc(void* idx)
 	papermodel* ppm = &(This->ppm);
 	crease* c = &(ppm->crs[0]);
 
-	if ((This->cnt_batchproc == 0 && This->phase_batchproc == 0) || batch_i == batch_j) {
+	if ((This->cnt_batchproc == 0 && This->phase_batchproc == 0) || batch_i == batch_j || batch_phase == 3) {
 	} else{
 		char fname[128];
 		sprintf(fname, "./output/input%02d_target%02d_mask%02d_phase%d_model.bmp", batch_i, batch_j, batch_k, batch_phase);
@@ -93,7 +97,7 @@ void ControlPanel::idle_batchproc(void* idx)
 
 	std::cout << "process index = " << i << ", " << j << ", " << k << ", phase = " << phase << std::endl;
 
-	if (This->phase_batchproc == 2) {
+	if (This->phase_batchproc == 3) {
 		This->phase_batchproc = 0;
 		This->cnt_batchproc++;
 	}
@@ -163,18 +167,36 @@ void ControlPanel::idle_batchproc(void* idx)
 		This->btn_randrul2->do_callback();
 
 		end_clock = clock();
-		//std::cout << "process time: " << (double)(end_clock - start_clock) / CLOCKS_PER_SEC << std::endl;
+		proc_time = (double)(end_clock - start_clock) / CLOCKS_PER_SEC;
+		//std::cout << "process time: " << proc_time << std::endl;
+	}
+	break;
+	case 3:
+	{
+		//
+		// evaluate
+		//
+		ppm->loadTgtMask((char*)fname_target[j].c_str(), (char*)fname_tmask[0].c_str());
+		ppm->calcAvetgap(); // calculate ppm->avetgap;
 
 		//
 		// save result
 		//
 		{
-			std::ofstream ofs("./output/time0.csv", std::ios_base::app);
-			ofs << i << "," << j << "," << k << "," << (double)(end_clock - start_clock) / CLOCKS_PER_SEC << std::endl;
+			time_t t0 = time(NULL);
+			struct tm* t1 = localtime(&t0);
+
+			std::ofstream ofs(FILENAME_RESULT, std::ios_base::app);
+			ofs << i << "," << j << "," << k << ","
+				<< This->optlog_itr << "," << This->optlog_minerr[This->optlog_itr - 1] << "," << ppm->avetgap << ","
+				<< proc_time << ","
+				<< std::setw(2) << std::setfill('0') << t1->tm_hour
+				<< std::setw(2) << std::setfill('0') << t1->tm_min
+				<< std::setw(2) << std::setfill('0') << t1->tm_sec << std::endl;
 			ofs.close();
 		}
 		{
-			std::ofstream ofs("./output/err0.csv", std::ios_base::app);
+			std::ofstream ofs(FILENAME_PROCESS, std::ios_base::app);
 			ofs << i << "," << j << "," << k << ",err,";
 			for (int i = 0; i < This->optlog_itr; i++)
 			{
@@ -191,6 +213,37 @@ void ControlPanel::idle_batchproc(void* idx)
 
 			This->optlog_itr = -1;
 		}
+		{
+			std::ofstream ofs(FILENAME_PARAM, std::ios_base::app);
+			ofs << i << "," << j << "," << k << ",,";
+			for (int i = 0; i < c->Pcnt; i++)
+			{
+				ofs << c->Pbl[i] << ",";
+			}
+			ofs << ",";
+			for (int i = 0; i < c->Pcnt; i++)
+			{
+				ofs << c->Pbr[i] << ",";
+			}
+			ofs << ",";
+			for (int i = 0; i < c->Pcnt; i++)
+			{
+				ofs << c->Pa[i] << ",";
+			}
+			ofs << ",";
+			for (int i = 0; i < c->Pcnt; i++)
+			{
+				ofs << c->Px[i] << ",";
+			}
+			ofs << ",";
+			for (int i = 0; i < c->Pcnt; i++)
+			{
+				ofs << c->Py[i] << ",";
+			}
+			ofs << std::endl;
+			ofs.close();
+		}
+		This->optlog_itr = -1;
 	}
 	break;
 	}
@@ -219,22 +272,27 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 
 	// reset log file
 	if (This->cnt_batchproc == 0) {
-		std::ofstream ofs("./output/time0.csv");
+		std::ofstream ofs(FILENAME_RESULT);
+		ofs << "initial,target,mask,iteration,minerr,ave dist,proc time,time" << std::endl;
 		ofs.close();
-		ofs.open("./output/err0.csv");
+		ofs.open(FILENAME_PROCESS);
+		ofs << "initial,target,mask," << std::endl;
+		ofs.close();
+		ofs.open(FILENAME_PARAM);
+		ofs << "initial,target,mask,,Pbl,,,,,,,,Pbr,,,,,,,,Pa,,,,,,,,Pk,,,,,,,,Pt,,,,,,,," << std::endl;
 		ofs.close();
 	}
 	Fl::add_idle(ControlPanel::idle_batchproc, This);
 
 #else
 
-	std::ofstream ofs("./output/time0.csv");
-	ofs << "initial,target,mask,time" << std::endl;
+	std::ofstream ofs(FILENAME_RESULT);
+	ofs << "initial,target,mask,iteration,minerr,ave dist,proc time,time" << std::endl;
 	ofs.close();
-	ofs.open("./output/err0.csv");
+	ofs.open(FILENAME_PROCESS);
 	ofs << "initial,target,mask," << std::endl;
 	ofs.close();
-	ofs.open("./output/result0.csv");
+	ofs.open(FILENAME_PARAM);
 	ofs << "initial,target,mask,,Pbl,,,,,,,,Pbr,,,,,,,,Pa,,,,,,,,Pk,,,,,,,,Pt,,,,,,,," << std::endl;
 	ofs.close();
 
@@ -299,15 +357,29 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 				//std::cout << "process time: " << (double)(end_clock - start_clock) / CLOCKS_PER_SEC << std::endl;
 
 				//
+				// evaluate
+				//
+				ppm->loadTgtMask((char*)fname_target[j].c_str(), (char*)fname_tmask[0].c_str());
+				ppm->calcAvetgap(); // calculate ppm->avetgap;
+
+				//
 				// save result
 				//
 				{
-					std::ofstream ofs("./output/time0.csv", std::ios_base::app);
-					ofs << i << "," << j << "," << k << "," << (double)(end_clock - start_clock) / CLOCKS_PER_SEC << std::endl;
+					time_t t0 = time(NULL);
+					struct tm* t1 = localtime(&t0);
+
+					std::ofstream ofs(FILENAME_RESULT, std::ios_base::app);
+					ofs << i << "," << j << "," << k << ","
+						<< This->optlog_itr << "," << This->optlog_minerr[This->optlog_itr-1] << "," << ppm->avetgap << ","
+						<< (double)(end_clock - start_clock) / CLOCKS_PER_SEC << "," 
+						<< std::setw(2) << std::setfill('0') << t1->tm_hour
+						<< std::setw(2) << std::setfill('0') << t1->tm_min
+						<< std::setw(2) << std::setfill('0') << t1->tm_sec << std::endl;
 					ofs.close();
 				}
 				{
-					std::ofstream ofs("./output/err0.csv", std::ios_base::app);
+					std::ofstream ofs(FILENAME_PROCESS, std::ios_base::app);
 					ofs << i << "," << j << "," << k << ",err,";
 					for (int i = 0; i < This->optlog_itr; i++)
 					{
@@ -325,7 +397,7 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 					This->optlog_itr = -1;
 				}
 				{
-					std::ofstream ofs("./output/result0.csv", std::ios_base::app);
+					std::ofstream ofs(FILENAME_PARAM, std::ios_base::app);
 					ofs << i << "," << j << "," << k << ",,";
 					for (int i = 0; i < c->Pcnt; i++)
 					{
@@ -353,9 +425,8 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 					}
 					ofs << std::endl;
 					ofs.close();
-
-					This->optlog_itr = -1;
 				}
+				This->optlog_itr = -1;
 			} // k
 		} // j
 	} // i
