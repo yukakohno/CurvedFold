@@ -76,7 +76,7 @@ void ControlPanel::cb_btn_optfold2(Fl_Widget* wgt, void* idx)
 			ppm->set_postproc_type(PPTYPE_UNDEF);
 			// recalculate average gap
 			if (This->cb_optmat->value() && ppm->tgcnt > 3) {
-				ppm->calcAvetgap();
+				ppm->calcAvetgapMat();
 			} else if (This->cb_optrot->value() && ppm->tgcnt > 3) {
 				ppm->calcAvetgapRot(); // calc gap with fixed origin
 			}
@@ -184,7 +184,7 @@ void ControlPanel::cb_btn_optrulfold(Fl_Widget* wgt, void* idx)
 					ppm->postproc();
 					ppm->set_postproc_type(PPTYPE_UNDEF);
 					if (This->cb_optmat->value() && ppm->tgcnt > 3) {
-						ppm->calcAvetgap();
+						ppm->calcAvetgapMat();
 					} else if (This->cb_optrot->value() && ppm->tgcnt > 3) {
 						ppm->calcAvetgapRot();
 					}
@@ -559,7 +559,7 @@ void ControlPanel::cb_btn_randrul3(Fl_Widget* wgt, void* idx)
 				ppm->set_postproc_type(PPTYPE_UNDEF);
 				// recalculate average gap
 				if (This->cb_optmat->value() && ppm->tgcnt > 3) {
-					ppm->calcAvetgap();
+					ppm->calcAvetgapMat();
 				}
 				else if (This->cb_optrot->value() && ppm->tgcnt > 3) {
 					ppm->calcAvetgapRot(); // calc gap with fixed origin

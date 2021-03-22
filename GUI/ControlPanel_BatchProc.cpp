@@ -177,7 +177,7 @@ void ControlPanel::idle_batchproc(void* idx)
 		// evaluate
 		//
 		ppm->loadTgtMask((char*)fname_target[j].c_str(), (char*)fname_tmask[0].c_str());
-		ppm->calcAvetgap(); // calculate ppm->avetgap;
+		ppm->calcAvetgapMat(); // calculate ppm->avetgap;
 
 		//
 		// save result
@@ -297,15 +297,12 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 	ofs.close();
 
 	for (int i = 0; i < INPUT_DATA_SIZE; i++) {
-	//for (int i = 5; i < INPUT_DATA_SIZE; i++) {
 		for (int j = 0; j < TARGET_DATA_SIZE; j++) {
-		//for (int j = 10; j < TARGET_DATA_SIZE; j++) {
 			if (i == j) {
 				continue;
 			}
 
 			for (int k = 0; k < TMASK_DATA_SIZE; k++) {
-			//for (int k = 7; k < 8; k++) {
 				std::cout << "process index = " << i << ", " << j << ", " << k << std::endl;
 
 				//
@@ -360,7 +357,7 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 				// evaluate
 				//
 				ppm->loadTgtMask((char*)fname_target[j].c_str(), (char*)fname_tmask[0].c_str());
-				ppm->calcAvetgap(); // calculate ppm->avetgap;
+				ppm->calcAvetgapMat(); // calculate ppm->avetgap;
 
 				//
 				// save result

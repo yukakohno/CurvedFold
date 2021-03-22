@@ -556,6 +556,29 @@ int papermodel::calcAvetgap()
 		return -1;
 	}
 
+	double dx, dy, dz, diff, diff0 = 0.0, diff1 = 0.0;
+	for (int i = 0; i < tgcnt; i++ ) {
+		dx = ogx[i] - tgx[i];
+		dy = ogy[i] - tgy[i];
+		dz = ogz[i] - tgz[i];
+		diff = sqrt(dx * dx + dy * dy + dz * dz);
+		diff0 += diff;
+	}
+	//std::cout << "diff0=" << diff0/(double)tgcnt << ", diff1=" << diff1/(double)tgcnt << std::endl;
+	this->avetgap = diff0 / (double)tgcnt;
+
+	return ret;
+}
+
+int papermodel::calcAvetgapMat()
+{
+	int ret = 0;
+
+	if (tgcnt == 0) {
+		std::cout << "no target point." << std::endl;
+		return -1;
+	}
+
 	double tgx0[MAX_TGT_CNT], tgy0[MAX_TGT_CNT], tgz0[MAX_TGT_CNT];
 	double ogx0[MAX_TGT_CNT], ogy0[MAX_TGT_CNT], ogz0[MAX_TGT_CNT];
 	memcpy(tgx0, tgx, sizeof(double) * tgcnt);
@@ -578,7 +601,7 @@ int papermodel::calcAvetgap()
 		dy = ogy0[i] - tgy[i];
 		dz = ogz0[i] - tgz[i];
 		diff = sqrt(dx * dx + dy * dy + dz * dz);
-		diff0 += diff;
+		diff0 += diff;s
 	}
 #else
 	for (int i = 0; i < tgcnt; i++) {

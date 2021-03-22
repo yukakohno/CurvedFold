@@ -188,6 +188,7 @@ public:
 	int getTgt2D3D();
 	int checkCollision();
 	int calcAvetgap();
+	int calcAvetgapMat();
 	int calcAvetgapRot();
 	int optMat( int mode );
 	int optMatRot(int mode );
