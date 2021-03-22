@@ -200,7 +200,7 @@ void ControlPanel::cb_btn_makePrmList2(Fl_Widget* wgt, void* idx)
 {
 	ControlPanel* This = (ControlPanel*)idx;
 	papermodel* ppm = &(This->ppm);
-	crease c0; memcpy(&c0, &(ppm->crs[0]), sizeof(crease));
+	crease* c = &(ppm->crs[0]);
 	This->pcnt2 = This->pidx2 = 0;
 
 	//
@@ -218,23 +218,25 @@ void ControlPanel::cb_btn_makePrmList2(Fl_Widget* wgt, void* idx)
 
 			std::istringstream i_stream(str_buf);
 
-			for (int j = 0; j < c0.Pcnt; j++) {
+			for (int j = 0; j < c->Pcnt; j++) {
 				if (getline(i_stream, str_conma_buf, ',')) {
 					This->prm2[This->pcnt2][j] = atof(str_conma_buf.c_str());
 				}
 			}
-			for (int j = 0; j < c0.Pcnt; j++) {
+			for (int j = 0; j < c->Pcnt; j++) {
 				if (getline(i_stream, str_conma_buf, ',')) {
-					This->prm2[This->pcnt2][c0.Pcnt + j] = atof(str_conma_buf.c_str());
+					This->prm2[This->pcnt2][c->Pcnt + j] = atof(str_conma_buf.c_str());
 				}
 			}
-			for (int j = 0; j < c0.Pcnt; j++) {
+			for (int j = 0; j < c->Pcnt; j++) {
 				if (getline(i_stream, str_conma_buf, ',')) {
-					This->prm2[This->pcnt2][c0.Pcnt*2 + j] = atof(str_conma_buf.c_str());
+					This->prm2[This->pcnt2][c->Pcnt*2 + j] = atof(str_conma_buf.c_str());
 				}
 			}
 			This->pcnt2++;
 		}
+		ppm->re_sidx = 0;
+		ppm->re_eidx = c->Xcnt;
 		fin.close();
 		std::cout << "parameters loaded from input/paramlist.csv. pcnt2 = " << This->pcnt2 << std::endl;
 		return;
@@ -250,6 +252,7 @@ void ControlPanel::cb_btn_makePrmList2(Fl_Widget* wgt, void* idx)
 	// create random params, check, file output
 	//
 
+	crease c0; memcpy(&c0, c, sizeof(crease));
 	std::vector<double> tmpPbl;
 	std::vector<double> tmpPbr;
 	int tmppmax = 200;
