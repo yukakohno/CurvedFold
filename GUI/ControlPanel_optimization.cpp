@@ -425,6 +425,7 @@ void ControlPanel::cb_btn_randrul2(Fl_Widget* wgt, void* idx)
 		ofs.close();
 	}
 #endif
+	This->optlog_cnt = This->optlog_itr;
 	This->optlog_itr = -1;
 }
 
@@ -640,8 +641,9 @@ void ControlPanel::cb_btn_randrul3(Fl_Widget* wgt, void* idx)
 	}
 	ofs.close();
 	}
-	This->optlog_itr = -1;
 #endif
+	This->optlog_cnt = This->optlog_itr;
+	This->optlog_itr = -1;
 }
 
 void ControlPanel::cb_btn_opttrfold(Fl_Widget* wgt, void* idx)
@@ -781,6 +783,7 @@ void ControlPanel::cb_btn_opttrfold(Fl_Widget* wgt, void* idx)
 	ofs.close();
 	}
 #endif
+	This->optlog_cnt = This->optlog_itr;
 	This->optlog_itr = -1;
 	This->gwin->redraw();
 	This->gwin_cp->redraw();

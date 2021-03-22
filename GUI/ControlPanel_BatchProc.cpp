@@ -57,6 +57,7 @@ std::string fname_tmask[10] = { "./input/tmasks/tmask81.txt",
 #define TMASK_DATA_SIZE 10
 #define TRIAL_SIZE (INPUT_DATA_SIZE*TARGET_DATA_SIZE*TMASK_DATA_SIZE)
 double proc_time;
+double result_gap;
 int batch_i = -1, batch_j = -1, batch_k = -1, batch_phase = -1;
 
 #define FILENAME_RESULT "./output/result.csv"
@@ -176,8 +177,10 @@ void ControlPanel::idle_batchproc(void* idx)
 		//
 		// evaluate
 		//
+		result_gap = ppm->avetgap;
 		ppm->loadTgtMask((char*)fname_target[j].c_str(), (char*)fname_tmask[0].c_str());
 		ppm->calcAvetgapMat(); // calculate ppm->avetgap;
+		std::cout << "ppm->avetgap (masked points) = " << result_gap << ", ppm->avetgap (81 points) = " << ppm->avetgap << std::endl;
 
 		//
 		// save result
@@ -188,7 +191,7 @@ void ControlPanel::idle_batchproc(void* idx)
 
 			std::ofstream ofs(FILENAME_RESULT, std::ios_base::app);
 			ofs << i << "," << j << "," << k << ","
-				<< This->optlog_itr << "," << This->optlog_minerr[This->optlog_itr - 1] << "," << ppm->avetgap << ","
+				<< This->optlog_cnt << "," << result_gap << "," << ppm->avetgap << ","
 				<< proc_time << ","
 				<< std::setw(2) << std::setfill('0') << t1->tm_hour
 				<< std::setw(2) << std::setfill('0') << t1->tm_min
@@ -198,20 +201,18 @@ void ControlPanel::idle_batchproc(void* idx)
 		{
 			std::ofstream ofs(FILENAME_PROCESS, std::ios_base::app);
 			ofs << i << "," << j << "," << k << ",err,";
-			for (int i = 0; i < This->optlog_itr; i++)
+			for (int i = 0; i < This->optlog_cnt; i++)
 			{
 				ofs << This->optlog_err[i] << ",";
 			}
 			ofs << std::endl;
 			ofs << i << "," << j << "," << k << ",minerr,";
-			for (int i = 0; i < This->optlog_itr; i++)
+			for (int i = 0; i < This->optlog_cnt; i++)
 			{
 				ofs << This->optlog_minerr[i] << ",";
 			}
 			ofs << std::endl;
 			ofs.close();
-
-			This->optlog_itr = -1;
 		}
 		{
 			std::ofstream ofs(FILENAME_PARAM, std::ios_base::app);
@@ -243,7 +244,7 @@ void ControlPanel::idle_batchproc(void* idx)
 			ofs << std::endl;
 			ofs.close();
 		}
-		This->optlog_itr = -1;
+		This->optlog_cnt = -1;
 	}
 	break;
 	}
@@ -356,8 +357,10 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 				//
 				// evaluate
 				//
+				result_gap = ppm->avetgap;
 				ppm->loadTgtMask((char*)fname_target[j].c_str(), (char*)fname_tmask[0].c_str());
 				ppm->calcAvetgapMat(); // calculate ppm->avetgap;
+				std::cout << "ppm->avetgap (masked points) = " << result_gap << ", ppm->avetgap (81 points) = " << ppm->avetgap << std::endl;
 
 				//
 				// save result
@@ -368,8 +371,8 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 
 					std::ofstream ofs(FILENAME_RESULT, std::ios_base::app);
 					ofs << i << "," << j << "," << k << ","
-						<< This->optlog_itr << "," << This->optlog_minerr[This->optlog_itr-1] << "," << ppm->avetgap << ","
-						<< (double)(end_clock - start_clock) / CLOCKS_PER_SEC << "," 
+						<< This->optlog_cnt << "," << result_gap << "," << ppm->avetgap << ","
+						<< (double)(end_clock - start_clock) / CLOCKS_PER_SEC << ","
 						<< std::setw(2) << std::setfill('0') << t1->tm_hour
 						<< std::setw(2) << std::setfill('0') << t1->tm_min
 						<< std::setw(2) << std::setfill('0') << t1->tm_sec << std::endl;
@@ -378,20 +381,18 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 				{
 					std::ofstream ofs(FILENAME_PROCESS, std::ios_base::app);
 					ofs << i << "," << j << "," << k << ",err,";
-					for (int i = 0; i < This->optlog_itr; i++)
+					for (int i = 0; i < This->optlog_cnt; i++)
 					{
 						ofs << This->optlog_err[i] << ",";
 					}
 					ofs << std::endl;
 					ofs << i << "," << j << "," << k << ",minerr,";
-					for (int i = 0; i < This->optlog_itr; i++)
+					for (int i = 0; i < This->optlog_cnt; i++)
 					{
 						ofs << This->optlog_minerr[i] << ",";
 					}
 					ofs << std::endl;
 					ofs.close();
-
-					This->optlog_itr = -1;
 				}
 				{
 					std::ofstream ofs(FILENAME_PARAM, std::ios_base::app);
@@ -423,7 +424,7 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 					ofs << std::endl;
 					ofs.close();
 				}
-				This->optlog_itr = -1;
+				//This->optlog_cnt = -1;
 			} // k
 		} // j
 	} // i

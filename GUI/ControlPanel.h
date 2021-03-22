@@ -223,6 +223,7 @@ private:
 #define MAX_OPT_ITR 2000
 	int optlog_itrmax;
 	int optlog_itr;
+	int optlog_cnt;
 	int optlog_trial_til_validrul[MAX_OPT_ITR];
 	double optlog_err[MAX_OPT_ITR];
 	double optlog_minerr[MAX_OPT_ITR];
