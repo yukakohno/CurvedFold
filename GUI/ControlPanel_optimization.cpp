@@ -611,16 +611,16 @@ void ControlPanel::cb_btn_randrul3(Fl_Widget* wgt, void* idx)
 		This->optlog_itr++;
 	} // i
 
-#if 1
+#if 0
 	This->btn_optfold2->do_callback();
 #else
 	if (minminval > -180) {
-		//std::cout << "gap=" << mintgap << std::endl;
+		std::cout << "mintgap = " << ppm->avetgap << std::endl;
 		This->vs_xmang0->value(minminval);
 		This->vs_xmang1->value(minminval);
 		This->btn_R2TA0->do_callback(); // includes This->push_hist()
-		This->btn_optmat->do_callback();
-		std::cout << "err = " << ppm->avetgap << std::endl;
+		ppm->calcAvetgapMat();
+		std::cout << "ppm->avetgap = " << ppm->avetgap << std::endl;
 	}
 #endif
 	end_clock = clock();
