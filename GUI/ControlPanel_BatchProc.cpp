@@ -193,7 +193,8 @@ void ControlPanel::idle_batchproc(void* idx)
 
 			std::ofstream ofs(FILENAME_RESULT, std::ios_base::app);
 			ofs << i << "," << j << "," << k << ","
-				<< This->optlog_cnt << "," << tmp_avetgap << "," << tmp_maxtgap << "," << ppm->avetgap << "," << ppm->maxtgap << ","
+				<< This->optlog_cnt << "," << This->optlog_minerr[This->optlog_cnt-1] << "," << ppm->avetgap << "," << ppm->maxtgap << ","
+				//<< This->optlog_cnt << "," << tmp_avetgap << "," << tmp_maxtgap << "," << ppm->avetgap << "," << ppm->maxtgap << ","
 				<< proc_time << ","
 				<< std::setw(2) << std::setfill('0') << t1->tm_hour
 				<< std::setw(2) << std::setfill('0') << t1->tm_min
@@ -276,7 +277,7 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 	// reset log file
 	if (This->cnt_batchproc == 0) {
 		std::ofstream ofs(FILENAME_RESULT);
-		ofs << "initial,target,mask,iteration,ave gap cp,max gap cp,ave gap all,max gap all, proc time,time" << std::endl;
+		ofs << "initial,target,mask,iteration,min gap,ave gap all,max gap all, proc time,time" << std::endl;
 		ofs.close();
 		ofs.open(FILENAME_PROCESS);
 		ofs << "initial,target,mask," << std::endl;
@@ -290,7 +291,7 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 #else
 
 	std::ofstream ofs(FILENAME_RESULT);
-	ofs << "initial,target,mask,iteration,ave gap cp,max gap cp,ave gap all,max gap all, proc time,time" << std::endl;
+	ofs << "initial,target,mask,iteration,min gap,ave gap all,max gap all, proc time,time" << std::endl;
 	ofs.close();
 	ofs.open(FILENAME_PROCESS);
 	ofs << "initial,target,mask," << std::endl;
@@ -376,7 +377,8 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 
 					std::ofstream ofs(FILENAME_RESULT, std::ios_base::app);
 					ofs << i << "," << j << "," << k << ","
-						<< This->optlog_cnt << "," << tmp_avetgap << "," << tmp_maxtgap << "," << ppm->avetgap << "," << ppm->maxtgap << ","
+						<< This->optlog_cnt << "," << This->optlog_minerr[This->optlog_cnt-1] << "," << ppm->avetgap << "," << ppm->maxtgap << ","
+						//<< This->optlog_cnt << "," << tmp_avetgap << "," << tmp_maxtgap << "," << ppm->avetgap << "," << ppm->maxtgap << ","
 						<< (double)(end_clock - start_clock) / CLOCKS_PER_SEC << ","
 						<< std::setw(2) << std::setfill('0') << t1->tm_hour
 						<< std::setw(2) << std::setfill('0') << t1->tm_min
