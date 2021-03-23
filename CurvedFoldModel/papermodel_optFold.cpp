@@ -160,6 +160,7 @@ int papermodel::getTgt2D3D()
 {
 	int ret=0, avecnt=0;
 	avetgap = 0.0;
+	maxtgap = 0.0;
 
 	for( int i=0; i<tgcnt; i++ ){
 		bool flg = false;
@@ -201,6 +202,7 @@ int papermodel::getTgt2D3D()
 				double dz = tgz[i] - ogz[i];
 				tgap[i] = sqrt( dx*dx + dy*dy + dz*dz );
 				avetgap += tgap[i]; avecnt++;
+				maxtgap = maxtgap > tgap[i] ? maxtgap : tgap[i];
 
 				if (dx * pmat[8] + dy * pmat[9] + dz * pmat[10] < 0) {
 					tgap[i] = -tgap[i];
@@ -224,6 +226,7 @@ int papermodel::getTgt2D3D()
 				double dz = tgz[i] - ogz[i];
 				tgap[i] = sqrt(dx * dx + dy * dy + dz * dz);
 				avetgap += tgap[i]; avecnt++;
+				maxtgap = maxtgap > tgap[i] ? maxtgap : tgap[i];
 
 				if (dx * pmat[8] + dy * pmat[9] + dz * pmat[10] < 0) {
 					tgap[i] = -tgap[i];
@@ -556,16 +559,18 @@ int papermodel::calcAvetgap()
 		return -1;
 	}
 
-	double dx, dy, dz, diff, diff0 = 0.0, diff1 = 0.0;
+	double dx, dy, dz, diff, diff0 = 0.0, diff1 = 0.0, maxdiff = 0.0;
 	for (int i = 0; i < tgcnt; i++ ) {
 		dx = ogx[i] - tgx[i];
 		dy = ogy[i] - tgy[i];
 		dz = ogz[i] - tgz[i];
 		diff = sqrt(dx * dx + dy * dy + dz * dz);
 		diff0 += diff;
+		maxdiff = maxdiff > diff ? maxdiff : diff;
 	}
 	//std::cout << "diff0=" << diff0/(double)tgcnt << ", diff1=" << diff1/(double)tgcnt << std::endl;
 	this->avetgap = diff0 / (double)tgcnt;
+	this->maxtgap = maxdiff;
 
 	return ret;
 }
@@ -591,7 +596,7 @@ int papermodel::calcAvetgapMat()
 	double mat[16];
 	getMat(tgcnt, ogx0, ogy0, ogz0, tgx0, tgy0, tgz0, mat);
 
-	double dx, dy, dz, diff, diff0 = 0.0, diff1 = 0.0;
+	double dx, dy, dz, diff, diff0 = 0.0, diff1 = 0.0, maxdiff = 0.0;
 #if 1
 	for (int i = 0; i < tgcnt; i++ ) {
 		ogx0[i] = mat[0] * ogx[i] + mat[1] * ogy[i] + mat[2] * ogz[i] + mat[3];
@@ -601,7 +606,8 @@ int papermodel::calcAvetgapMat()
 		dy = ogy0[i] - tgy[i];
 		dz = ogz0[i] - tgz[i];
 		diff = sqrt(dx * dx + dy * dy + dz * dz);
-		diff0 += diff;s
+		diff0 += diff;
+		maxdiff = maxdiff > diff ? maxdiff : diff;
 	}
 #else
 	for (int i = 0; i < tgcnt; i++) {
@@ -613,10 +619,12 @@ int papermodel::calcAvetgapMat()
 		dz = tgz0[i] - ogz[i];
 		diff = sqrt(dx * dx + dy * dy + dz * dz);
 		diff1 += diff;
+		maxdiff = maxdiff > diff ? maxdiff : diff;
 	}
 #endif
 	//std::cout << "diff0=" << diff0/(double)tgcnt << ", diff1=" << diff1/(double)tgcnt << std::endl;
 	this->avetgap = diff0 / (double)tgcnt;
+	this->maxtgap = maxdiff;
 
 	return ret;
 }
@@ -650,7 +658,7 @@ int papermodel::calcAvetgapRot()
 	double mat[16];
 	getMatRot(tgcnt, ogx0, ogy0, ogz0, tgx0, tgy0, tgz0, mat);
 
-	double dx, dy, dz, diff, diff0 = 0.0, diff1 = 0.0, tmpx, tmpy, tmpz;
+	double dx, dy, dz, diff, diff0 = 0.0, diff1 = 0.0, maxdiff = 0.0, tmpx, tmpy, tmpz;
 #if 1
 	for (int i = 0; i < tgcnt; i++) {
 		tmpx = mat[0] * ogx0[i] + mat[1] * ogy0[i] + mat[2] * ogz0[i];
@@ -661,6 +669,7 @@ int papermodel::calcAvetgapRot()
 		dz = tmpz - tgz0[i];
 		diff = sqrt(dx * dx + dy * dy + dz * dz);
 		diff0 += diff;
+		maxdiff = maxdiff > diff ? maxdiff : diff;
 	}
 #else
 	for (int i = 0; i < tgcnt; i++) {
@@ -672,10 +681,12 @@ int papermodel::calcAvetgapRot()
 		dz = tgz0[i] - ogz[i];
 		diff = sqrt(dx * dx + dy * dy + dz * dz);
 		diff1 += diff;
+		maxdiff = maxdiff > diff ? maxdiff : diff;
 	}
 #endif
 	//std::cout << "diff0=" << diff0/(double)tgcnt << ", diff1=" << diff1/(double)tgcnt << std::endl;
 	this->avetgap = diff0 / (double)tgcnt;
+	this->maxtgap = maxdiff;
 
 	return ret;
 }

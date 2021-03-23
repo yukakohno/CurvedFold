@@ -180,7 +180,7 @@ public:
 	double tgx[MAX_TGT_CNT], tgy[MAX_TGT_CNT], tgz[MAX_TGT_CNT];
 	double ogx[MAX_TGT_CNT], ogy[MAX_TGT_CNT], ogz[MAX_TGT_CNT];
 	double ogx_cp[MAX_TGT_CNT], ogy_cp[MAX_TGT_CNT];
-	double tgap[MAX_TGT_CNT], avetgap;
+	double tgap[MAX_TGT_CNT], avetgap, maxtgap;
 
 	int saveTgt( char *fname );
 	int loadTgt( char *fname );
