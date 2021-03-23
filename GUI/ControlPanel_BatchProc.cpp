@@ -179,8 +179,8 @@ void ControlPanel::idle_batchproc(void* idx)
 		double tmp_avetgap = ppm->avetgap;
 		double tmp_maxtgap = ppm->maxtgap;
 		ppm->loadTgtMask((char*)fname_target[j].c_str(), (char*)fname_tmask[0].c_str());
-		ppm->calcAvetgapMat();	// calculate ppm->avetgap, maxtgap;
-		//ppm->calcAvetgap();
+		//ppm->calcAvetgapMat();
+		ppm->calcAvetgap();	// calculate ppm->avetgap, maxtgap;
 		std::cout << "ppm->avetgap (masked points) = " << tmp_avetgap << ", ppm->avetgap (81 points) = " << ppm->avetgap << std::endl;
 		std::cout << "ppm->maxtgap (masked points) = " << tmp_maxtgap << ", ppm->maxtgap (81 points) = " << ppm->maxtgap << std::endl;
 
@@ -362,8 +362,8 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 				double tmp_avetgap = ppm->avetgap;
 				double tmp_maxtgap = ppm->maxtgap;
 				ppm->loadTgtMask((char*)fname_target[j].c_str(), (char*)fname_tmask[0].c_str());
-				ppm->calcAvetgapMat();	// calculate ppm->avetgap, maxtgap;
-				//ppm->calcAvetgap();
+				//ppm->calcAvetgapMat();
+				ppm->calcAvetgap();	// calculate ppm->avetgap, maxtgap;
 				std::cout << "ppm->avetgap (masked points) = " << tmp_avetgap << ", ppm->avetgap (81 points) = " << ppm->avetgap << std::endl;
 				std::cout << "ppm->maxtgap (masked points) = " << tmp_maxtgap << ", ppm->maxtgap (81 points) = " << ppm->maxtgap << std::endl;
 
