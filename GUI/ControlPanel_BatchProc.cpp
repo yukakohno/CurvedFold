@@ -57,7 +57,6 @@ std::string fname_tmask[10] = { "./input/tmasks/tmask81.txt",
 #define TMASK_DATA_SIZE 10
 #define TRIAL_SIZE (INPUT_DATA_SIZE*TARGET_DATA_SIZE*TMASK_DATA_SIZE)
 double proc_time;
-double result_gap;
 int batch_i = -1, batch_j = -1, batch_k = -1, batch_phase = -1;
 
 #define FILENAME_RESULT "./output/result.csv"
@@ -177,10 +176,13 @@ void ControlPanel::idle_batchproc(void* idx)
 		//
 		// evaluate
 		//
-		result_gap = ppm->avetgap;
+		double tmp_avetgap = ppm->avetgap;
+		double tmp_maxtgap = ppm->maxtgap;
 		ppm->loadTgtMask((char*)fname_target[j].c_str(), (char*)fname_tmask[0].c_str());
-		ppm->calcAvetgapMat(); // calculate ppm->avetgap;
-		std::cout << "ppm->avetgap (masked points) = " << result_gap << ", ppm->avetgap (81 points) = " << ppm->avetgap << std::endl;
+		ppm->calcAvetgapMat();	// calculate ppm->avetgap, maxtgap;
+		//ppm->calcAvetgap();
+		std::cout << "ppm->avetgap (masked points) = " << tmp_avetgap << ", ppm->avetgap (81 points) = " << ppm->avetgap << std::endl;
+		std::cout << "ppm->maxtgap (masked points) = " << tmp_maxtgap << ", ppm->maxtgap (81 points) = " << ppm->maxtgap << std::endl;
 
 		//
 		// save result
@@ -191,7 +193,7 @@ void ControlPanel::idle_batchproc(void* idx)
 
 			std::ofstream ofs(FILENAME_RESULT, std::ios_base::app);
 			ofs << i << "," << j << "," << k << ","
-				<< This->optlog_cnt << "," << result_gap << "," << ppm->avetgap << ","
+				<< This->optlog_cnt << "," << tmp_avetgap << "," << tmp_maxtgap << "," << ppm->avetgap << "," << ppm->maxtgap << ","
 				<< proc_time << ","
 				<< std::setw(2) << std::setfill('0') << t1->tm_hour
 				<< std::setw(2) << std::setfill('0') << t1->tm_min
@@ -274,7 +276,7 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 	// reset log file
 	if (This->cnt_batchproc == 0) {
 		std::ofstream ofs(FILENAME_RESULT);
-		ofs << "initial,target,mask,iteration,minerr,ave dist,proc time,time" << std::endl;
+		ofs << "initial,target,mask,iteration,ave gap cp,max gap cp,ave gap all,max gap all, proc time,time" << std::endl;
 		ofs.close();
 		ofs.open(FILENAME_PROCESS);
 		ofs << "initial,target,mask," << std::endl;
@@ -288,7 +290,7 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 #else
 
 	std::ofstream ofs(FILENAME_RESULT);
-	ofs << "initial,target,mask,iteration,minerr,ave dist,proc time,time" << std::endl;
+	ofs << "initial,target,mask,iteration,ave gap cp,max gap cp,ave gap all,max gap all, proc time,time" << std::endl;
 	ofs.close();
 	ofs.open(FILENAME_PROCESS);
 	ofs << "initial,target,mask," << std::endl;
@@ -357,10 +359,13 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 				//
 				// evaluate
 				//
-				result_gap = ppm->avetgap;
+				double tmp_avetgap = ppm->avetgap;
+				double tmp_maxtgap = ppm->maxtgap;
 				ppm->loadTgtMask((char*)fname_target[j].c_str(), (char*)fname_tmask[0].c_str());
-				ppm->calcAvetgapMat(); // calculate ppm->avetgap;
-				std::cout << "ppm->avetgap (masked points) = " << result_gap << ", ppm->avetgap (81 points) = " << ppm->avetgap << std::endl;
+				ppm->calcAvetgapMat();	// calculate ppm->avetgap, maxtgap;
+				//ppm->calcAvetgap();
+				std::cout << "ppm->avetgap (masked points) = " << tmp_avetgap << ", ppm->avetgap (81 points) = " << ppm->avetgap << std::endl;
+				std::cout << "ppm->maxtgap (masked points) = " << tmp_maxtgap << ", ppm->maxtgap (81 points) = " << ppm->maxtgap << std::endl;
 
 				//
 				// save result
@@ -371,7 +376,7 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 
 					std::ofstream ofs(FILENAME_RESULT, std::ios_base::app);
 					ofs << i << "," << j << "," << k << ","
-						<< This->optlog_cnt << "," << result_gap << "," << ppm->avetgap << ","
+						<< This->optlog_cnt << "," << tmp_avetgap << "," << tmp_maxtgap << "," << ppm->avetgap << "," << ppm->maxtgap << ","
 						<< (double)(end_clock - start_clock) / CLOCKS_PER_SEC << ","
 						<< std::setw(2) << std::setfill('0') << t1->tm_hour
 						<< std::setw(2) << std::setfill('0') << t1->tm_min

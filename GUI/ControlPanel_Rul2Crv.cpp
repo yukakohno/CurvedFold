@@ -101,7 +101,7 @@ void ControlPanel::idle(void* idx)
 	This->vs_xmang1->value(This->acnt);
 	This->vs_xmang1->do_callback();
 
-	printf( "average gap = %f\n", This->ppm.avetgap );
+	std::cout << "average gap = " << This->ppm.avetgap << ", max gap = " << This->ppm.maxtgap << std::endl;
 }
 
 //-----------------------------
