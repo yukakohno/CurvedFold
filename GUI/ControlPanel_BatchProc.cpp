@@ -192,9 +192,10 @@ void ControlPanel::idle_batchproc(void* idx)
 			struct tm* t1 = localtime(&t0);
 
 			std::ofstream ofs(FILENAME_RESULT, std::ios_base::app);
-			ofs << i << "," << j << "," << k << ","
-				<< This->optlog_cnt << "," << This->optlog_minerr[This->optlog_cnt-1] << "," << ppm->avetgap << "," << ppm->maxtgap << ","
-				//<< This->optlog_cnt << "," << tmp_avetgap << "," << tmp_maxtgap << "," << ppm->avetgap << "," << ppm->maxtgap << ","
+			ofs << i << "," << j << "," << k << "," << This->optlog_cnt << ","
+				<< This->optlog_min_avetgap[This->optlog_cnt - 1] << "," << This->optlog_min_maxtgap[This->optlog_cnt - 1] << ","
+				//<< tmp_avetgap << "," << tmp_maxtgap << ","
+				<< ppm->avetgap << "," << ppm->maxtgap << ","
 				<< proc_time << ","
 				<< std::setw(2) << std::setfill('0') << t1->tm_hour
 				<< std::setw(2) << std::setfill('0') << t1->tm_min
@@ -203,16 +204,28 @@ void ControlPanel::idle_batchproc(void* idx)
 		}
 		{
 			std::ofstream ofs(FILENAME_PROCESS, std::ios_base::app);
-			ofs << i << "," << j << "," << k << ",err,";
+			ofs << i << "," << j << "," << k << ",ave gap,";
 			for (int i = 0; i < This->optlog_cnt; i++)
 			{
-				ofs << This->optlog_err[i] << ",";
+				ofs << This->optlog_avetgap[i] << ",";
 			}
 			ofs << std::endl;
-			ofs << i << "," << j << "," << k << ",minerr,";
+			ofs << i << "," << j << "," << k << ",max gap,";
 			for (int i = 0; i < This->optlog_cnt; i++)
 			{
-				ofs << This->optlog_minerr[i] << ",";
+				ofs << This->optlog_maxtgap[i] << ",";
+			}
+			ofs << std::endl;
+			ofs << i << "," << j << "," << k << ",min ave gap,";
+			for (int i = 0; i < This->optlog_cnt; i++)
+			{
+				ofs << This->optlog_min_avetgap[i] << ",";
+			}
+			ofs << std::endl;
+			ofs << i << "," << j << "," << k << ",min max gap,";
+			for (int i = 0; i < This->optlog_cnt; i++)
+			{
+				ofs << This->optlog_min_maxtgap[i] << ",";
 			}
 			ofs << std::endl;
 			ofs.close();
@@ -277,7 +290,7 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 	// reset log file
 	if (This->cnt_batchproc == 0) {
 		std::ofstream ofs(FILENAME_RESULT);
-		ofs << "initial,target,mask,iteration,min gap,ave gap all,max gap all, proc time,time" << std::endl;
+		ofs << "initial,target,mask,iteration,min gap,max gap,ave gap all,max gap all, proc time,time" << std::endl;
 		ofs.close();
 		ofs.open(FILENAME_PROCESS);
 		ofs << "initial,target,mask," << std::endl;
@@ -291,7 +304,7 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 #else
 
 	std::ofstream ofs(FILENAME_RESULT);
-	ofs << "initial,target,mask,iteration,min gap,ave gap all,max gap all, proc time,time" << std::endl;
+	ofs << "initial,target,mask,iteration,min gap,max gap,ave gap all,max gap all, proc time,time" << std::endl;
 	ofs.close();
 	ofs.open(FILENAME_PROCESS);
 	ofs << "initial,target,mask," << std::endl;
@@ -355,7 +368,8 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 				This->btn_randrul2->do_callback();
 
 				end_clock = clock();
-				//std::cout << "process time: " << (double)(end_clock - start_clock) / CLOCKS_PER_SEC << std::endl;
+				double proc_time = (double)(end_clock - start_clock) / CLOCKS_PER_SEC;
+				//std::cout << "process time: " << proc_time << std::endl;
 
 				//
 				// evaluate
@@ -376,10 +390,11 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 					struct tm* t1 = localtime(&t0);
 
 					std::ofstream ofs(FILENAME_RESULT, std::ios_base::app);
-					ofs << i << "," << j << "," << k << ","
-						<< This->optlog_cnt << "," << This->optlog_minerr[This->optlog_cnt-1] << "," << ppm->avetgap << "," << ppm->maxtgap << ","
-						//<< This->optlog_cnt << "," << tmp_avetgap << "," << tmp_maxtgap << "," << ppm->avetgap << "," << ppm->maxtgap << ","
-						<< (double)(end_clock - start_clock) / CLOCKS_PER_SEC << ","
+					ofs << i << "," << j << "," << k << "," << This->optlog_cnt << ","
+						<< This->optlog_min_avetgap[This->optlog_cnt - 1] << "," << This->optlog_min_maxtgap[This->optlog_cnt - 1] << ","
+						//<< tmp_avetgap << "," << tmp_maxtgap << ","
+						<< ppm->avetgap << "," << ppm->maxtgap << ","
+						<< proc_time << ","
 						<< std::setw(2) << std::setfill('0') << t1->tm_hour
 						<< std::setw(2) << std::setfill('0') << t1->tm_min
 						<< std::setw(2) << std::setfill('0') << t1->tm_sec << std::endl;
@@ -387,16 +402,28 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 				}
 				{
 					std::ofstream ofs(FILENAME_PROCESS, std::ios_base::app);
-					ofs << i << "," << j << "," << k << ",err,";
+					ofs << i << "," << j << "," << k << ",ave gap,";
 					for (int i = 0; i < This->optlog_cnt; i++)
 					{
-						ofs << This->optlog_err[i] << ",";
+						ofs << This->optlog_avetgap[i] << ",";
 					}
 					ofs << std::endl;
-					ofs << i << "," << j << "," << k << ",minerr,";
+					ofs << i << "," << j << "," << k << ",max gap,";
 					for (int i = 0; i < This->optlog_cnt; i++)
 					{
-						ofs << This->optlog_minerr[i] << ",";
+						ofs << This->optlog_maxtgap[i] << ",";
+					}
+					ofs << std::endl;
+					ofs << i << "," << j << "," << k << ",min ave gap,";
+					for (int i = 0; i < This->optlog_cnt; i++)
+					{
+						ofs << This->optlog_min_avetgap[i] << ",";
+					}
+					ofs << std::endl;
+					ofs << i << "," << j << "," << k << ",min max gap,";
+					for (int i = 0; i < This->optlog_cnt; i++)
+					{
+						ofs << This->optlog_min_maxtgap[i] << ",";
 					}
 					ofs << std::endl;
 					ofs.close();

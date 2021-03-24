@@ -363,8 +363,10 @@ void ControlPanel::cb_btn_randrul(Fl_Widget* wgt, void* idx)
 		//int ret = This->access_hist(1, &(c->Pcnt), &mode, c->Px2d, c->Py2d, c->Px, c->Py, c->Pz, c->Pa, c->Pbl, c->Pbr, c->m3);
 		This->btn_R2TA0->do_callback();
 		This->optlog_trial_til_validrul[This->optlog_itr] = 100;
-		This->optlog_err[This->optlog_itr] = -1.0;
-		This->optlog_minerr[This->optlog_itr] = -1.0;
+		This->optlog_avetgap[This->optlog_itr] = -1.0;
+		This->optlog_maxtgap[This->optlog_itr] = -1.0;
+		This->optlog_min_avetgap[This->optlog_itr] = -1.0;
+		This->optlog_min_maxtgap[This->optlog_itr] = -1.0;
 		return;
 	}
 
@@ -372,37 +374,28 @@ void ControlPanel::cb_btn_randrul(Fl_Widget* wgt, void* idx)
 	This->btn_optfold2->do_callback();
 	This->push_hist(c->Pcnt, mode, c->Px2d, c->Py2d, c->Px, c->Py, c->Pz, c->Pa, c->Pbl, c->Pbr, c->m3);
 
-#if TARGET_GAP_TYPE == 0 // 0: average, 1: max
-	This->optlog_err[This->optlog_itr] = ppm->avetgap;
+	This->optlog_avetgap[This->optlog_itr] = ppm->avetgap;
+	This->optlog_maxtgap[This->optlog_itr] = ppm->maxtgap;
 
-	if ( flg_optimize && ppm->avetgap > avetgap_prev ) {
+#if TARGET_GAP_TYPE == 0 // 0: average, 1: max
+	if ( flg_optimize && ppm->avetgap > avetgap_prev )
+#else
+	if (flg_optimize && ppm->maxtgap > maxtgap_prev)
+#endif
+	{
 		memcpy(c->Px2d, Px2d, sizeof(double) * c->Pcnt);
 		memcpy(c->Pa, Pa, sizeof(double) * c->Pcnt);
 		memcpy(c->Pbl, Pbl, sizeof(double) * c->Pcnt);
 		memcpy(c->Pbr, Pbr, sizeof(double) * c->Pcnt);
 		//int ret = This->access_hist(1, &(c->Pcnt), &mode, c->Px2d, c->Py2d, c->Px, c->Py, c->Pz, c->Pa, c->Pbl, c->Pbr, c->m3);
 		ppm->avetgap = avetgap_prev;
-		if (This->optlog_itr < 0 || This->optlog_itr == This->optlog_itrmax) {
-			This->btn_R2TA0->do_callback();
-		}
-	}
-	This->optlog_minerr[This->optlog_itr] = ppm->avetgap;
-#else
-	This->optlog_err[This->optlog_itr] = ppm->maxtgap;
-
-	if (flg_optimize && ppm->maxtgap > maxtgap_prev) {
-		memcpy(c->Px2d, Px2d, sizeof(double) * c->Pcnt);
-		memcpy(c->Pa, Pa, sizeof(double) * c->Pcnt);
-		memcpy(c->Pbl, Pbl, sizeof(double) * c->Pcnt);
-		memcpy(c->Pbr, Pbr, sizeof(double) * c->Pcnt);
-		//int ret = This->access_hist(1, &(c->Pcnt), &mode, c->Px2d, c->Py2d, c->Px, c->Py, c->Pz, c->Pa, c->Pbl, c->Pbr, c->m3);
 		ppm->maxtgap = maxtgap_prev;
 		if (This->optlog_itr < 0 || This->optlog_itr == This->optlog_itrmax) {
 			This->btn_R2TA0->do_callback();
 		}
 	}
-	This->optlog_minerr[This->optlog_itr] = ppm->maxtgap;
-#endif
+	This->optlog_min_avetgap[This->optlog_itr] = ppm->avetgap;
+	This->optlog_min_maxtgap[This->optlog_itr] = ppm->maxtgap;
 }
 
 void ControlPanel::cb_btn_randrul2(Fl_Widget* wgt, void* idx)
@@ -440,8 +433,11 @@ void ControlPanel::cb_btn_randrul2(Fl_Widget* wgt, void* idx)
 		This->btn_randrul->do_callback();
 		//std::cout << "i = " << i << ", avetgap = " << ppm->avetgap <<  ", maxtgap = " << ppm->maxtgap << std::endl;
 		std::cout << "iter = " << This->optlog_itr
-			<< ", err = " << This->optlog_err[This->optlog_itr]
-			<< ", minerr = " << This->optlog_minerr[This->optlog_itr] << std::endl;
+			<< ", ave gap = " << This->optlog_avetgap[This->optlog_itr]
+			<< ", max gap = " << This->optlog_maxtgap[This->optlog_itr]
+			<< ", min ave gap = " << This->optlog_min_avetgap[This->optlog_itr]
+			<< ", min max gap = " << This->optlog_min_maxtgap[This->optlog_itr]
+			<< std::endl;
 		This->optlog_itr++;
 	}
 	end_clock = clock();
@@ -458,7 +454,8 @@ void ControlPanel::cb_btn_randrul2(Fl_Widget* wgt, void* idx)
 		for (int i = 0; i < This->optlog_itr; i++)
 		{
 			ofs << i << "," << This->optlog_trial_til_validrul[i] << ","
-				<< This->optlog_err[i] << "," << This->optlog_minerr[i] << std::endl;
+				<< This->optlog_avetgap[i] << "," << This->optlog_maxtgap[i] << ","
+				<< This->optlog_min_avetgap[i] << "," << This->optlog_min_maxtgap[i] << std::endl;
 		}
 		ofs.close();
 	}
@@ -508,13 +505,13 @@ void ControlPanel::cb_btn_randrul3(Fl_Widget* wgt, void* idx)
 #if 0
 		This->btn_randrul->do_callback();
 #else
-		double prevPx2d[MAX_CPCNT], prevPa[MAX_CPCNT], prevPbr[MAX_CPCNT], prevPbl[MAX_CPCNT], avetgap_prev, maxtgap_prev;
+		double prevPx2d[MAX_CPCNT], prevPa[MAX_CPCNT], prevPbr[MAX_CPCNT], prevPbl[MAX_CPCNT], prev_avetgap, prev_maxtgap;
 		memcpy(prevPx2d, c->Px2d, sizeof(double) * c->Pcnt);
 		memcpy(prevPa, c->Pa, sizeof(double) * c->Pcnt);
 		memcpy(prevPbl, c->Pbl, sizeof(double) * c->Pcnt);
 		memcpy(prevPbr, c->Pbr, sizeof(double) * c->Pcnt);
-		avetgap_prev = ppm->avetgap;
-		maxtgap_prev = ppm->maxtgap;
+		prev_avetgap = ppm->avetgap;
+		prev_maxtgap = ppm->maxtgap;
 
 		bool flg_rulOK = false;
 		for (int j = 0; j < 100; j++)
@@ -570,8 +567,10 @@ void ControlPanel::cb_btn_randrul3(Fl_Widget* wgt, void* idx)
 			//int ret = This->access_hist(1, &(c->Pcnt), &mode, c->Px2d, c->Py2d, c->Px, c->Py, c->Pz, c->Pa, c->Pbl, c->Pbr, c->m3);
 			This->btn_R2TA0->do_callback();
 			This->optlog_trial_til_validrul[This->optlog_itr] = 100;
-			This->optlog_err[This->optlog_itr] = -1.0;
-			This->optlog_minerr[This->optlog_itr] = -1.0;
+			This->optlog_avetgap[This->optlog_itr] = -1.0;
+			This->optlog_maxtgap[This->optlog_itr] = -1.0;
+			This->optlog_min_avetgap[This->optlog_itr] = -1.0;
+			This->optlog_min_maxtgap[This->optlog_itr] = -1.0;
 			break; // i
 		}
 
@@ -588,7 +587,8 @@ void ControlPanel::cb_btn_randrul3(Fl_Widget* wgt, void* idx)
 		rcrcnt = ppm->rcrcnt; ppm->rcrcnt = 0;
 
 		int minval = -180;
-		double mintgap = 10000;
+		double min_avetgap = 10000;
+		double min_maxtgap = 10000;
 		for (int val = This->vs_xmang1->minimum(); val < This->vs_xmang1->maximum(); val++)
 		{
 			double mang = val / 180.0 * M_PI;
@@ -608,20 +608,17 @@ void ControlPanel::cb_btn_randrul3(Fl_Widget* wgt, void* idx)
 				else if (This->cb_optrot->value() && ppm->tgcnt > 3) {
 					ppm->calcAvetgapRot();
 				}
-				//std::cout << ", avetgap=" << ppm->avetgap << ", maxtgap=" << ppm->maxtgap;
+				//std::cout << ", ave gap=" << ppm->avetgap << ", max gap=" << ppm->maxtgap;
 #if TARGET_GAP_TYPE == 0 // 0: average, 1: max
-				if (mintgap > ppm->avetgap) {
-					minval = val;
-					mintgap = ppm->avetgap;
-					//std::cout << ", minval=" << minval << ", mintgap=" << mintgap;
-				}
+				if (min_avetgap > ppm->avetgap) {
 #else
-				if (mintgap > ppm->maxtgap) {
-					minval = val;
-					mintgap = ppm->maxtgap;
-					//std::cout << ", minval=" << minval << ", mintgap=" << mintgap;
-				}
+				if (min_maxtgap > ppm->maxtgap) {
 #endif
+					minval = val;
+					min_avetgap = ppm->avetgap;
+					min_maxtgap = ppm->maxtgap;
+					//std::cout << ", min ave gap=" << min_avetval << ", min max gap=" << min_maxtgap;
+				}
 			}
 			//std::cout << std::endl;
 		}
@@ -632,40 +629,34 @@ void ControlPanel::cb_btn_randrul3(Fl_Widget* wgt, void* idx)
 		ppm->lcrcnt = lcrcnt;
 		ppm->rcrcnt = rcrcnt;
 #endif
-		This->optlog_err[This->optlog_itr] = mintgap;
+		This->optlog_avetgap[This->optlog_itr] = min_avetgap;
+		This->optlog_maxtgap[This->optlog_itr] = min_maxtgap;
 #if TARGET_GAP_TYPE == 0 // 0: average, 1: max
-		if (mintgap > avetgap_prev) {
-			memcpy(c->Px2d, prevPx2d, sizeof(double) * c->Pcnt);
-			memcpy(c->Pa, prevPa, sizeof(double) * c->Pcnt);
-			memcpy(c->Pbl, prevPbl, sizeof(double) * c->Pcnt);
-			memcpy(c->Pbr, prevPbr, sizeof(double) * c->Pcnt);
-			ppm->avetgap = avetgap_prev;
-		} else {
-			ppm->avetgap = mintgap;
-			minminval = minval;
-		}
-		This->optlog_minerr[This->optlog_itr] = ppm->avetgap;
+		if (min_avetgap > prev_avetgap)
 #else
-		if (mintgap > maxtgap_prev) {
+		if (min_maxtgap > prev_maxtgap)
+#endif
+		{
 			memcpy(c->Px2d, prevPx2d, sizeof(double) * c->Pcnt);
 			memcpy(c->Pa, prevPa, sizeof(double) * c->Pcnt);
 			memcpy(c->Pbl, prevPbl, sizeof(double) * c->Pcnt);
 			memcpy(c->Pbr, prevPbr, sizeof(double) * c->Pcnt);
-			ppm->maxtgap = maxtgap_prev;
-		}
-		else {
-			ppm->maxtgap = mintgap;
+			This->optlog_min_avetgap[This->optlog_itr] = ppm->avetgap = prev_avetgap;
+			This->optlog_min_maxtgap[This->optlog_itr] = ppm->maxtgap = prev_maxtgap;
+		} else {
+			This->optlog_min_avetgap[This->optlog_itr] = ppm->avetgap = min_avetgap;
+			This->optlog_min_maxtgap[This->optlog_itr] = ppm->maxtgap = min_maxtgap;
 			minminval = minval;
 		}
-		This->optlog_minerr[This->optlog_itr] = ppm->maxtgap;
-#endif
 #endif
 
 #if 0
 		std::cout << "iter = " << This->optlog_itr
-			<< ", err = " << This->optlog_err[This->optlog_itr]
+			<< ", ave gap = " << This->optlog_avetgap[This->optlog_itr]
+			<< ", max gap = " << This->optlog_maxtgap[This->optlog_itr]
 			<< ", angle = " << minval
-			<< ", minerr = " << This->optlog_minerr[This->optlog_itr]
+			<< ", min ave gap = " << This->optlog_min_avetgap[This->optlog_itr]
+			<< ", min max gap = " << This->optlog_min_maxtgap[This->optlog_itr]
 			<< ", minangle = " << minminval
 			<< std::endl;
 #endif
@@ -693,14 +684,15 @@ void ControlPanel::cb_btn_randrul3(Fl_Widget* wgt, void* idx)
 		ofs.close();
 	}
 	{
-	std::ofstream ofs("./output/err_seq0_target.csv");
-	ofs << "iter,trial_validrul,err,minerr" << std::endl;
-	for (int i = 0; i < This->optlog_itr; i++)
-	{
-		ofs << i << "," << This->optlog_trial_til_validrul[i] << ","
-			<< This->optlog_err[i] << "," << This->optlog_minerr[i] << std::endl;
-	}
-	ofs.close();
+		std::ofstream ofs("./output/err_seq0_target.csv");
+		ofs << "iter,trial_validrul,ave gap,max gap,min gap" << std::endl;
+		for (int i = 0; i < This->optlog_itr; i++)
+		{
+			ofs << i << "," << This->optlog_trial_til_validrul[i] << ","
+				<< This->optlog_avetgap[i] << "," << This->optlog_maxtgap[i] << ","
+				<< This->optlog_min_avetgap[i] << "," << This->optlog_min_maxtgap[i] << std::endl;
+		}
+		ofs.close();
 	}
 #endif
 	This->optlog_cnt = This->optlog_itr;
@@ -733,14 +725,17 @@ void ControlPanel::cb_btn_opttrfold(Fl_Widget* wgt, void* idx)
 	double thres_avetgap = 0.3;
 	double thres_maxtgap = 1.0;
 	int miniter = -1;
-	double mingap = 100000;
+	double min_avetgap = 100000;
+	double min_maxtgap = 100000;
 	clock_t start_clock, end_clock;
 	start_clock = clock();
 	for (int i = 0; i < 18000; i++)
 	{
 		This->optlog_itr = i;
-		This->optlog_err[This->optlog_itr] = -1;
-		This->optlog_minerr[This->optlog_itr] = mingap;
+		This->optlog_avetgap[This->optlog_itr] = -1;
+		This->optlog_maxtgap[This->optlog_itr] = -1;
+		This->optlog_min_avetgap[This->optlog_itr] = min_avetgap;
+		This->optlog_min_maxtgap[This->optlog_itr] = min_maxtgap;
 
 #if TARGET_GAP_TYPE == 0 // 0: average, 1: max
 		if (ppm->avetgap < thres_avetgap) {
@@ -754,8 +749,8 @@ void ControlPanel::cb_btn_opttrfold(Fl_Widget* wgt, void* idx)
 		memcpy(prevPx2d, c->Px2d, sizeof(double) * c->Pcnt);
 		memcpy(prevPa, c->Pa, sizeof(double) * c->Pcnt);
 		memcpy(prevPy, c->Py, sizeof(double) * c->Pcnt);
-		double avetgap_prev = ppm->avetgap;
-		double maxtgap_prev = ppm->maxtgap;
+		double prev_avetgap = ppm->avetgap;
+		double prev_maxtgap = ppm->maxtgap;
 
 		// control point of the rulings
 		int i0 = rand() % dPa_size;
@@ -782,16 +777,12 @@ void ControlPanel::cb_btn_opttrfold(Fl_Widget* wgt, void* idx)
 		if (result) { /*std::cout << "i = " << i << ", c->checkRulCreaseCross() NG" << std::endl;*/ continue; }
 
 		This->btn_optmat->do_callback();
+		This->optlog_avetgap[This->optlog_itr] = ppm->avetgap;
+		This->optlog_maxtgap[This->optlog_itr] = ppm->maxtgap;
 #if TARGET_GAP_TYPE == 0 // 0: average, 1: max
-		This->optlog_err[This->optlog_itr] = ppm->avetgap;
+		if (ppm->avetgap > prev_avetgap) {
 #else
-		This->optlog_err[This->optlog_itr] = ppm->maxtgap;
-#endif
-		//This->optlog_minerr[This->optlog_itr];
-#if TARGET_GAP_TYPE == 0 // 0: average, 1: max
-		if (ppm->avetgap > avetgap_prev) {
-#else
-		if (ppm->maxtgap > maxtgap_prev) {
+		if (ppm->maxtgap > prev_maxtgap) {
 #endif
 			memcpy(c->Px2d, prevPx2d, sizeof(double) * c->Pcnt);
 			memcpy(c->Pa, prevPa, sizeof(double) * c->Pcnt);
@@ -802,23 +793,24 @@ void ControlPanel::cb_btn_opttrfold(Fl_Widget* wgt, void* idx)
 			ppm->postproc();
 			ppm->set_postproc_type(PPTYPE_UNDEF);
 #endif
-			std::cout << "iter = " << i << ", avetgap = " << ppm->avetgap << ", maxtgap = " << ppm->maxtgap << ", minerr = " << mingap << std::endl;
+			std::cout << "iter = " << i	<< ", ave gap = " << ppm->avetgap << ", max gap = " << ppm->maxtgap	<< ", min ave gap = " << min_avetgap << ", min max gap = " << min_maxtgap << std::endl;
 			continue;
 		}
 #if TARGET_GAP_TYPE == 0 // 0: average, 1: max
-		if (mingap > ppm->avetgap) {
-			mingap = ppm->avetgap;
+		if (min_avetgap > ppm->avetgap) {
 #else
-		if (mingap > ppm->maxtgap) {
-			mingap = ppm->maxtgap;
+		if (min_maxtgap > ppm->maxtgap) {
 #endif
+			min_avetgap = ppm->avetgap;
+			min_maxtgap = ppm->maxtgap;
 			miniter = i;
 			memcpy(Px2d, c->Px2d, sizeof(double) * c->Pcnt);
 			memcpy(Pa, c->Pa, sizeof(double) * c->Pcnt);
 			memcpy(Py, c->Py, sizeof(double) * c->Pcnt);
 		}
-		This->optlog_minerr[This->optlog_itr] = mingap;
-		std::cout << "iter = " << i	<< ", avetgap = " << ppm->avetgap << ", maxtgap = " << ppm->maxtgap << ", minerr = " << mingap << std::endl;
+		This->optlog_min_avetgap[This->optlog_itr] = min_avetgap;
+		This->optlog_min_maxtgap[This->optlog_itr] = min_maxtgap;
+		std::cout << "iter = " << i << ", ave gap = " << ppm->avetgap << ", max gap = " << ppm->maxtgap	<< ", min ave gap = " << min_avetgap << ", min max gap = " << min_maxtgap << std::endl;
 	}
 	end_clock = clock();
 	std::cout << "clock," << (double)(end_clock - start_clock) / CLOCKS_PER_SEC << std::endl;
@@ -843,14 +835,13 @@ void ControlPanel::cb_btn_opttrfold(Fl_Widget* wgt, void* idx)
 #if 1
 	{
 	std::ofstream ofs("./output/err_seq1_target.csv");
-	ofs << "iter,,err,minerr" << std::endl;
+	ofs << "iter,,ave gap,max gap,min ave gap,min max gap" << std::endl;
 	for (int i = 0; i < This->optlog_itr; i++)
 	{
-		if (This->optlog_err[i] > 0.0) {
-			ofs << i << ",," << This->optlog_err[i] << "," << This->optlog_minerr[i] << std::endl;
-			}
-			else {
-			ofs << i << ",,," << This->optlog_minerr[i] << std::endl;
+		if (This->optlog_avetgap[i] > 0.0) {
+			ofs << i << ",," << This->optlog_avetgap[i] << "," << This->optlog_maxtgap[i] << "," << This->optlog_min_avetgap[i] << "," << This->optlog_min_maxtgap[i] << std::endl;
+		} else {
+			ofs << i << ",,," << This->optlog_min_avetgap[i] << "," << This->optlog_min_maxtgap[i] << std::endl;
 		}
 	}
 	ofs.close();

@@ -226,8 +226,10 @@ private:
 	int optlog_itr;
 	int optlog_cnt;
 	int optlog_trial_til_validrul[MAX_OPT_ITR];
-	double optlog_err[MAX_OPT_ITR];
-	double optlog_minerr[MAX_OPT_ITR];
+	double optlog_avetgap[MAX_OPT_ITR];
+	double optlog_maxtgap[MAX_OPT_ITR];
+	double optlog_min_avetgap[MAX_OPT_ITR];
+	double optlog_min_maxtgap[MAX_OPT_ITR];
 
 	static void cb_btn_optfold(Fl_Widget* wgt, void* idx);
 	static void cb_btn_optfold2(Fl_Widget* wgt, void* idx);
