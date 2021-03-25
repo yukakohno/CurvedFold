@@ -220,8 +220,7 @@ public:
 	Fl_Button* btn_opttrfold;
 
 private:
-#define TARGET_GAP_TYPE 0 // 0: average, 1: max
-#define MAX_OPT_ITR 2000
+#define MAX_OPT_ITR 10000
 	int optlog_itrmax;
 	int optlog_itr;
 	int optlog_cnt;
