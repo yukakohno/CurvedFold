@@ -498,7 +498,7 @@ void ControlPanel::cb_btn_randrul3(Fl_Widget* wgt, void* idx)
 	int opt_type = 2;
 	int max_itr = 500;
 	int max_trial_til_validrul = 100;
-	bool double_check_rulings = false;
+	bool double_check_rulings = true;
 #ifdef INPUT_PARAMETERS
 	std::cout << "type of parameter shift, 1: random, 2: table(default)" << std::endl;
 	std::cin >> opt_type;
@@ -531,10 +531,8 @@ void ControlPanel::cb_btn_randrul3(Fl_Widget* wgt, void* idx)
 	start_clock = clock();
 
 	int minminval = c->alpha[c->Xcnt/2];	// angle with min gap in all rulings
-	for (int i = 0; i < max_itr; i++)
+	for (int i = 0; i < max_itr; i++, This->optlog_cnt = i)
 	{
-		This->optlog_cnt = i;
-
 #if TARGET_GAP_TYPE == 0 // 0: average, 1: max
 		if (ppm->avetgap < thres_avetgap) {
 #else
@@ -628,6 +626,11 @@ void ControlPanel::cb_btn_randrul3(Fl_Widget* wgt, void* idx)
 			memcpy(c->Pa, prevPa, sizeof(double) * c->Pcnt);
 			memcpy(c->Pbl, prevPbl, sizeof(double) * c->Pcnt);
 			memcpy(c->Pbr, prevPbr, sizeof(double) * c->Pcnt);
+			This->optlog_avetgap[i] = -1;
+			This->optlog_maxtgap[i] = -1;
+			This->optlog_min_avetgap[i] = -1;
+			This->optlog_min_maxtgap[i] = -1;
+			This->optlog_cnt = i;
 			break; // i
 		}
 
@@ -783,7 +786,6 @@ void ControlPanel::cb_btn_randrul3(Fl_Widget* wgt, void* idx)
 		ofs.close();
 	}
 #endif
-	//This->optlog_cnt = i;
 }
 
 void ControlPanel::cb_btn_opttrfold(Fl_Widget* wgt, void* idx)

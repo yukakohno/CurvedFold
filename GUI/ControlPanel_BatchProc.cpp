@@ -35,11 +35,12 @@ std::string fname_target[15] = { "./input/param_synth/target00.txt",
 	"./input/param_rulings/target002.txt",
 	"./input/param_rulings/target003.txt",
 	"./input/param_rulings/target004.txt",
-	"./input/param_tr_ang/target000.txt",
+	//"./input/param_tr_ang/target000.txt",
 	"./input/param_tr_ang/target001.txt",
 	"./input/param_tr_ang/target002.txt",
 	"./input/param_tr_ang/target003.txt",
-	"./input/param_tr_ang/target004.txt" };
+	"./input/param_tr_ang/target004.txt",
+	"./input/param_tr_ang/target005.txt"};
 std::string fname_tmask[10] = { "./input/tmasks/tmask81.txt",
 	"./input/tmasks/tmask_left.txt",
 	"./input/tmasks/tmask_convex.txt",
@@ -179,8 +180,8 @@ void ControlPanel::idle_batchproc(void* idx)
 		double tmp_avetgap = ppm->avetgap;
 		double tmp_maxtgap = ppm->maxtgap;
 		ppm->loadTgtMask((char*)fname_target[j].c_str(), (char*)fname_tmask[0].c_str());
-		//ppm->calcAvetgapMat();
-		ppm->calcAvetgap();	// calculate ppm->avetgap, maxtgap;
+		ppm->calcAvetgapMat();
+		//ppm->calcAvetgap();	// calculate ppm->avetgap, maxtgap;
 		std::cout << "ppm->avetgap (masked points) = " << tmp_avetgap << ", ppm->avetgap (81 points) = " << ppm->avetgap << std::endl;
 		std::cout << "ppm->maxtgap (masked points) = " << tmp_maxtgap << ", ppm->maxtgap (81 points) = " << ppm->maxtgap << std::endl;
 
@@ -188,13 +189,29 @@ void ControlPanel::idle_batchproc(void* idx)
 		// save result
 		//
 		{
+			double ave_iter_ruling = 0.0;
+			int cnt_iter_ruling = 0;
+			for (int i = 0; i < This->optlog_cnt; i++)
+			{
+				if (This->optlog_trial_til_validrul[i] + 1 > 0) {
+					ave_iter_ruling += This->optlog_trial_til_validrul[i] + 1;
+					cnt_iter_ruling++;
+				}
+			}
+			if (cnt_iter_ruling > 0) {
+				ave_iter_ruling /= (double)cnt_iter_ruling;
+			}
+			else {
+				ave_iter_ruling = -1;
+			}
+
 			time_t t0 = time(NULL);
 			struct tm* t1 = localtime(&t0);
 
 			std::ofstream ofs(FILENAME_RESULT, std::ios_base::app);
-			ofs << i << "," << j << "," << k << "," << This->optlog_cnt << ","
+			ofs << i << "," << j << "," << k << "," << This->optlog_cnt << "," << ave_iter_ruling << ","
 				<< This->optlog_min_avetgap[This->optlog_cnt - 1] << "," << This->optlog_min_maxtgap[This->optlog_cnt - 1] << ","
-				//<< tmp_avetgap << "," << tmp_maxtgap << ","
+				<< tmp_avetgap << "," << tmp_maxtgap << ","
 				<< ppm->avetgap << "," << ppm->maxtgap << ","
 				<< proc_time << ","
 				<< std::setw(2) << std::setfill('0') << t1->tm_hour
@@ -207,25 +224,48 @@ void ControlPanel::idle_batchproc(void* idx)
 			ofs << i << "," << j << "," << k << ",ave gap,";
 			for (int i = 0; i < This->optlog_cnt; i++)
 			{
-				ofs << This->optlog_avetgap[i] << ",";
+				if (This->optlog_avetgap[i] < 0) {
+					ofs << ",";
+				}
+				else {
+					ofs << This->optlog_avetgap[i] << ",";
+				}
 			}
 			ofs << std::endl;
+
 			ofs << i << "," << j << "," << k << ",max gap,";
 			for (int i = 0; i < This->optlog_cnt; i++)
 			{
-				ofs << This->optlog_maxtgap[i] << ",";
+				if (This->optlog_maxtgap[i] < 0) {
+					ofs << ",";
+				}
+				else {
+					ofs << This->optlog_maxtgap[i] << ",";
+				}
 			}
 			ofs << std::endl;
+
 			ofs << i << "," << j << "," << k << ",min ave gap,";
 			for (int i = 0; i < This->optlog_cnt; i++)
 			{
-				ofs << This->optlog_min_avetgap[i] << ",";
+				if (This->optlog_min_maxtgap[i] < 0) {
+					ofs << ",";
+				}
+				else {
+					ofs << This->optlog_min_avetgap[i] << ",";
+				}
 			}
 			ofs << std::endl;
+
 			ofs << i << "," << j << "," << k << ",min max gap,";
 			for (int i = 0; i < This->optlog_cnt; i++)
 			{
-				ofs << This->optlog_min_maxtgap[i] << ",";
+				if (This->optlog_min_maxtgap[i] < 0) {
+					ofs << ",";
+				}
+				else {
+					ofs << This->optlog_min_maxtgap[i] << ",";
+				}
 			}
 			ofs << std::endl;
 			ofs.close();
@@ -304,7 +344,7 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 #else
 
 	std::ofstream ofs(FILENAME_RESULT);
-	ofs << "initial,target,mask,iteration,min gap,max gap,ave gap all,max gap all, proc time,time" << std::endl;
+	ofs << "initial,target,mask,iteration,rul_iter,ave gap,max gap,ave gap,max gap,ave gap all,max gap all, proc time,time" << std::endl;
 	ofs.close();
 	ofs.open(FILENAME_PROCESS);
 	ofs << "initial,target,mask," << std::endl;
@@ -366,6 +406,7 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 				start_clock = clock();
 
 				This->btn_randrul2->do_callback();
+				//This->btn_opttrfold->do_callback();
 
 				end_clock = clock();
 				double proc_time = (double)(end_clock - start_clock) / CLOCKS_PER_SEC;
@@ -377,8 +418,8 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 				double tmp_avetgap = ppm->avetgap;
 				double tmp_maxtgap = ppm->maxtgap;
 				ppm->loadTgtMask((char*)fname_target[j].c_str(), (char*)fname_tmask[0].c_str());
-				//ppm->calcAvetgapMat();
-				ppm->calcAvetgap();	// calculate ppm->avetgap, maxtgap;
+				ppm->calcAvetgapMat();
+				//ppm->calcAvetgap();	// calculate ppm->avetgap, maxtgap;
 				std::cout << "ppm->avetgap (masked points) = " << tmp_avetgap << ", ppm->avetgap (81 points) = " << ppm->avetgap << std::endl;
 				std::cout << "ppm->maxtgap (masked points) = " << tmp_maxtgap << ", ppm->maxtgap (81 points) = " << ppm->maxtgap << std::endl;
 
@@ -386,13 +427,29 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 				// save result
 				//
 				{
+					double ave_iter_ruling = 0.0;
+					int cnt_iter_ruling = 0;
+					for (int i = 0; i < This->optlog_cnt; i++)
+					{
+						if (This->optlog_trial_til_validrul[i] +1 > 0) {
+							ave_iter_ruling += This->optlog_trial_til_validrul[i] +1;
+							cnt_iter_ruling++;
+						}
+					}
+					if (cnt_iter_ruling > 0) {
+						ave_iter_ruling /= (double)cnt_iter_ruling;
+					}
+					else {
+						ave_iter_ruling = -1;
+					}
+
 					time_t t0 = time(NULL);
 					struct tm* t1 = localtime(&t0);
 
 					std::ofstream ofs(FILENAME_RESULT, std::ios_base::app);
-					ofs << i << "," << j << "," << k << "," << This->optlog_cnt << ","
+					ofs << i << "," << j << "," << k << "," << This->optlog_cnt << "," << ave_iter_ruling  << ","
 						<< This->optlog_min_avetgap[This->optlog_cnt - 1] << "," << This->optlog_min_maxtgap[This->optlog_cnt - 1] << ","
-						//<< tmp_avetgap << "," << tmp_maxtgap << ","
+						<< tmp_avetgap << "," << tmp_maxtgap << ","
 						<< ppm->avetgap << "," << ppm->maxtgap << ","
 						<< proc_time << ","
 						<< std::setw(2) << std::setfill('0') << t1->tm_hour
@@ -405,25 +462,44 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 					ofs << i << "," << j << "," << k << ",ave gap,";
 					for (int i = 0; i < This->optlog_cnt; i++)
 					{
-						ofs << This->optlog_avetgap[i] << ",";
+						if (This->optlog_avetgap[i] < 0) {
+							ofs << ",";
+						} else {
+							ofs << This->optlog_avetgap[i] << ",";
+						}
 					}
 					ofs << std::endl;
+
 					ofs << i << "," << j << "," << k << ",max gap,";
 					for (int i = 0; i < This->optlog_cnt; i++)
 					{
-						ofs << This->optlog_maxtgap[i] << ",";
+						if (This->optlog_maxtgap[i] < 0) {
+							ofs << ",";
+						} else {
+							ofs << This->optlog_maxtgap[i] << ",";
+						}
 					}
 					ofs << std::endl;
+
 					ofs << i << "," << j << "," << k << ",min ave gap,";
 					for (int i = 0; i < This->optlog_cnt; i++)
 					{
-						ofs << This->optlog_min_avetgap[i] << ",";
+						if (This->optlog_min_maxtgap[i] < 0) {
+							ofs << ",";
+						} else {
+							ofs << This->optlog_min_avetgap[i] << ",";
+						}
 					}
 					ofs << std::endl;
+
 					ofs << i << "," << j << "," << k << ",min max gap,";
 					for (int i = 0; i < This->optlog_cnt; i++)
 					{
-						ofs << This->optlog_min_maxtgap[i] << ",";
+						if (This->optlog_min_maxtgap[i] < 0) {
+							ofs << ",";
+						} else {
+							ofs << This->optlog_min_maxtgap[i] << ",";
+						}
 					}
 					ofs << std::endl;
 					ofs.close();
