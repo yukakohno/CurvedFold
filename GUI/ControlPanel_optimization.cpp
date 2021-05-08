@@ -14,6 +14,7 @@
 #define TARGET_GAP_TYPE 0 // 0: average, 1: max
 //#define INPUT_PARAMETERS
 //#define PRINT_OPT_PROC
+#define PRINT_RAND_PROC
 //#define DUMP_OPT_RESULT
 
 void ControlPanel::cb_btn_optfold(Fl_Widget* wgt, void* idx)
@@ -786,6 +787,101 @@ void ControlPanel::cb_btn_randrul3(Fl_Widget* wgt, void* idx)
 		ofs.close();
 	}
 #endif
+}
+
+void ControlPanel::cb_btn_randtrfold(Fl_Widget* wgt, void* idx)
+
+{
+	ControlPanel* This = (ControlPanel*)idx;
+	papermodel* ppm = &(This->ppm);
+	crease* c = &(ppm->crs[0]);
+
+	This->rb_fix[CMODE_B]->setonly();
+	This->rb_param[P_TRSN]->setonly();
+	This->cb_optmat->value(1);
+
+	double prevPx2d[MAX_CPCNT], prevPy[MAX_CPCNT], prevPa[MAX_CPCNT], prev_avetgap, prev_maxtgap;
+	memcpy(prevPx2d, c->Px2d, sizeof(double) * c->Pcnt);
+	memcpy(prevPa, c->Pa, sizeof(double) * c->Pcnt);
+	memcpy(prevPy, c->Py, sizeof(double) * c->Pcnt);
+
+	for (int i = 0; i < 10000; i++)
+	{
+		// control point of the rulings
+		for (int j = 0; j <= c->Pcnt; j++) {
+			c->Pa[j] = ((double)rand() / (double)RAND_MAX - 0.5) * M_PI; // [-pi/2, pi/2];
+		}
+		for (int j = 0; j <= c->Pcnt; j++) {
+			c->Py[j] = ((double)rand() / (double)RAND_MAX - 0.5) * 2.0 * 0.1; // [-0.1, 0.1];
+		}
+
+		// make new ruling
+		c->calcCPA_X(1/*ppm->flg_interpolate*/, &ppm->rp);
+		ppm->set_postproc_type(PPTYPE_PRICURVE);
+		ppm->postproc();
+		ppm->set_postproc_type(PPTYPE_UNDEF);
+
+		// check crossing
+		int result = c->checkRulingCross();
+		if (result) {
+#ifdef PRINT_RAND_PROC
+			std::cout << "i = " << i << ", c->checkRulingCross() = " << result << std::endl;
+#endif
+		}
+		else {
+			result = c->checkRulingAngle();
+			if (result) {
+#ifdef PRINT_RAND_PROC
+				std::cout << "i = " << i << ", c->checkRulingAngle() = " << result << std::endl;
+#endif
+			}
+			else {
+				result = c->checkRulCreaseCross();
+				if (result) {
+#ifdef PRINT_RAND_PROC
+					std::cout << "i = " << i << ", c->checkRulCreaseCross() = " << result << std::endl;
+#endif
+				}
+				else {
+#ifdef PRINT_RAND_PROC
+					std::cout << "i = " << i << ", OK" << result << std::endl;
+#endif
+				}
+			}
+		}
+	} // i
+
+#if 0
+	{
+		std::ofstream ofs("./output/time1.csv", std::ios_base::app);
+		ofs << (double)(end_clock - start_clock) / CLOCKS_PER_SEC << std::endl;
+		ofs.close();
+	}
+	{
+		std::ofstream ofs("./output/err_seq1_target.csv");
+		ofs << "iter,,ave gap,max gap,min ave gap,min max gap" << std::endl;
+		for (int i = 0; i < This->optlog_cnt; i++)
+		{
+			if (This->optlog_avetgap[i] > 0.0) {
+				ofs << i << ",," << This->optlog_avetgap[i] << "," << This->optlog_maxtgap[i]
+					<< "," << This->optlog_min_avetgap[i] << "," << This->optlog_min_maxtgap[i] << std::endl;
+			}
+		}
+		ofs.close();
+	}
+#endif
+
+	memcpy(c->Px2d, prevPx2d, sizeof(double) * c->Pcnt);
+	memcpy(c->Pa, prevPa, sizeof(double) * c->Pcnt);
+	memcpy(c->Py, prevPy, sizeof(double) * c->Pcnt);
+	c->calcCPA_X(1/*ppm->flg_interpolate*/, &ppm->rp);
+	ppm->set_postproc_type(PPTYPE_PRICURVE);
+	ppm->postproc();
+	ppm->set_postproc_type(PPTYPE_UNDEF);
+	This->btn_optmat->do_callback();
+
+	This->gwin->redraw();
+	This->gwin_cp->redraw();
 }
 
 void ControlPanel::cb_btn_opttrfold(Fl_Widget* wgt, void* idx)

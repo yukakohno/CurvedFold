@@ -217,6 +217,7 @@ public:
 	Fl_Button* btn_optrulfold;
 	Fl_Button* btn_randrul;
 	Fl_Button* btn_randrul2;
+	Fl_Button* btn_randtrfold;
 	Fl_Button* btn_opttrfold;
 
 private:
@@ -239,6 +240,7 @@ private:
 	static void cb_btn_randrul(Fl_Widget* wgt, void* idx);
 	static void cb_btn_randrul2(Fl_Widget* wgt, void* idx);
 	static void cb_btn_randrul3(Fl_Widget* wgt, void* idx);
+	static void cb_btn_randtrfold(Fl_Widget* wgt, void* idx);
 	static void cb_btn_opttrfold(Fl_Widget* wgt, void* idx);
 
 	// ------------------------- TARGET POINTS --------------------------------------

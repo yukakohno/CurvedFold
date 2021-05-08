@@ -966,6 +966,13 @@ void ControlPanel::createPanel()
 			wgt_x = 10;
 			wgt_y += 25;
 
+			btn_randtrfold = new Fl_Button(wgt_x, wgt_y, 180, 20, "Random Torsion and Angles");
+			btn_randtrfold->callback(cb_btn_randtrfold, (void*)this);
+			g->add(btn_randtrfold);
+
+			wgt_x = 10;
+			wgt_y += 25;
+
 			btn_opttrfold = new Fl_Button(wgt_x, wgt_y, 180, 20, "Torsion and Angles");
 			btn_opttrfold->callback(cb_btn_opttrfold, (void*)this);
 			g->add(btn_opttrfold);
