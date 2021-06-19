@@ -894,8 +894,8 @@ void ControlPanel::cb_btn_opttrfold(Fl_Widget* wgt, void* idx)
 	This->rb_param[P_TRSN]->setonly();
 	This->cb_optmat->value(1);
 
-	double thres_avetgap = 0.3;
-	//double thres_avetgap = 0.1;
+	//double thres_avetgap = 0.3;
+	double thres_avetgap = 0.1;
 	double thres_maxtgap = 1.0;
 	double avetgap_org = ppm->avetgap;
 
