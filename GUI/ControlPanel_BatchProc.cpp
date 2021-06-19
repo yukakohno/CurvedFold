@@ -64,6 +64,9 @@ int batch_i = -1, batch_j = -1, batch_k = -1, batch_phase = -1;
 #define FILENAME_PROCESS "./output/process.csv"
 #define FILENAME_PARAM "./output/param.csv"
 
+#define PROC_BATCH_IDLE 0 // 0:batch, 1:idle
+#define PROC_OPT_MODE 2 // 0: ruling, 1: torsion & fold angle, 2: hybrid
+
 void ControlPanel::idle_batchproc(void* idx)
 {
 	ControlPanel* This = (ControlPanel*)idx;
@@ -101,6 +104,7 @@ void ControlPanel::idle_batchproc(void* idx)
 	if (This->phase_batchproc == 3) {
 		This->phase_batchproc = 0;
 		This->cnt_batchproc++;
+		//This->cnt_batchproc += TARGET_DATA_SIZE * TMASK_DATA_SIZE;
 	}
 	else {
 		This->phase_batchproc++;
@@ -165,7 +169,14 @@ void ControlPanel::idle_batchproc(void* idx)
 		clock_t start_clock, end_clock;
 		start_clock = clock();
 
+#if PROC_OPT_MODE == 0 // 0: ruling, 1: torsion & fold angle, 2: hybrid
 		This->btn_randrul2->do_callback();
+#elif PROC_OPT_MODE == 1
+		This->btn_opttrfold->do_callback();
+#elif PROC_OPT_MODE == 2
+		This->btn_randrul2->do_callback();
+		This->btn_opttrfold->do_callback();
+#endif
 
 		end_clock = clock();
 		proc_time = (double)(end_clock - start_clock) / CLOCKS_PER_SEC;
@@ -319,7 +330,8 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 	This->cb_optmat->value(1);
 	This->btn_makePrmList2->do_callback();
 
-#if 0
+#if PROC_BATCH_IDLE == 1 // 0:batch, 1:idle
+
 	int input_no = atoi(This->in_input_no->value());
 	int target_no = atoi(This->in_target_no->value());
 	int mask_no = atoi(This->in_mask_no->value());
@@ -405,8 +417,14 @@ void ControlPanel::cb_btn_batchproc(Fl_Widget* wgt, void* idx)
 				clock_t start_clock, end_clock;
 				start_clock = clock();
 
+#if PROC_OPT_MODE == 0 // 0: ruling, 1: torsion & fold angle, 2: hybrid
 				This->btn_randrul2->do_callback();
-				//This->btn_opttrfold->do_callback();
+#elif PROC_OPT_MODE == 1
+				This->btn_opttrfold->do_callback();
+#elif PROC_OPT_MODE == 2
+				This->btn_randrul2->do_callback();
+				This->btn_opttrfold->do_callback();
+#endif
 
 				end_clock = clock();
 				double proc_time = (double)(end_clock - start_clock) / CLOCKS_PER_SEC;
