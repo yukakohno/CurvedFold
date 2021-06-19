@@ -492,7 +492,8 @@ void GraphWindow3DCF::draw3DCurveFold()
 
 	if( disp_PTN && ppm )
 	{
-		double dangle = (double)dc*2.0*M_PI/(double)divnum -15.0/180.0*M_PI;
+		//double dangle = (double)dc*2.0*M_PI/(double)divnum -15.0/180.0*M_PI; // for origami-sphere
+		double dangle = (double)dc * 2.0 * M_PI / (double)divnum;
 		double cosd = cos(-dangle);
 		double sind = sin(-dangle);
 

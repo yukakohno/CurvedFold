@@ -92,8 +92,8 @@ int main(int argc, char* argv[])
 	cwin->gwin_gr = gwin_gr;
 	gwin->cwin = gwin_cp->cwin = (void*)cwin;
 
-	int ret = cwin->ppm.crs[0].load("input/P1.txt");
-	ret = cwin->ppm.crs[0].loadm2m3("input/P1_m2m3.txt");
+	int ret = cwin->ppm.crs[0].load("input/P0.txt");
+	ret = cwin->ppm.crs[0].loadm2m3("input/P0_m2m3.txt");
 	cwin->rb_fix[CMODE_B]->setonly();
 	cwin->rb_param[P_CV2D]->setonly();
 	cwin->ppm.set_postproc_type( PPTYPE_OPEN );
