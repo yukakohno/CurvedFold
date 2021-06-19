@@ -895,7 +895,9 @@ void ControlPanel::cb_btn_opttrfold(Fl_Widget* wgt, void* idx)
 	This->cb_optmat->value(1);
 
 	double thres_avetgap = 0.3;
+	//double thres_avetgap = 0.1;
 	double thres_maxtgap = 1.0;
+	double avetgap_org = ppm->avetgap;
 
 	double dPa[MAX_DB_SIZE][MAX_CPCNT], dPa_val[MAX_CPCNT * 2], dPa_max = 5.0 / 180.0 * M_PI; // [-5 degrees, 5 degrees]
 	double dPy[MAX_DB_SIZE][MAX_CPCNT], dPy_val[MAX_CPCNT * 2], dPy_max = 0.001; // [-0.001, 0.001]
@@ -919,7 +921,7 @@ void ControlPanel::cb_btn_opttrfold(Fl_Widget* wgt, void* idx)
 #endif
 
 	// get parameters
-	int opt_type = 2;
+	int opt_type = 1;
 	int max_itr = MAX_OPT_ITR;
 #ifdef INPUT_PARAMETERS
 	std::cout << "type of parameter shift, 1: random, 2: table(default)" << std::endl;
@@ -936,6 +938,10 @@ void ControlPanel::cb_btn_opttrfold(Fl_Widget* wgt, void* idx)
 	}
 	std::cout << "max_itr = " << max_itr << std::endl;
 #endif
+	double prevPbl[MAX_CPCNT], prevPbr[MAX_CPCNT], minminval;
+	memcpy(prevPbl, c->Pbl, sizeof(double)* c->Pcnt);
+	memcpy(prevPbr, c->Pbr, sizeof(double)* c->Pcnt);
+	minminval = c->alpha[c->Xcnt/2]*180.0/M_PI;
 
 	clock_t start_clock, end_clock;
 	start_clock = clock();
@@ -1056,12 +1062,24 @@ void ControlPanel::cb_btn_opttrfold(Fl_Widget* wgt, void* idx)
 #if 1
 	std::cout << "iter_adopted = " << miniter << std::endl;
 	std::cout << "min ave gap = " << ppm->avetgap << ", min max gap = " << ppm->maxtgap << std::endl;
-	c->calcCPA_X(1/*ppm->flg_interpolate*/, &ppm->rp);
-	ppm->set_postproc_type(PPTYPE_PRICURVE);
-	ppm->postproc();
-	ppm->set_postproc_type(PPTYPE_UNDEF);
-	This->btn_optmat->do_callback();
-	ppm->calcAvetgapMat();	// calculate ppm->avetgap, maxtgap;
+	if ( ppm->avetgap < avetgap_org ) {
+		c->calcCPA_X(1/*ppm->flg_interpolate*/, &ppm->rp);
+		ppm->set_postproc_type(PPTYPE_PRICURVE);
+		ppm->postproc();
+		ppm->set_postproc_type(PPTYPE_UNDEF);
+		This->btn_optmat->do_callback();
+		ppm->calcAvetgapMat();	// calculate ppm->avetgap, maxtgap;
+	}
+	else {
+		This->rb_fix[CMODE_R]->setonly();
+		This->rb_param[P_RULL]->setonly();
+		memcpy(c->Pbl, prevPbl, sizeof(double) * c->Pcnt);
+		memcpy(c->Pbr, prevPbr, sizeof(double) * c->Pcnt);
+		This->vs_xmang0->value(minminval);
+		This->vs_xmang1->value(minminval);
+		This->btn_R2TA0->do_callback(); // includes This->push_hist()
+		ppm->calcAvetgapMat();	// calculate ppm->avetgap, maxtgap;
+	}
 	std::cout << "ppm->avetgap = " << ppm->avetgap << ", maxtgap = " << ppm->maxtgap << std::endl;
 #endif
 
