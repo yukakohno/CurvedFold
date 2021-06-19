@@ -125,6 +125,8 @@ void ControlPanel::cb_btn_optmat(Fl_Widget *wgt, void *idx)
 	This->gwin_gr->redraw();
 }
 
+//-----------------------------
+
 void ControlPanel::cb_btn_start(Fl_Widget *wgt, void *idx)
 {
 	ControlPanel *This = (ControlPanel *)idx;
@@ -137,6 +139,19 @@ void ControlPanel::cb_btn_start(Fl_Widget *wgt, void *idx)
 
 	if( !This->flg_idle_active ){
 		This->flg_idle_active = true;
+#if 0
+		{	// clear file
+			FILE *fout = fopen( "output/paramresult.csv","w");
+			if( fout ){
+				fprintf( fout, "res_rul, crossarea,," );
+				for( int i=0; i<c->Pcnt; i++ ){ fprintf( fout, "torsion%d,", i ); }
+				fprintf( fout, "," );
+				for( int i=0; i<c->Pcnt; i++ ){ fprintf( fout, "alpha%d, ", i ); }
+				fprintf( fout, "\n" );
+				fclose(fout);
+			}
+		}
+#endif
 		Fl::add_idle( ControlPanel::idle, This );
 	}
 }

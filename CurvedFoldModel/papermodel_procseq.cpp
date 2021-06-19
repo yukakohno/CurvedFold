@@ -181,9 +181,9 @@ int papermodel::postproc()
 	getTgt2D3D();
 #if 0
 	checkCollision();
-	checkRulCross();
-	checkRulAngle();
-	checkRulCreaseCross();
+	crs[0].checkRulingCross();
+	crs[0].checkRulingAngle();
+	crs[0].checkRulCreaseCross();
 #endif
 	return 0;
 }

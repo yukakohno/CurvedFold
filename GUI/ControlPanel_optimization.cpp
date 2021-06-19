@@ -105,7 +105,7 @@ void ControlPanel::cb_btn_optfold2(Fl_Widget* wgt, void* idx)
 	}
 	//This->push_hist(c->Pcnt, CMODE_R, c->Px2d, c->Py2d, c->Px, c->Py, c->Pz, c->Pa, c->Pbl, c->Pbr, c->m3);
 }
-
+#if 0
 void ControlPanel::cb_btn_opttr(Fl_Widget *wgt, void *idx)
 {
 	ControlPanel *This = (ControlPanel *)idx;
@@ -219,419 +219,7 @@ void ControlPanel::cb_btn_optrulfold(Fl_Widget* wgt, void* idx)
 		memcpy(c, &c0, sizeof(crease));
 	}
 }
-
-// ------------------------- LIST RULINGS -------------------------------------------
-
-#define IPP 10
-int checkRulCross_recursive(papermodel *ppm, crease* c, int pidx, int rl, int *cnt, std::vector<double>& vPb)
-{
-	int idx_crossing = -1;
-
-	if ( pidx == c->Pcnt-1 ) {
-
-		// TODO: check starting ruling angle
-		int i_start = 1;
-
-		for (int i = i_start; i < 180; i+=IPP) { 
-			if (rl < 0) {
-				c->Pbl[pidx] = (double)i / 180.0 * M_PI;
-				crease::interpolate_spline_RulAngle(c->Pbl, c->Pcnt, c->betal, c->Xcnt, c->cotbl, c->cosbl, c->sinbl);
-				for (int j = c->Xsidx; j <= c->Xeidx; j++) {
-					//c->betal[j] = atan(1.0 / c->cotbl[j]);
-					//if (c->betal[j] < 0.0) {
-					//	c->betal[j] += M_PI;
-					//}
-					c->rlx_cp[j] = c->cosbl[j] * c->Tx2d[j] - c->sinbl[j] * c->Ty2d[j];
-					c->rly_cp[j] = c->sinbl[j] * c->Tx2d[j] + c->cosbl[j] * c->Ty2d[j];
-					normalize_v2(&(c->rlx_cp[j]), &(c->rly_cp[j]));
-					c->rllen[j] = ppm->pw * ppm->ph;
-				}
-			}else {
-				c->Pbr[pidx] = (double)i / 180.0 * M_PI;
-				crease::interpolate_spline_RulAngle(c->Pbr, c->Pcnt, c->betar, c->Xcnt, c->cotbr, c->cosbr, c->sinbr);
-				for (int j = c->Xsidx; j <= c->Xeidx; j++) {
-					//c->betar[j] = atan(1.0 / c->cotbr[j]);
-					//if (c->betar[j] < 0.0) {
-					//	c->betar[j] += M_PI;
-					//}
-					c->rrx_cp[j] = c->cosbr[j] * c->Tx2d[j] + c->sinbr[j] * c->Ty2d[j];
-					c->rry_cp[j] = -c->sinbr[j] * c->Tx2d[j] + c->cosbr[j] * c->Ty2d[j];
-					normalize_v2(&(c->rrx_cp[j]), &(c->rry_cp[j]));
-					c->rrlen[j] = ppm->pw * ppm->ph;
-				}
-			}
-			c->calcRLenP(ppm->psx, ppm->psy, ppm->pex, ppm->pey);		// ruling’·‚³C³i˜güA‹Èü‚Ü‚Å‚Ì’·‚³—Dæj
-
-			// return index of rulings crossing, -1 if no crossing
-			idx_crossing = c->checkRulingCross(rl); // -1:left, 1:right
-			if ( idx_crossing > -1 ) {
-#if 0
-				std::cout << "idx_crossing=" << idx_crossing;
-				if (rl<0) {
-					for (int k = 0; k < c->Pcnt; k++) { std::cout << ", " << c->Pbl[k]; }
-				} else {
-					for (int k = 0; k < c->Pcnt; k++) { std::cout << ", " << c->Pbr[k]; }
-				}
-				std::cout << std::endl;
 #endif
-				break;
-			}
-
-			(*cnt)++;
-#if 1
-			{
-				//std::cout << "OK, cnt="<< (*cnt);
-				if (rl < 0) {
-					for (int k = 0; k < c->Pcnt; k++) {
-						//std::cout << ", " << c->Pbl[k];
-						vPb.push_back(c->Pbl[k]);
-					}
-				}
-				else {
-					for (int k = 0; k < c->Pcnt; k++) {
-						//std::cout << ", " << c->Pbr[k];
-						vPb.push_back(c->Pbr[k]);
-					}
-				}
-				//std::cout << std::endl;
-			}
-#endif
-		}
-	} else {
-		double* Pb = NULL;
-		if (rl < 0) {
-			Pb = c->Pbl;
-		}
-		else {
-			Pb = c->Pbr;
-		}
-
-		// TODO: check starting ruling angle
-		int i_start = 1;
-
-		for (int i = i_start; i < 180; i+=IPP) {
-			Pb[pidx] = (double)i / 180.0 * M_PI;
-
-			idx_crossing = checkRulCross_recursive(ppm, c, pidx + 1, rl, cnt, vPb);
-			if ( idx_crossing > -1 ) {
-				continue;
-			}
-		}
-	}
-	return idx_crossing;
-}
-
-void ControlPanel::cb_btn_makelist(Fl_Widget* wgt, void* idx)
-{
-	ControlPanel* This = (ControlPanel*)idx;
-	papermodel* ppm = &(This->ppm);
-	crease* _c = &(ppm->crs[0]);
-	crease c; memcpy(&c, _c, sizeof(crease));
-	int idx_crossing = -1, lcnt=0, rcnt=0;
-
-	if (This->rb_listleft->value() != 0) {
-		This->vPbl.clear();
-		idx_crossing = checkRulCross_recursive(ppm, &c, 0, -1, &lcnt, This->vPbl);
-		std::cout << "vPbl->size = " << This->vPbl.size() << ", " << This->vPbl.size() / c.Pcnt << std::endl;
-	} else {
-		This->vPbr.clear();
-		idx_crossing = checkRulCross_recursive(ppm, &c, 0, 1, &rcnt, This->vPbr);
-		std::cout << "vPbr->size = " << This->vPbr.size() << ", " << This->vPbr.size() / c.Pcnt << std::endl;
-	}
-}
-
-void ControlPanel::idlerul(void* idx)
-{
-	ControlPanel* This = (ControlPanel*)idx;
-	papermodel* ppm = &(This->ppm);
-	crease* c = &(ppm->crs[0]);
-
-	if (This->rb_listleft->value() != 0) {
-
-		if (This->idlerul_idx >= This->vPbl.size() / c->Pcnt) {
-		This->idlerul_idx = 0;
-	}
-#if 0
-	std::cout << "idlerul_idx = " << This->idlerul_idx;
-	for (int i = 0; i < c->Pcnt; i++) {
-		std::cout << ", " << This->vPbl[This->idlerul_idx * c->Pcnt + i];
-	}
-	std::cout << std::endl;
-#endif
-	for (int i = 0; i < c->Pcnt; i++) {
-		c->Pbl[i] = This->vPbl[This->idlerul_idx * c->Pcnt + i];
-	}
-	crease::interpolate_spline_RulAngle(c->Pbl, c->Pcnt, c->betal, c->Xcnt, c->cotbl, c->cosbl, c->sinbl);
-	for (int j = c->Xsidx; j <= c->Xeidx; j++) {
-		c->rlx_cp[j] = c->cosbl[j] * c->Tx2d[j] - c->sinbl[j] * c->Ty2d[j];
-		c->rly_cp[j] = c->sinbl[j] * c->Tx2d[j] + c->cosbl[j] * c->Ty2d[j];
-		normalize_v2(&(c->rlx_cp[j]), &(c->rly_cp[j]));
-		c->rllen[j] = ppm->pw * ppm->ph;
-	}
-	} else {
-	if (This->idlerul_idx >= This->vPbr.size() / c->Pcnt) {
-		This->idlerul_idx = 0;
-	}
-#if 0
-	std::cout << "idlerul_idx = " << This->idlerul_idx;
-	for (int i = 0; i < c->Pcnt; i++) {
-		std::cout << ", " << This->vPbr[This->idlerul_idx * c->Pcnt + i];
-	}
-	std::cout << std::endl;
-#endif
-	for (int i = 0; i < c->Pcnt; i++) {
-		c->Pbr[i] = This->vPbr[This->idlerul_idx * c->Pcnt + i];
-	}
-	crease::interpolate_spline_RulAngle(c->Pbr, c->Pcnt, c->betar, c->Xcnt, c->cotbr, c->cosbr, c->sinbr);
-	for (int j = c->Xsidx; j <= c->Xeidx; j++) {
-		c->rrx_cp[j] = c->cosbr[j] * c->Tx2d[j] + c->sinbr[j] * c->Ty2d[j];
-		c->rry_cp[j] = -c->sinbr[j] * c->Tx2d[j] + c->cosbr[j] * c->Ty2d[j];
-		normalize_v2(&(c->rrx_cp[j]), &(c->rry_cp[j]));
-		c->rrlen[j] = ppm->pw * ppm->ph;
-	}
-	}
-	c->calcRLenP(ppm->psx, ppm->psy, ppm->pex, ppm->pey);		// ruling’·‚³C³i˜güA‹Èü‚Ü‚Å‚Ì’·‚³—Dæj
-
-	This->gwin_cp->redraw();
-	This->gwin_gr->redraw();
-	Sleep(1);
-
-	This->idlerul_idx++;
-}
-void ControlPanel::cb_btn_startrul(Fl_Widget* wgt, void* idx)
-{
-	ControlPanel* This = (ControlPanel*)idx;
-	//This->acnt = (int)This->vs_xmang1->value();
-	papermodel* ppm = &(This->ppm);
-	crease* c = &(ppm->crs[0]);
-
-	if (!This->flg_idlerul_active) {
-		if (This->rb_listleft->value() != 0 && This->vPbl.size() == 0) {
-			return;
-		}
-		if (This->rb_listright->value() != 0 && This->vPbr.size() == 0) {
-			return;
-		}
-		This->flg_idlerul_active = true;
-		Fl::add_idle(ControlPanel::idlerul, This);
-	}
-}
-
-void ControlPanel::cb_btn_stoprul(Fl_Widget* wgt, void* idx)
-{
-	ControlPanel* This = (ControlPanel*)idx;
-	if (This->flg_idlerul_active) {
-		This->flg_idlerul_active = false;
-		Fl::remove_idle(ControlPanel::idlerul, This);
-	}
-}
-
-// ------------------------- SAMPLE TARGET POINTS --------------------------------------
-
-
-void ControlPanel::cb_btn_listtgt(Fl_Widget* wgt, void* idx)
-{
-	ControlPanel* This = (ControlPanel*)idx;
-	papermodel* ppm = &(This->ppm);
-	crease* c = &(ppm->crs[0]);
-	crease c0; memcpy(&c0, c, sizeof(crease));
-
-	srand((unsigned int)time(NULL));
-	int targetcnt = 100;
-
-	This->vPbl.clear();
-	This->vPbr.clear();
-
-	// random rulings left -> This->vPbl
-	for (int i = 0; i < 1000000; i++)
-	{
-		for (int j = 0; j < c->Pcnt; j++) {
-			c->Pbl[j] = ((double)rand() / (double)RAND_MAX) * M_PI; // [0, PI]
-		}
-		crease::interpolate_spline_RulAngle(c->Pbl, c->Pcnt, c->betal, c->Xcnt, c->cotbl, c->cosbl, c->sinbl);
-		for (int j = c->Xsidx; j <= c->Xeidx; j++) {
-			c->rlx_cp[j] = c->cosbl[j] * c->Tx2d[j] - c->sinbl[j] * c->Ty2d[j];
-			c->rly_cp[j] = c->sinbl[j] * c->Tx2d[j] + c->cosbl[j] * c->Ty2d[j];
-			normalize_v2(&(c->rlx_cp[j]), &(c->rly_cp[j]));
-			c->rllen[j] = ppm->pw * ppm->ph;
-		}
-		c->calcRLenP(ppm->psx, ppm->psy, ppm->pex, ppm->pey);		// ruling’·‚³C³i˜güA‹Èü‚Ü‚Å‚Ì’·‚³—Dæj
-		int idx_crossing = c->checkRulingCross(-1); // -1:left, 1:right
-		if (idx_crossing > -1) {
-			continue;
-		}
-		for (int k = 0; k < c->Pcnt; k++) {
-			This->vPbl.push_back(c->Pbl[k]);
-		}
-		if (This->vPbl.size() >= targetcnt * c->Pcnt) {
-			break;
-		}
-	}
-
-	// random rulings right -> This->vPbr
-	for (int i = 0; i < 1000000; i++)
-	{
-		for (int j = 0; j < c->Pcnt; j++) {
-			c->Pbr[j] = ((double)rand() / (double)RAND_MAX) * M_PI; // [0, PI]
-		}
-		crease::interpolate_spline_RulAngle(c->Pbr, c->Pcnt, c->betar, c->Xcnt, c->cotbr, c->cosbr, c->sinbr);
-		for (int j = c->Xsidx; j <= c->Xeidx; j++) {
-			c->rrx_cp[j] = c->cosbr[j] * c->Tx2d[j] + c->sinbr[j] * c->Ty2d[j];
-			c->rry_cp[j] = -c->sinbr[j] * c->Tx2d[j] + c->cosbr[j] * c->Ty2d[j];
-			normalize_v2(&(c->rrx_cp[j]), &(c->rry_cp[j]));
-			c->rrlen[j] = ppm->pw * ppm->ph;
-		}
-		c->calcRLenP(ppm->psx, ppm->psy, ppm->pex, ppm->pey);		// ruling’·‚³C³i˜güA‹Èü‚Ü‚Å‚Ì’·‚³—Dæj
-		int idx_crossing = c->checkRulingCross(1); // -1:left, 1:right
-		if (idx_crossing > -1) {
-			continue;
-		}
-		for (int k = 0; k < c->Pcnt; k++) {
-			This->vPbr.push_back(c->Pbr[k]);
-		}
-		if (This->vPbr.size() >= targetcnt * c->Pcnt) {
-			break;
-		}
-	}
-
-	This->listtgcnt = 0;
-	int cntl = (This->vPbl.size() / c->Pcnt);
-	int cntr = (This->vPbr.size() / c->Pcnt);
-	int targetcnt1 = cntl < cntr ? cntl : cntr;
-
-	// This->vPbl + This->vPbl + random folding angle -> This->tgt*
-	for (int j = 0; j < targetcnt1; j++) {
-
-		for (int i = 0; i < c->Pcnt; i++) {
-			c->Pbl[i] = This->vPbl[j * c->Pcnt + i];
-		}
-		for (int i = 0; i < c->Pcnt; i++) {
-			c->Pbr[i] = This->vPbr[j * c->Pcnt + i];
-		}
-		bool flg = false;
-		for (int i = 0; i < 1000000; i++)
-		{
-			double mang = ((double)rand() / (double)RAND_MAX - 0.5) * M_PI; // [-PI/2, PI/2]
-			ppm->re_sidx = 0;
-			ppm->re_eidx = c->Xcnt;
-			int ret = c->calcR_TA(1/*flg_interpolate*/, &ppm->rp, ppm->re_sidx, ppm->re_eidx, mang, 0);
-			if (ret == 0) {
-				flg = true;
-				break;
-			}
-		}
-		if (flg) {
-			This->tgPcnt[This->listtgcnt] = c->Pcnt;
-			memcpy(This->tgtPbl[This->listtgcnt], c->Pbl, sizeof(double) * MAX_CPCNT);
-			memcpy(This->tgtPbr[This->listtgcnt], c->Pbr, sizeof(double) * MAX_CPCNT);
-			memcpy(This->tgtPa[This->listtgcnt], c->Pa, sizeof(double) * MAX_CPCNT);
-
-			ppm->set_postproc_type(PPTYPE_PRICURVE);
-			ppm->postproc();
-			ppm->set_postproc_type(PPTYPE_UNDEF);
-
-			This->tgcnt[This->listtgcnt] = ppm->tgcnt;
-			memcpy(This->tgx[This->listtgcnt], ppm->ogx, sizeof(double) * MAX_TGT_CNT);
-			memcpy(This->tgy[This->listtgcnt], ppm->ogy, sizeof(double) * MAX_TGT_CNT);
-			memcpy(This->tgz[This->listtgcnt], ppm->ogz, sizeof(double) * MAX_TGT_CNT);
-			memcpy(This->ogx_cp[This->listtgcnt], ppm->ogx_cp, sizeof(double) * MAX_TGT_CNT);
-			memcpy(This->ogy_cp[This->listtgcnt], ppm->ogy_cp, sizeof(double) * MAX_TGT_CNT);
-
-			This->listtgcnt++;
-			std::cout << "listtgcnt=" << This->listtgcnt << std::endl;
-
-			if (This->listtgcnt >= MAX_TGTLST) {
-				break;
-			}
-		}
-	}
-#if 1
-	// file output
-	for (int i = 0; i < This->listtgcnt; i++) {
-		std::stringstream ss; ss << "./output/target" << std::setw(3) << std::setfill('0') << i << ".txt";
-		std::ofstream ofs( ss.str() );
-		for (int j = 0; j < This->tgcnt[i]; j++) {
-			ofs << This->tgx[i][j] << "\t" << This->tgy[i][j] << "\t" << This->tgz[i][j]
-				<< "\t" << This->ogx_cp[i][j] << "\t" << This->ogy_cp[i][j] << std::endl;
-		}
-		ofs.close();
-		ss.str(""); ss << "./output/rulings" << std::setw(3) << std::setfill('0') << i << ".txt";
-		ofs.open(ss.str());
-		for (int j = 0; j < This->tgPcnt[i]; j++) { ofs << This->tgtPbl[i][j] << "\t"; }
-		ofs << std::endl;
-		for (int j = 0; j < This->tgPcnt[i]; j++) { ofs << This->tgtPbr[i][j] << "\t"; }
-		ofs << std::endl;
-		ofs.close();
-	}
-#endif
-	memcpy(c, &c0, sizeof(crease));
-	ppm->set_postproc_type(PPTYPE_PRICURVE);
-	ppm->postproc();
-	ppm->set_postproc_type(PPTYPE_UNDEF);
-}
-
-void ControlPanel::idletgt(void* idx)
-{
-	ControlPanel* This = (ControlPanel*)idx;
-	papermodel* ppm = &(This->ppm);
-	crease* c = &(ppm->crs[0]);
-
-	if (This->listtgcnt==0) {
-		return;
-	}
-
-	if (This->idletgt_idx >= This->listtgcnt) {
-		This->idletgt_idx = 0;
-	}
-
-	ppm->tgcnt = This->tgcnt[This->idletgt_idx];
-	memcpy(ppm->tgx, This->tgx[This->idletgt_idx], sizeof(double)* MAX_TGT_CNT);
-	memcpy(ppm->tgy, This->tgy[This->idletgt_idx], sizeof(double) * MAX_TGT_CNT);
-	memcpy(ppm->tgz, This->tgz[This->idletgt_idx], sizeof(double) * MAX_TGT_CNT);
-	memcpy(ppm->ogx_cp, This->ogx_cp[This->idletgt_idx], sizeof(double) * MAX_TGT_CNT);
-	memcpy(ppm->ogy_cp, This->ogy_cp[This->idletgt_idx], sizeof(double) * MAX_TGT_CNT);
-	ppm->getTgt2D3D();
-#if 0
-	for (int i = 0; i < ppm->tgcnt; i++) {
-		std::cout << i << ":" << ppm->tgx[i] << "," << ppm->tgy[i] << "," << ppm->tgz[i]
-			<< "," << ppm->ogx[i] << "," << ppm->ogy[i] << "," << ppm->ogz[i]
-			<< "," << ppm->ogx_cp[i] << "," << ppm->ogy_cp[i] << std::endl;
-	}
-	std::cout << std::endl;
-#endif
-	This->btn_optfold2->do_callback();
-
-	This->gwin->redraw();
-	This->gwin_cp->redraw();
-	This->gwin_gr->redraw();
-	Sleep(1);
-
-	This->idletgt_idx++;
-}
-
-void ControlPanel::cb_btn_starttgt(Fl_Widget* wgt, void* idx)
-{
-	ControlPanel* This = (ControlPanel*)idx;
-
-	if (This->listtgcnt == 0) {
-		return;
-	}
-
-	if (!This->flg_idletgt_active) {
-		This->flg_idletgt_active = true;
-		Fl::add_idle(ControlPanel::idletgt, This);
-	}
-}
-
-void ControlPanel::cb_btn_stoptgt(Fl_Widget* wgt, void* idx)
-{
-	ControlPanel* This = (ControlPanel*)idx;
-	if (This->flg_idletgt_active) {
-		This->flg_idletgt_active = false;
-		Fl::remove_idle(ControlPanel::idletgt, This);
-	}
-}
-
 #define MAX_DB_SIZE 100
 
 int set_dPb(double (&dPb)[MAX_DB_SIZE][MAX_CPCNT], int cpcnt)
@@ -735,11 +323,11 @@ void ControlPanel::cb_btn_randrul(Fl_Widget* wgt, void* idx)
 		c->calcRLenP(ppm->psx, ppm->psy, ppm->pex, ppm->pey);
 
 		// check crossing
-		int result = ppm->checkRulCross();
+		int result = c->checkRulingCross();
 		if (result) { continue; }
-		result = ppm->checkRulAngle();
+		result = c->checkRulingAngle();
 		if (result) { continue; }
-		result = ppm->checkRulCreaseCross();
+		result = c->checkRulCreaseCross();
 		if (result) { continue; }
 
 		flg_rulOK = true;
@@ -915,11 +503,11 @@ void ControlPanel::cb_btn_randrul3(Fl_Widget* wgt, void* idx)
 			c->calcRLenP(ppm->psx, ppm->psy, ppm->pex, ppm->pey);
 
 			// check crossing
-			int result = ppm->checkRulCross();
+			int result = c->checkRulingCross();
 			if (result) { continue; }
-			result = ppm->checkRulAngle();
+			result =c->checkRulingAngle();
 			if (result) { continue; }
-			result = ppm->checkRulCreaseCross();
+			result = c->checkRulCreaseCross();
 			if (result) { continue; }
 
 			flg_rulOK = true;
@@ -1115,12 +703,12 @@ void ControlPanel::cb_btn_opttrfold(Fl_Widget* wgt, void* idx)
 		ppm->set_postproc_type(PPTYPE_UNDEF);
 
 		// check crossing
-		int result = ppm->checkRulCross();
-		if (result) { /*std::cout << "i = " << i << ", ppm->checkRulCross() NG" << std::endl;*/ continue; }
-		result = ppm->checkRulAngle();
-		if (result) { /*std::cout << "i = " << i << ", ppm->checkRulAngle() NG" << std::endl;*/ continue; }
-		result = ppm->checkRulCreaseCross();
-		if (result) { /*std::cout << "i = " << i << ", ppm->checkRulCreaseCross() NG" << std::endl;*/ continue; }
+		int result = c->checkRulingCross();
+		if (result) { /*std::cout << "i = " << i << ", c->checkRulingCross() NG" << std::endl;*/ continue; }
+		result = c->checkRulingAngle();
+		if (result) { /*std::cout << "i = " << i << ", c->checkRulingAngle() NG" << std::endl;*/ continue; }
+		result = c->checkRulCreaseCross();
+		if (result) { /*std::cout << "i = " << i << ", c->checkRulCreaseCross() NG" << std::endl;*/ continue; }
 
 		This->btn_optmat->do_callback();
 		This->optlog_err[This->optlog_itr] = ppm->avetgap;

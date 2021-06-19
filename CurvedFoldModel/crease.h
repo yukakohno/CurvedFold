@@ -161,8 +161,16 @@ public:
 
 	int check180( double *errdata, int row, int col );
 	int checkquadplane( double *errdata, int row, int col );
+
 	int checkRulingCross( double *errdata, int row, int col );
-	int checkRulingCross( int rl ); // -1:left, 1:right
+	int checkRulingCross();
+	int checkRulingCross(int rl); // -1:left, 1:right
+	int checkRulingCross(double& _area);
+	int checkRulingCross(int rl, double& _area);
+	static double calcRulingCross(double* xx, double* xy, double* rx, double* ry, double* rlen, int cvcnt,
+		double* errdata, int row, int col);
+	int checkRulingAngle();
+	int checkRulCreaseCross();
 
 	// ------------------------- proseq -------------------------------------------
 

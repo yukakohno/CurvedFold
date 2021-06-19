@@ -229,10 +229,10 @@ private:
 
 	static void cb_btn_optfold(Fl_Widget* wgt, void* idx);
 	static void cb_btn_optfold2(Fl_Widget* wgt, void* idx);
-	static void cb_btn_opttr(Fl_Widget* wgt, void* idx);
-	static void cb_btn_optrul(Fl_Widget* wgt, void* idx);
-	static void cb_btn_optcp(Fl_Widget* wgt, void* idx);
-	static void cb_btn_optrulfold(Fl_Widget* wgt, void* idx);
+	//static void cb_btn_opttr(Fl_Widget* wgt, void* idx);
+	//static void cb_btn_optrul(Fl_Widget* wgt, void* idx);
+	//static void cb_btn_optcp(Fl_Widget* wgt, void* idx);
+	//static void cb_btn_optrulfold(Fl_Widget* wgt, void* idx);
 	static void cb_btn_randrul(Fl_Widget* wgt, void* idx);
 	static void cb_btn_randrul2(Fl_Widget* wgt, void* idx);
 	static void cb_btn_randrul3(Fl_Widget* wgt, void* idx);
@@ -253,9 +253,67 @@ private:
 	//static void cb_vs_tgtxyz(Fl_Widget* wgt, void* idx);
 	//static void cb_vs_tgtn(Fl_Widget* wgt, void* idx);
 
-	// ------------------------- LIST RULINGS --------------------------------------
+	// ------------------------- PARAM LIST --------------------------------------
+
 public:
-	Fl_Button* btn_makelist;
+	Fl_Button* btn_makePrmList;
+	Fl_Button* btn_startprm;
+	Fl_Button* btn_stopprm;
+
+private:
+#define PRMAX 100
+	int pidx, pcnt;
+	double prm[PRMAX][20];
+	static void cb_btn_makePrmList(Fl_Widget* wgt, void* idx);
+
+	bool flg_idle_activeprm;
+	static void cb_btn_startprm(Fl_Widget* wgt, void* idx);
+	static void cb_btn_stopprm(Fl_Widget* wgt, void* idx);
+	static void idleprm(void* idx);
+
+	// ------------------------- PARAM LIST2 --------------------------------------
+
+public:
+	Fl_Button* btn_makePrmList2;
+	Fl_Button* btn_startprm2;
+	Fl_Button* btn_stopprm2;
+
+private:
+#define PRMAX2 100
+	int pidx2, pcnt2;
+	double prm2[PRMAX2][30];
+	static void cb_btn_makePrmList2(Fl_Widget* wgt, void* idx);
+	bool flg_idle_activeprm2;
+	static void cb_btn_startprm2(Fl_Widget* wgt, void* idx);
+	static void cb_btn_stopprm2(Fl_Widget* wgt, void* idx);
+	static void idleprm2(void* idx);
+
+	// ------------------------- SAMPLE TARGET POINTS --------------------------------------
+public:
+	Fl_Button* btn_listtgt;
+	Fl_Button* btn_listtgt2;
+
+private:
+#define MAX_TGTLST 100
+	int listtgcnt, tgcnt[MAX_TGTLST];
+	double tgx[MAX_TGTLST][MAX_TGT_CNT], tgy[MAX_TGTLST][MAX_TGT_CNT], tgz[MAX_TGTLST][MAX_TGT_CNT];
+	double ogx_cp[MAX_TGTLST][MAX_TGT_CNT], ogy_cp[MAX_TGTLST][MAX_TGT_CNT];
+	int tgPcnt[MAX_TGTLST];
+
+	static void cb_btn_listtgt(Fl_Widget* wgt, void* idx);
+	static void cb_btn_listtgt2(Fl_Widget* wgt, void* idx);
+
+	// ------------------------- BATCH PROC --------------------------------------
+public:
+	Fl_Button* btn_batchproc;
+
+private:
+	static void cb_btn_batchproc(Fl_Widget* wgt, void* idx);
+
+#if 0
+	// ------------------------- RULINGS LIST --------------------------------------
+public:
+	Fl_Button* btn_makeRulList;
 	Fl_Button* btn_startrul;
 	Fl_Button* btn_stoprul;
 
@@ -264,40 +322,14 @@ public:
 	Fl_Round_Button* rb_listright;
 
 private:
-	std::vector<double> vPbl;
-	std::vector<double> vPbr;
 	bool flg_idlerul_active;
 	int idlerul_idx;
 
 	static void idlerul(void* idx);
-	static void cb_btn_makelist(Fl_Widget* wgt, void* idx);
+	static void cb_btn_makeRulList(Fl_Widget* wgt, void* idx);
 	static void cb_btn_startrul(Fl_Widget* wgt, void* idx);
 	static void cb_btn_stoprul(Fl_Widget* wgt, void* idx);
-
-	// ------------------------- SAMPLE TARGET POINTS --------------------------------------
-public:
-	Fl_Button* btn_listtgt;
-	Fl_Button* btn_starttgt;
-	Fl_Button* btn_stoptgt;
-
-private:
-#define MAX_TGTLST 100
-
-	bool flg_idletgt_active;
-	int idletgt_idx;
-	int listtgcnt, tgcnt[MAX_TGTLST];
-	double tgx[MAX_TGTLST][MAX_TGT_CNT], tgy[MAX_TGTLST][MAX_TGT_CNT], tgz[MAX_TGTLST][MAX_TGT_CNT];
-	double ogx_cp[MAX_TGTLST][MAX_TGT_CNT], ogy_cp[MAX_TGTLST][MAX_TGT_CNT];
-	int tgPcnt[MAX_TGTLST];
-	double tgtPbl[MAX_TGTLST][MAX_CPCNT];
-	double tgtPbr[MAX_TGTLST][MAX_CPCNT];
-	double tgtPa[MAX_TGTLST][MAX_CPCNT];
-
-	static void idletgt(void* idx);
-	static void cb_btn_listtgt(Fl_Widget* wgt, void* idx);
-	static void cb_btn_starttgt(Fl_Widget* wgt, void* idx);
-	static void cb_btn_stoptgt(Fl_Widget* wgt, void* idx);
-
+#endif
 	// ------------------------- HISTORY --------------------------------------
 public:
 	Fl_Check_Button* cb_history;

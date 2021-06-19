@@ -104,108 +104,206 @@ int crease::checkquadplane( double *errdata, int row, int col )
 	return ret;
 }
 
-// return index of rulings crossing, -1 if no crossing
-int crease::checkRulingCross( int rl ) // -1:left, 1:right
+double crease::calcRulingCross(double* xx, double* xy, double* rx, double* ry, double* rlen, int cvcnt,
+	double* errdata=NULL, int row=0, int col=0)
 {
-	double ex[MAX_SPCNT], ey[MAX_SPCNT]; // end point
+	double ex[MAX_SPCNT], ey[MAX_SPCNT], diff = 0.0;
 
-	if ( rl<0 ) {
-		for (int i = Xsidx; i <= Xeidx; i++) {
-			ex[i] = Xx2d[i] + rllen[i] * rlx_cp[i];
-			ey[i] = Xy2d[i] + rllen[i] * rly_cp[i];
-		}
-	}
-	else {
-		for (int i = Xsidx; i <= Xeidx; i++) {
-			ex[i] = Xx2d[i] + rrlen[i] * rrx_cp[i];
-			ey[i] = Xy2d[i] + rrlen[i] * rry_cp[i];
-		}
+	for (int i = 0; i < cvcnt; i++) {
+		ex[i] = xx[i] + rlen[i] * rx[i];
+		ey[i] = xy[i] + rlen[i] * ry[i];
 	}
 #if 0
 	{
-		std::ofstream fout("./output/debug_RulingEnds.csv");
-		fout << "x,y" << std::endl;
-		for (int i = Xsidx; i <= Xeidx; i++) {
-			fout << Xx2d[i] << "," << Xy2d[i] << std::endl;
-			fout << ex[i] << "," << ey[i] << std::endl;
-			fout << std::endl;
+		FILE* fp = fopen("output/calcRulCross.csv", "w");
+		if (fp) {
+			for (int i = 4; i < cvcnt - 4; i++) {
+				fprintf(fp, "%f,%f\n%f,%f\n\n", xx[i], xy[i], ex[i], ey[i]);
+			}
+			fclose(fp);
 		}
 	}
 #endif
-	for (int li = Xsidx, i = Xsidx + 1; i <= Xeidx; i++) {
-		double ix, iy, l0, l1;
-		if (rllen[i] == 0.0) {
+	for (int li = 0, i = 1; i < cvcnt; i++) {
+		double ix, iy, l0, l1, l0_, l1_, a, b, c, d, area;
+		if (rlen[i] == 0.0) {
 			continue;
 		}
-		int ret = intersectionOfLine(Xx2d[li], Xy2d[li], ex[li], ey[li], Xx2d[i], Xy2d[i], ex[i], ey[i], &ix, &iy, &l0, &l1);
-		if (ret==0) { // -1: no intersection, 0: intersection
-			return i;
+		int ret = intersectionOfLine(xx[li], xy[li], ex[li], ey[li], xx[i], xy[i], ex[i], ey[i], &ix, &iy, &l0, &l1);
+		if (ret < 0) {
+			li = i;
+			continue;
+		}
+		// サラスの公式 O(0,0),A(a,b),B(c,d) -> area of OAB = abs(a*d-b*c)*0.5
+		l0_ = rlen[li] - l0;
+		l1_ = rlen[i] - l1;
+		a = l0_ * rx[li];
+		b = l0_ * ry[li];
+		c = l1_ * rx[i];
+		d = l1_ * ry[i];
+		area = sqrt(fabs(a * d - b * c)) + 0.01;
+		diff += area;
+		if (errdata) {
+			errdata[li * col] = fabs(a * d - b * c) * 0.5;
 		}
 		li = i;
 	}
-	return -1;
+end:
+	//return diff*0.1 / (double)cvcnt;
+	return diff / (double)cvcnt;
+}
+
+int crease::checkRulingCross()
+{
+	double area = 0.0;
+	return crease::checkRulingCross(area);
+}
+
+int crease::checkRulingCross(double& area)
+{
+	double area_l = calcRulingCross(&(Xx2d[Xsidx]), &(Xy2d[Xsidx]), &(rlx_cp[Xsidx]), &(rly_cp[Xsidx]), &(rllen[Xsidx]), Xeidx - Xsidx + 1);
+	double area_r = calcRulingCross(&(Xx2d[Xsidx]), &(Xy2d[Xsidx]), &(rrx_cp[Xsidx]), &(rry_cp[Xsidx]), &(rrlen[Xsidx]), Xeidx - Xsidx + 1);
+	area = area_l + area_r;
+	if (area > 0.0) {
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
+int crease::checkRulingCross(int rl, double& area)
+{
+	if (rl < 0) {
+		area = calcRulingCross(&(Xx2d[Xsidx]), &(Xy2d[Xsidx]), &(rlx_cp[Xsidx]), &(rly_cp[Xsidx]), &(rllen[Xsidx]), Xeidx - Xsidx + 1);
+	}
+	else {
+		area = calcRulingCross(&(Xx2d[Xsidx]), &(Xy2d[Xsidx]), &(rrx_cp[Xsidx]), &(rry_cp[Xsidx]), &(rrlen[Xsidx]), Xeidx - Xsidx + 1);
+	}
+	if (area > 0.0) {
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
+// return index of rulings crossing, -1 if no crossing
+int crease::checkRulingCross( int rl ) // -1:left, 1:right
+{
+	double area = 0.0;
+	if (rl < 0) {
+		area = calcRulingCross(&(Xx2d[Xsidx]), &(Xy2d[Xsidx]), &(rlx_cp[Xsidx]), &(rly_cp[Xsidx]), &(rllen[Xsidx]), Xeidx - Xsidx + 1);
+	}
+	else {
+		area = calcRulingCross(&(Xx2d[Xsidx]), &(Xy2d[Xsidx]), &(rrx_cp[Xsidx]), &(rry_cp[Xsidx]), &(rrlen[Xsidx]), Xeidx - Xsidx + 1);
+	}
+	if (area > 0.0) {
+		return 1;
+	}
+	else {
+		return 0;
+	}
 }
 
 int crease::checkRulingCross( double *errdata, int row, int col )
 {
-	int ret=0, li=0;
-	double lex[MAX_SPCNT], ley[MAX_SPCNT], rex[MAX_SPCNT], rey[MAX_SPCNT];
-	if (errdata) {
-		memset(errdata, 0, sizeof(double) * row * col);
+	double area_l = calcRulingCross(&(Xx2d[Xsidx]), &(Xy2d[Xsidx]), &(rlx_cp[Xsidx]), &(rly_cp[Xsidx]), &(rllen[Xsidx]), Xeidx - Xsidx + 1,
+		errdata, row, col);
+	double area_r = calcRulingCross(&(Xx2d[Xsidx]), &(Xy2d[Xsidx]), &(rrx_cp[Xsidx]), &(rry_cp[Xsidx]), &(rrlen[Xsidx]), Xeidx - Xsidx + 1,
+		&(errdata[1]), row, col);
+	if (area_l + area_r > 0.0) {
+		return 1;
 	}
-	for( int i=Xsidx;  i<=Xeidx; i++ ){
-		lex[i] = Xx2d[i]+rllen[i]*rlx_cp[i];
-		ley[i] = Xy2d[i]+rllen[i]*rly_cp[i];
-		rex[i] = Xx2d[i]+rrlen[i]*rrx_cp[i];
-		rey[i] = Xy2d[i]+rrlen[i]*rry_cp[i];
+	else {
+		return 0;
+	}
+}
+
+int crease::checkRulingAngle()
+{
+	int ret = 0;
+
+	for (int i = Xsidx; i <= Xeidx; i++) {
+		double dx0 = 0, dy0 = 0, dx1 = 0, dy1 = 0;
+		if (Xsidx < i) {
+			dx0 = Xx2d[i] - Xx2d[i - 1];
+			dy0 = Xy2d[i] - Xy2d[i - 1];
+		}
+		if (i < Xeidx) {
+			dx1 = Xx2d[i + 1] - Xx2d[i];
+			dy1 = Xy2d[i + 1] - Xy2d[i];
+		}
+		double ip = rlx_cp[i] * Tx2d[i] + rly_cp[i] * Ty2d[i];
+		double rl = 0;
+		if (ip > 0.0 && i < Xeidx) {
+			rl = rlx_cp[i] * dy1 - rly_cp[i] * dx1;
+		}
+		else if (ip < 0.0 && Xsidx < i) {
+			rl = rlx_cp[i] * dy0 - rly_cp[i] * dx0;
+		}
+		else {
+			rl = rlx_cp[i] * Ty2d[i] - rly_cp[i] * Tx2d[i];
+		}
+		if (rl >= 0.0) {
+			ret = -1;
+			break;
+		}
+
+		ip = rrx_cp[i] * Tx2d[i] + rry_cp[i] * Ty2d[i];
+		if (ip > 0.0 && i < Xeidx) {
+			rl = rrx_cp[i] * dy1 - rry_cp[i] * dx1;
+		}
+		else if (ip < 0.0 && Xsidx < i) {
+			rl = rrx_cp[i] * dy0 - rry_cp[i] * dx0;
+		}
+		else {
+			rl = rrx_cp[i] * Ty2d[i - 1] - rry_cp[i] * Tx2d[i - 1];
+		}
+		if (rl < 0.0) {
+			ret = 1;
+			break;
+		}
 	}
 
-	for( int li=Xsidx, i=Xsidx+1; i<=Xeidx; i++ ){
-		double ix,iy, l0,l1, l0_,l1_, a,b,c,d, area;
-		if( rllen[i]==0.0 ){
-			continue;
+	return ret;
+}
+
+int crease::checkRulCreaseCross()
+{
+	int ret = 0;
+
+	for (int i = Xsidx; i <= Xeidx; i++) {
+		double lex, ley, rex, rey;
+		lex = Xx2d[i] + rllen[i] * rlx_cp[i];
+		ley = Xy2d[i] + rllen[i] * rly_cp[i];
+		rex = Xx2d[i] + rrlen[i] * rrx_cp[i];
+		rey = Xy2d[i] + rrlen[i] * rry_cp[i];
+		for (int j = Xsidx; j < Xeidx; j++) {
+			double ix, iy, l0, l1;
+			int res = intersectionOfLine(Xx2d[i], Xy2d[i], lex, ley,
+				Xx2d[j], Xy2d[j], Xx2d[j + 1], Xy2d[j + 1], &ix, &iy, &l0, &l1);
+			if (res == 0 && l0 > 0.0 && l1 > 0.0) {
+				ret = -1;
+				break;
+			}
 		}
-		int ret = intersectionOfLine( Xx2d[li],Xy2d[li],lex[li],ley[li], Xx2d[i],Xy2d[i],lex[i],ley[i], &ix, &iy, &l0, &l1 );
-		if( ret<0 ){
-			li=i;
-			continue;
+		if (ret < 0) {
+			break;
 		}
-		// サラスの公式 O(0,0),A(a,b),B(c,d) -> area of OAB = abs(a*d-b*c)*0.5
-		l0_ = rllen[li]-l0;
-		l1_ = rllen[i]-l1;
-		a = l0_*rlx_cp[li];
-		b = l0_*rly_cp[li];
-		c = l1_*rlx_cp[i];
-		d = l1_*rly_cp[i];
-		if (errdata) {
-			errdata[li * col] = fabs(a * d - b * c) * 0.5;
+		for (int j = Xsidx; j < Xeidx; j++) {
+			double ix, iy, l0, l1;
+			int res = intersectionOfLine(Xx2d[i], Xy2d[i], rex, rey,
+				Xx2d[j], Xy2d[j], Xx2d[j + 1], Xy2d[j + 1], &ix, &iy, &l0, &l1);
+			if (res == 0 && l0 > 0.0 && l1 > 0.0) {
+				ret = -1;
+				break;
+			}
 		}
-		li=i;
+		if (ret < 0) {
+			break;
+		}
 	}
 
-	for( int li=Xsidx, i=Xsidx+1; i<=Xeidx; i++ ){
-		double ix,iy, l0,l1, l0_,l1_, a,b,c,d, area;
-		if( rrlen[i]==0.0 ){
-			continue;
-		}
-		int ret = intersectionOfLine( Xx2d[li],Xy2d[li],rex[li],rey[li], Xx2d[i],Xy2d[i],rex[i],rey[i], &ix, &iy, &l0, &l1 );
-		if( ret<0 ){
-			li=i;
-			continue;
-		}
-		// サラスの公式 O(0,0),A(a,b),B(c,d) -> area of OAB = abs(a*d-b*c)*0.5
-		l0_ = rrlen[li]-l0;
-		l1_ = rrlen[i]-l1;
-		a = l0_*rrx_cp[li];
-		b = l0_*rry_cp[li];
-		c = l1_*rrx_cp[i];
-		d = l1_*rry_cp[i];
-		if (errdata) {
-			errdata[li * col + 1] = fabs(a * d - b * c) * 0.5;
-		}
-		li=i;
-	}
-
-end:
 	return ret;
 }

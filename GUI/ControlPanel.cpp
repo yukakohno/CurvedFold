@@ -34,13 +34,13 @@ ControlPanel::ControlPanel(int X, int Y, int W, int H, const char *L, GraphWindo
 	fcnt = acnt = 0;
 	acnt_inc = true;
 	flg_idle_active = false;
-	flg_idlerul_active = false;
-	flg_idletgt_active = false;
-	idlerul_idx = 0;
-	idletgt_idx = 0;
+	flg_idle_activeprm = false;
+	flg_idle_activeprm2 = false;
 	listtgcnt = 0;
 
 	hist_head = hist_size = 0;
+
+	pidx = pcnt = 0;
 
 	mode_modtgt = false;
 
@@ -999,77 +999,135 @@ void ControlPanel::createPanel()
 		btn_optcp->callback(cb_btn_optcp, (void*)this);
 		btn_optcp->deactivate();
 		g->add(btn_optcp);
-
-		wgt_x = 10;
-		wgt_y += 25;
-
-		// ------------------------- LIST RULINGS -------------------------------------------
-
-		Fl_Box* bx_ListRul = new Fl_Box(0, wgt_y, g->w(), 20, "--- LIST RULINGS ---");	wgt_y += 20;
-
-		btn_startrul = new Fl_Button(wgt_x, wgt_y, 60, 20, "start");	wgt_x += 70;
-		btn_startrul->callback(cb_btn_startrul, (void*)this);
-		g->add(btn_startrul);
-
-		btn_stoprul = new Fl_Button(wgt_x, wgt_y, 60, 20, "stop");	wgt_x += 70;
-		btn_stoprul->callback(cb_btn_stoprul, (void*)this);
-		g->add(btn_stoprul);
-
-		btn_makelist = new Fl_Button(wgt_x, wgt_y, 40, 20, "list");
-		btn_makelist->callback(cb_btn_makelist, (void*)this);
-		g->add(btn_makelist);
-
-		wgt_x = 10;
-		wgt_y += 25;
-
-		grp_list = new Fl_Group(0, wgt_y, g->w(), y_space);
-		rb_listleft = new Fl_Round_Button(wgt_x, wgt_y, 50, y_space, "left");
-		rb_listright = new Fl_Round_Button(wgt_x + 50, wgt_y, 50, y_space, "right");
-		rb_listleft->type(FL_RADIO_BUTTON);
-		rb_listright->type(FL_RADIO_BUTTON);
-		rb_listleft->setonly();
-		grp_list->add(rb_listleft);
-		grp_list->add(rb_listright);
-		grp_list->end();
-		g->add(grp_list);
-
-		wgt_y += 25;
-
-		// ------------------------- SAMPLE TARGET POINTS --------------------------------------
-
-		Fl_Box* bx_ListTgt = new Fl_Box(0, wgt_y, g->w(), 20, "--- SAMPLE TARGET POINTS ---");	wgt_y += 20;
-
-		btn_starttgt = new Fl_Button(wgt_x, wgt_y, 60, 20, "start");	wgt_x += 70;
-		btn_starttgt->callback(cb_btn_starttgt, (void*)this);
-		g->add(btn_starttgt);
-
-		btn_stoptgt = new Fl_Button(wgt_x, wgt_y, 60, 20, "stop");	wgt_x += 70;
-		btn_stoptgt->callback(cb_btn_stoptgt, (void*)this);
-		g->add(btn_stoptgt);
-
-		btn_listtgt = new Fl_Button(wgt_x, wgt_y, 40, 20, "list");
-		btn_listtgt->callback(cb_btn_listtgt, (void*)this);
-		g->add(btn_listtgt);
 #endif
 		wgt_x = 10;
 		wgt_y += 25;
 
-		// ------------------------- HISTORY -------------------------------------------
+			// ------------------------- HISTORY -------------------------------------------
 
-		Fl_Box* bx_Hist = new Fl_Box(0, wgt_y, g->w(), 20, "--- HISTORY ---");	wgt_y += 20;
+			Fl_Box* bx_Hist = new Fl_Box(0, wgt_y, g->w(), 20, "--- HISTORY ---");	wgt_y += 20;
 
-		cb_history = new Fl_Check_Button(wgt_x, wgt_y, 20, 20, "history");
-		cb_history->value(0);
-		g->add(cb_history);
+			cb_history = new Fl_Check_Button(wgt_x, wgt_y, 20, 20, "history");
+			cb_history->value(0);
+			g->add(cb_history);
 
+			wgt_y += 25;
+
+			vs_history = new Fl_Value_Slider(wgt_x, wgt_y, 180, 20);
+			vs_history->bounds(0, MAX_HISTORY - 1);	vs_history->step(1);	vs_history->value(0);
+			vs_history->align(FL_ALIGN_LEFT);
+			vs_history->type(FL_HORIZONTAL);
+			vs_history->callback(cb_vs_history, (void*)this);
+			g->add(vs_history);
+		}
+		g->end();
+	}
+	{
+		Fl_Group* g = new Fl_Group(0, 20, this->w(), this->h() - 20, "D5");
+		g->hide();
+		{
+			wgt_x = 10;	wgt_y = 20;
+			int y_space = 25;
+
+			// ------------------------- PARAM LIST -------------------------------------------
+
+			Fl_Box* bx_ParamList = new Fl_Box(0, wgt_y, g->w(), 20, "--- PARAM / TARGETS LIST ---");	wgt_y += 20;
+
+			btn_makePrmList = new Fl_Button(wgt_x, wgt_y, 180, 20, "param list (torsion/angle)");
+			btn_makePrmList->callback(cb_btn_makePrmList, (void*)this);
+			g->add(btn_makePrmList);
+
+		wgt_x = 10;
 		wgt_y += 25;
 
-		vs_history = new Fl_Value_Slider(wgt_x, wgt_y, 180, 20);
-		vs_history->bounds(0, MAX_HISTORY-1);	vs_history->step(1);	vs_history->value(0);
-		vs_history->align(FL_ALIGN_LEFT);
-		vs_history->type(FL_HORIZONTAL);
-		vs_history->callback(cb_vs_history, (void*)this);
-		g->add(vs_history);
+			btn_listtgt = new Fl_Button(wgt_x, wgt_y, 180, 20, "target list (torsion/angle)");
+			btn_listtgt->callback(cb_btn_listtgt, (void*)this);
+			g->add(btn_listtgt);
+
+			wgt_x = 10;
+		wgt_y += 25;
+
+			btn_startprm = new Fl_Button(wgt_x, wgt_y, 50, 20, "start"); wgt_x += 50;
+			btn_startprm->callback(cb_btn_startprm, (void*)this);
+			g->add(btn_startprm);
+
+			btn_stopprm = new Fl_Button(wgt_x, wgt_y, 50, 20, "stop");
+			btn_stopprm->callback(cb_btn_stopprm, (void*)this);
+			g->add(btn_stopprm);
+
+			wgt_x = 10;
+			wgt_y += 25;
+
+			btn_makePrmList2 = new Fl_Button(wgt_x, wgt_y, 180, 20, "param list (rulings)");
+			btn_makePrmList2->callback(cb_btn_makePrmList2, (void*)this);
+			g->add(btn_makePrmList2);
+
+		wgt_x = 10;
+		wgt_y += 25;
+
+			btn_listtgt2 = new Fl_Button(wgt_x, wgt_y, 180, 20, "target list (rulings)");
+			btn_listtgt2->callback(cb_btn_listtgt2, (void*)this);
+			g->add(btn_listtgt2);
+
+			wgt_x = 10;
+			wgt_y += 25;
+
+			btn_startprm2 = new Fl_Button(wgt_x, wgt_y, 50, 20, "start"); wgt_x += 50;
+			btn_startprm2->callback(cb_btn_startprm2, (void*)this);
+			g->add(btn_startprm2);
+
+			btn_stopprm2 = new Fl_Button(wgt_x, wgt_y, 50, 20, "stop");
+			btn_stopprm2->callback(cb_btn_stopprm2, (void*)this);
+			g->add(btn_stopprm2);
+
+			wgt_x = 10;
+		wgt_y += 25;
+
+			// ------------------------- BATCH PROC --------------------------------------
+
+			Fl_Box* bx_BatchProc = new Fl_Box(0, wgt_y, g->w(), 20, "--- BATCH PROC ---");	wgt_y += 20;
+
+			btn_batchproc = new Fl_Button(wgt_x, wgt_y, 90, 20, "batch proc");	wgt_x += 90;
+			btn_batchproc->callback(cb_btn_batchproc, (void*)this);
+			g->add(btn_batchproc);
+
+#if 0			// ------------------------- LIST RULINGS -------------------------------------------
+
+			Fl_Box* bx_RulList = new Fl_Box(0, wgt_y, g->w(), 20, "--- RULINGS LIST ---");	wgt_y += 20;
+
+			btn_makeRulList = new Fl_Button(wgt_x, wgt_y, 90, 20, "ruling list");		wgt_x += 90;
+			btn_makeRulList->callback(cb_btn_makeRulList, (void*)this);
+			btn_makeRulList->deactivate();
+			g->add(btn_makeRulList);
+
+			btn_startrul = new Fl_Button(wgt_x, wgt_y, 50, 20, "start");	wgt_x += 50;
+			btn_startrul->callback(cb_btn_startrul, (void*)this);
+			btn_startrul->deactivate();
+			g->add(btn_startrul);
+
+			btn_stoprul = new Fl_Button(wgt_x, wgt_y, 50, 20, "stop");
+			btn_stoprul->callback(cb_btn_stoprul, (void*)this);
+			btn_stoprul->deactivate();
+			g->add(btn_stoprul);
+
+
+			wgt_x = 10;
+			wgt_y += 25;
+
+			grp_list = new Fl_Group(0, wgt_y, g->w(), y_space);
+			rb_listleft = new Fl_Round_Button(wgt_x, wgt_y, 50, y_space, "left");
+			rb_listright = new Fl_Round_Button(wgt_x + 50, wgt_y, 50, y_space, "right");
+			rb_listleft->type(FL_RADIO_BUTTON);
+			rb_listright->type(FL_RADIO_BUTTON);
+			rb_listleft->deactivate();
+			rb_listright->deactivate();
+			rb_listleft->setonly();
+			grp_list->add(rb_listleft);
+			grp_list->add(rb_listright);
+			grp_list->end();
+			g->add(grp_list);
+#endif
+		wgt_y += 25;
 
 	}
 	g->end();
