@@ -470,7 +470,7 @@ void ControlPanel::cb_btn_loadtpt( Fl_Widget *wgt, void *idx)
 		strcpy(fname, fc->value());
 		strcpy(This->fname_tpt, fc->value());
 		ppm->loadTgt(fname);
-	This->gwin->redraw();
+		This->gwin->redraw();
 		This->gwin_cp->redraw();
 	}
 }
