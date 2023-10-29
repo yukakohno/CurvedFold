@@ -3,14 +3,24 @@
 This is a software to model and design a curved folding model with a single crease and a "rotationally symmetric curved folding" composed of mutiple pieces with single creases.
 The parameters of the curved fold are optimized to fit the surface to the 3D target points.<br>
 
+Relateted papers:<br>
+- Yuka Watanabe, Jun Mitani, "Modelling the Folding Motions of a Curved Fold", in Origami7: Proceedings of the 7th International Meeting on Origami in Science, Oxford, England, September 5-7, 2018, pages 1135-1150.<br>
+- Yuka Watanabe, Jun Mitani, "Visualization of Folding Motion of Rotationally Symmetric Curved Folding", Computer-Aided Design & Applications, 17(3), 2019, 513-524.<br>
+- Yuka Watanabe, Jun Mitani, "Fitting Single Crease Curved-Fold Model to the User Specified Points", Computer-Aided Design & Applications, 19(2), 2022, 387-404.<br>
+ "Stitch the Boundaries of Two Surface Patches" (Section 4.2 and Figure 5)
+
+The source code and sample data for the other sections of the papers are provided in other branches:<br>
+- "Intuitive User Interface for a Single Crease Model Manipulation" (Section 4.1 and Figure 2) : "SingleCrease2".<br>
+https://github.com/yukakohno/CurvedFold/tree/SingleCrease2
+- "Evaluation" (Section 5) : "EvaluateOptimization".<br>
+https://github.com/yukakohno/CurvedFold/tree/EvaluateOptimization
+
+
 This code is build by Visual Studio 2019 with libraries below installed.<br>
 - openCV 2.4.9
 - fltk-1.3.5
 - freeglut 3.0.0 MSVC Package (https://www.transmissionzero.co.uk/software/freeglut-devel/)
 
-For the basic information of this software, please refer to:<br>
-Yuka Watanabe, Jun Mitani, "Modelling the Folding Motions of a Curved Fold", in Origami7: Proceedings of the 7th International Meeting on Origami in Science, Oxford, England, September 5-7, 2018, pages 1135-1150.<br>
-Yuka Watanabe, Jun Mitani, "Visualization of Folding Motion of Rotationally Symmetric Curved Folding", Computer-Aided Design & Applications, 17(3), 2019, 513-524.<br>
 
 ### How to optimize the parameters
 
