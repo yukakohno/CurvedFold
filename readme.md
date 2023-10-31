@@ -32,27 +32,19 @@ This code is build by Visual Studio 2019 with libraries below installed.<br>
 All the input files are in "CurvedFold/GUI/input/".<br>
 In P.txt, the folding angle and the 2D curvature of the control points on the 2D crease curve are defined on 3rd and 4th columns.
 
-> 10 1 # file type, mode: B, kv,tr,fa,k2d<br>
-> 7 # plot count<br>
-> 0.000000	0.000000	1.570796	0.000000<br>
-> 0.000000	0.000000	1.291544	0.004536<br>
-> 0.000000	0.000000	1.117011	0.005988<br>
-> 0.000000	0.000000	1.064651	0.007399<br>
-> 0.000000	0.000000	1.121374	0.005987<br>
-> 0.000000	0.000000	1.291544	0.004538<br>
-> 0.000000	0.000000	1.570796	0.000000
+| P.txt |  |
+| ---- | :----: |
+| 10 1 # file type, mode: B, kv,tr,fa,k2d<br>7 # plot count<br>0.0 &nbsp; 0.0 &nbsp; &alpha;<sub>0</sub> &nbsp; &kappa;<sub>2D 0</sub><br>0.0 &nbsp; 0.0 &nbsp; &alpha;<sub>1</sub> &nbsp; &kappa;<sub>2D 1</sub><br>0.0 &nbsp; 0.0 &nbsp; &alpha;<sub>2</sub> &nbsp; &kappa;<sub>2D 2</sub><br>0.0 &nbsp; 0.0 &nbsp; &alpha;<sub>3</sub> &nbsp; &kappa;<sub>2D 3</sub><br>0.0 &nbsp; 0.0 &nbsp; &alpha;<sub>4</sub> &nbsp; &kappa;<sub>2D 4</sub><br>0.0 &nbsp; 0.0 &nbsp; &alpha;<sub>5</sub> &nbsp; &kappa;<sub>2D 5</sub><br>0.0 &nbsp; 0.0 &nbsp; &alpha;<sub>6</sub> &nbsp; &kappa;<sub>2D 6</sub> | <img src="readme_images/00_CPs.bmp" width="300"> |
+
+
+<br>
 
 As P.txt is loaded, m2m3.txt is automatically loaded.  It describes the poses, in the form of homogeneous coordinates, of the starting point of the curved crease in the 2D paper and the 3D space.
 
-> m2<br>
-> 0.884988	-0.465615	0.000000<br>
-> 0.465615	0.884988	0.000000<br>
-> 10.156250	89.062500	1.000000<br>
-> m3<br>
-> 0.884988	-0.465615	0.000000	0.000000<br>
-> 0.465615	0.884988	0.000000	0.000000<br>
-> 0.000000	0.000000	1.000000	0.000000<br>
-> 10.156250	89.062500	0.000000	1.000000<br>
+| m2m3.txt |  |
+| ---- | :----: |
+| m2 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br> X<sub>x</sub> &nbsp; X<sub>y</sub> &nbsp; 0.0<br>Y<sub>x</sub> &nbsp; Y<sub>y</sub> &nbsp; 0.0<br>P<sub>x</sub> &nbsp; P<sub>y</sub> &nbsp; 1.0<br>m3<br>X<sub>x</sub> &nbsp; X<sub>y</sub> &nbsp; X<sub>z</sub> &nbsp; 0.0<br>Y<sub>x</sub> &nbsp; Y<sub>y</sub> &nbsp; Y<sub>z</sub> &nbsp; 0.0<br>Z<sub>x</sub> &nbsp; Z<sub>y</sub> &nbsp; Z<sub>z</sub> &nbsp; 0.0<br>P<sub>x</sub> &nbsp; P<sub>y</sub> &nbsp; P<sub>z</sub> &nbsp; 1.0<br> | <img src="readme_images/00_Ms.bmp" width="300"> |
+
 
 #### 2. Load Target Points (target*.txt)<br>
 
@@ -64,18 +56,13 @@ As P.txt is loaded, m2m3.txt is automatically loaded.  It describes the poses, i
 The color shows the distance between 2D and 3D points.
 Red/blue indicates larger distance and green for smaller distance.
 
-target*.txt includes pairs of 3D target point positions, in the 1st to 3rd columns, and 2D control point positions, in the 4th and 5th columns.
+target*.txt includes pairs of 3D target point positions, 1st to 3rd columns, and 2D control point positions, the 4th and 5th columns.
 
-> 22.643123 24.016077 21.951300 20.000000 20.000000<br>
-> 42.346042 23.623047 18.539481 40.000000 20.000000<br>
-> 62.048961 23.230018 15.127662 60.000000 20.000000<br>
-> 81.776372 22.957820 12.191825 80.000000 20.000000<br>
-> 101.703084 23.141041 10.557504 100.000000 20.000000<br>
-> 121.689522 23.662013 10.108393 120.000000 20.000000<br>
-> 141.635901 24.402057 10.701165 140.000000 20.000000<br>
-> 161.534307 25.299417 12.129287 160.000000 20.000000<br>
-> 181.393607 26.351279 14.323893 180.000000 20.000000<br>
-...
+| target*.txt |  |
+| ---- | :----: |
+| tp0<sub>x</sub> &nbsp; tp0<sub>y</sub> &nbsp; tp0<sub>z</sub> &nbsp; cp0<sub>x</sub> &nbsp; cp0<sub>y</sub><br>tp1<sub>x</sub> &nbsp; tp1<sub>y</sub> &nbsp; tp1<sub>z</sub> &nbsp; cp1<sub>x</sub> &nbsp; cp1<sub>y</sub><br>tp2<sub>x</sub> &nbsp; tp2<sub>y</sub> &nbsp; tp2<sub>z</sub> &nbsp; cp2<sub>x</sub> &nbsp; cp2<sub>y</sub><br>tp3<sub>x</sub> &nbsp; tp3<sub>y</sub> &nbsp; tp3<sub>z</sub> &nbsp; cp3<sub>x</sub> &nbsp; cp3<sub>y</sub><br>tp4<sub>x</sub> &nbsp; tp4<sub>y</sub> &nbsp; tp4<sub>z</sub> &nbsp; cp4<sub>x</sub> &nbsp; cp4<sub>y</sub><br>... | <img src="readme_images/00_CPsTs.bmp" width="300"> |
+
+
 
 #### 3. Load Target Mask (tmask*.txt) (optional)
 
