@@ -12,7 +12,9 @@ The 3 panes are
 
 <img src="readme_images/111_Display_General.bmp" width="100%"><br>
 
-To change/reset the view pose of the 3D Pane,
+#### 1.2. Changing the Camera Pose<br>
+
+To change/reset the camera pose in the 3D Pane,
 - Rotation : shift + left mouse drag
 - Scale : alt + left mouse drag
 - Translation : ctrl + left mouse drag
@@ -22,9 +24,9 @@ To change/reset the view pose of the 3D Pane,
 
 <img src="readme_images/112_ChangeViewPose.bmp" width="100%"><br>
 
-#### 1.2. Showing/Hiding Each Elements<br>
+#### 1.3. Showing/Hiding Each Elements<br>
 
-To show/hide the elements of 2D/3D model, check the checkbuttons under "DISPLAY" section:
+To show/hide the elements of the 2D/3D model, check the checkbuttons under "DISPLAY" section:
 - X : Crease curve
 - TNB : Tangent, normal, and binormal vectors of the curved crease
 - RUL : Rulings
